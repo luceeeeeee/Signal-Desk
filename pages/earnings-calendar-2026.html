@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earnings Calendar 2026 · The Signal Desk</title>
+<style>
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-mid:   #4a8a74;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --green:        #2a7a50;
+  --green-bg:     #e8f5ee;
+  --green-border: #a8d8bc;
+  --red:          #b84040;
+  --red-bg:       #fceaea;
+  --red-border:   #e8aaaa;
+  --amber:        #b87820;
+  --amber-bg:     #fdf4e7;
+  --amber-border: #e8c88a;
+  --muted-bg:     #f3f5f2;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ── Nav ─────────────────────────────────────────────── */
+nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+
+/* ── Hero ────────────────────────────────────────────── */
+.hero {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 52px 48px 36px;
+  border-bottom: 1px solid var(--border);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+
+/* ── Content ─────────────────────────────────────────── */
+.content {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 36px 48px 80px;
+}
+
+/* ── Quarter tabs ────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.tab {
+  padding: 10px 22px 11px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: color 0.15s, background 0.15s;
+  user-select: none;
+}
+.tab:hover { color: var(--text-med); background: var(--surface-off); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.tab .q-status {
+  display: inline-block;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 1px 6px; border-radius: 10px; margin-left: 6px;
+  vertical-align: middle;
+}
+.tab .q-done  { background: var(--green-bg);  color: var(--green); border: 1px solid var(--green-border); }
+.tab .q-live  { background: var(--amber-bg);  color: var(--amber); border: 1px solid var(--amber-border); }
+.tab .q-soon  { background: var(--muted-bg);  color: var(--text-muted); border: 1px solid var(--border); }
+
+/* ── Quarter color themes ────────────────────────────── */
+.q-blue   { --qc: #3a72b0; --qc-light: #eaf2fb; --qc-border: #b8d4f0; }
+.q-teal   { --qc: #2e6b58; --qc-light: #eaf3f0; --qc-border: #c6ddd6; }
+.q-amber  { --qc: #b87820; --qc-light: #fdf4e7; --qc-border: #e8c88a; }
+.q-indigo { --qc: #5560a8; --qc-light: #f0f0fc; --qc-border: #c0c4ec; }
+
+/* Active tab inherits quarter color via data-q */
+.tab[data-q="q1"].active { color: #3a72b0; border-bottom-color: #3a72b0; }
+.tab[data-q="q2"].active { color: #2e6b58; border-bottom-color: #2e6b58; }
+.tab[data-q="q3"].active { color: #b87820; border-bottom-color: #b87820; }
+.tab[data-q="q4"].active { color: #5560a8; border-bottom-color: #5560a8; }
+
+/* ── Quarter panel ───────────────────────────────────── */
+.q-panel { display: none; }
+.q-panel.active { display: block; }
+
+.q-meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-left: 16px;
+  border-left: 3px solid var(--qc, var(--accent));
+}
+.q-title { font-size: 15px; font-weight: 700; color: var(--qc, var(--text)); }
+.q-desc  { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.q-updated { font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+/* ── Table ───────────────────────────────────────────── */
+.cal-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--qc, var(--accent));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead tr {
+  background: linear-gradient(135deg, var(--qc-light, var(--surface-off)) 0%, var(--surface-off) 65%);
+  border-bottom: 1px solid var(--qc-border, var(--border));
+}
+th {
+  padding: 11px 16px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--qc, var(--text-muted)); text-align: left; white-space: nowrap;
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tbody tr { background: var(--surface); transition: background 0.1s; }
+tbody tr:nth-child(even) { background: #fafcfa; }
+tbody tr:hover { background: var(--accent-bg); }
+
+/* left-edge accent */
+.row-beat  td:first-child { border-left: 3px solid var(--green); }
+.row-miss  td:first-child { border-left: 3px solid var(--red); }
+.row-today td { background: var(--amber-bg) !important; }
+.row-today td:first-child { border-left: 3px solid var(--amber); }
+.row-upcoming td:first-child { border-left: 3px solid var(--border); }
+.row-tbd { opacity: 0.6; }
+
+/* cell styles */
+.ticker { font-weight: 700; font-size: 13px; font-family: 'Menlo','SF Mono',monospace; color: var(--text); white-space: nowrap; }
+.company-name { font-size: 13px; color: var(--text-med); }
+.company-zh { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.date-main { font-size: 13px; color: var(--text-med); white-space: nowrap; }
+.date-tpe { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.eps-num { font-family: 'Menlo','SF Mono',monospace; font-size: 13px; color: var(--text-med); white-space: nowrap; }
+.eps-beat { color: var(--green); font-weight: 700; }
+.eps-miss { color: var(--red);   font-weight: 700; }
+.eps-na   { color: var(--text-muted); font-style: italic; font-family: inherit; font-size: 12px; }
+.sector { font-size: 11px; color: var(--text-muted); }
+
+/* badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+}
+.badge::before { font-size: 8px; }
+.badge-beat     { background: var(--green-bg);  color: var(--green); border: 1px solid var(--green-border); }
+.badge-beat::before  { content: '▲'; }
+.badge-miss     { background: var(--red-bg);    color: var(--red);   border: 1px solid var(--red-border); }
+.badge-miss::before  { content: '▼'; }
+.badge-today    { background: var(--amber-bg);  color: var(--amber); border: 1px solid var(--amber-border); }
+.badge-today::before { content: '◎'; }
+.badge-upcoming { background: var(--muted-bg);  color: var(--text-muted); border: 1px solid var(--border); }
+.badge-upcoming::before { content: '○'; }
+.badge-tbd      { background: var(--muted-bg);  color: var(--text-muted); border: 1px solid var(--border); }
+
+/* ── TBD placeholder ─────────────────────────────────── */
+.placeholder {
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 48px 32px;
+  text-align: center;
+  margin-top: 16px;
+}
+.placeholder-title { font-size: 16px; font-weight: 600; color: var(--text-med); margin-bottom: 8px; }
+.placeholder-sub { font-size: 13px; color: var(--text-muted); }
+
+/* ── Legend ──────────────────────────────────────────── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 0;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text-muted);
+}
+.l-swatch { width: 4px; height: 16px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Footer ──────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 48px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface);
+}
+
+@media (max-width: 720px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  th:nth-child(7), td:nth-child(7) { display: none; } /* hide sector */
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="income-statement-guide.html">Income Statement Guide</a></li>
+    <li><a href="earnings-calendar-2026.html" class="active">Earnings Calendar</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Manually Curated · Updated Quarterly</div>
+  <h1>2026 Earnings Calendar</h1>
+  <p class="hero-sub">Key reporting dates for major US and Taiwan stocks tracked by The Signal Desk. All times in ET (US Eastern) and TPE (Taipei). Estimates and results updated after each report.</p>
+</div>
+
+<div class="content">
+
+  <div class="tabs">
+    <div class="tab" data-q="q1" onclick="showQ('q1')">Q1 2026 <span class="q-status q-done">Done</span></div>
+    <div class="tab active" data-q="q2" onclick="showQ('q2')">Q2 2026 <span class="q-status q-live">Live</span></div>
+    <div class="tab" data-q="q3" onclick="showQ('q3')">Q3 2026 <span class="q-status q-soon">Soon</span></div>
+    <div class="tab" data-q="q4" onclick="showQ('q4')">Q4 2026 <span class="q-status q-soon">TBD</span></div>
+  </div>
+
+  <!-- Q1 2026 -->
+  <div id="q1" class="q-panel q-blue">
+    <div class="q-meta">
+      <div>
+        <div class="q-title">Q1 FY2026 — Reported Jan – Feb 2026</div>
+        <div class="q-desc">Fiscal Q4 / FY2025 full-year results. Season complete.</div>
+      </div>
+      <div class="q-updated">Updated Apr 2026</div>
+    </div>
+    <div class="cal-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Company</th>
+            <th>Report Date (ET)</th>
+            <th>EPS Estimate</th>
+            <th>EPS Actual</th>
+            <th>Result</th>
+            <th>Sector</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-beat">
+            <td class="ticker">JPM</td>
+            <td class="company-name">JPMorgan Chase<span class="company-zh">摩根大通</span></td>
+            <td class="date-main">Jan 15, 2026<span class="date-tpe">TPE Jan 16 · 01:00</span></td>
+            <td class="eps-num">$4.03</td>
+            <td class="eps-num eps-beat">$4.81</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Financials</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">GS</td>
+            <td class="company-name">Goldman Sachs<span class="company-zh">高盛</span></td>
+            <td class="date-main">Jan 15, 2026<span class="date-tpe">TPE Jan 16 · 01:00</span></td>
+            <td class="eps-num">$8.17</td>
+            <td class="eps-num eps-beat">$11.95</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Financials</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">TSMC</td>
+            <td class="company-name">TSMC<span class="company-zh">台積電</span></td>
+            <td class="date-main">Jan 16, 2026<span class="date-tpe">TPE Jan 16 · 14:00</span></td>
+            <td class="eps-num">NT$14.90</td>
+            <td class="eps-num eps-beat">NT$15.22</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">MS</td>
+            <td class="company-name">Morgan Stanley<span class="company-zh">摩根士丹利</span></td>
+            <td class="date-main">Jan 17, 2026<span class="date-tpe">TPE Jan 18 · 01:00</span></td>
+            <td class="eps-num">$1.70</td>
+            <td class="eps-num eps-beat">$2.22</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Financials</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">TSLA</td>
+            <td class="company-name">Tesla<span class="company-zh">特斯拉</span></td>
+            <td class="date-main">Jan 29, 2026<span class="date-tpe">TPE Jan 30 · 06:00</span></td>
+            <td class="eps-num">$0.43</td>
+            <td class="eps-num eps-beat">$0.66</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">EV / Auto</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">META</td>
+            <td class="company-name">Meta Platforms<span class="company-zh">Meta</span></td>
+            <td class="date-main">Jan 29, 2026<span class="date-tpe">TPE Jan 30 · 06:00</span></td>
+            <td class="eps-num">$7.29</td>
+            <td class="eps-num eps-beat">$8.05</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Tech / Social</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">MSFT</td>
+            <td class="company-name">Microsoft<span class="company-zh">微軟</span></td>
+            <td class="date-main">Jan 29, 2026<span class="date-tpe">TPE Jan 30 · 06:00</span></td>
+            <td class="eps-num">$3.23</td>
+            <td class="eps-num eps-beat">$3.23</td>
+            <td><span class="badge badge-beat">In Line</span></td>
+            <td class="sector">Tech / Cloud</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">AAPL</td>
+            <td class="company-name">Apple<span class="company-zh">蘋果</span></td>
+            <td class="date-main">Jan 30, 2026<span class="date-tpe">TPE Jan 31 · 06:00</span></td>
+            <td class="eps-num">$2.35</td>
+            <td class="eps-num eps-beat">$2.40</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Tech / Consumer</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">GOOGL</td>
+            <td class="company-name">Alphabet (Google)<span class="company-zh">字母（Google）</span></td>
+            <td class="date-main">Feb 4, 2026<span class="date-tpe">TPE Feb 5 · 06:00</span></td>
+            <td class="eps-num">$2.13</td>
+            <td class="eps-num eps-beat">$2.15</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Tech / Ads / AI</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">AMZN</td>
+            <td class="company-name">Amazon<span class="company-zh">亞馬遜</span></td>
+            <td class="date-main">Feb 6, 2026<span class="date-tpe">TPE Feb 7 · 06:00</span></td>
+            <td class="eps-num">$1.49</td>
+            <td class="eps-num eps-beat">$1.86</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">E-comm / Cloud</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">NVDA</td>
+            <td class="company-name">NVIDIA<span class="company-zh">輝達</span></td>
+            <td class="date-main">Feb 26, 2026<span class="date-tpe">TPE Feb 27 · 06:00</span></td>
+            <td class="eps-num">$0.84</td>
+            <td class="eps-num eps-beat">$0.89</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="l-swatch" style="background:var(--green)"></div>Beat estimates</div>
+      <div class="legend-item"><div class="l-swatch" style="background:var(--red)"></div>Missed estimates</div>
+    </div>
+  </div>
+
+  <!-- Q2 2026 -->
+  <div id="q2" class="q-panel q-teal active">
+    <div class="q-meta">
+      <div>
+        <div class="q-title">Q2 FY2026 — Reporting Apr – May 2026</div>
+        <div class="q-desc">Fiscal Q1 2026 results. Season in progress — as of Apr 30, 2026.</div>
+      </div>
+      <div class="q-updated">Updated Apr 30, 2026</div>
+    </div>
+    <div class="cal-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Company</th>
+            <th>Report Date (ET)</th>
+            <th>EPS Estimate</th>
+            <th>EPS Actual</th>
+            <th>Result</th>
+            <th>Sector</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-beat">
+            <td class="ticker">TSMC</td>
+            <td class="company-name">TSMC<span class="company-zh">台積電</span></td>
+            <td class="date-main">Apr 17, 2026<span class="date-tpe">TPE Apr 17 · 14:00</span></td>
+            <td class="eps-num">NT$14.50</td>
+            <td class="eps-num eps-beat">NT$15.80</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+          <tr class="row-miss">
+            <td class="ticker">TSLA</td>
+            <td class="company-name">Tesla<span class="company-zh">特斯拉</span></td>
+            <td class="date-main">Apr 22, 2026<span class="date-tpe">TPE Apr 23 · 06:00</span></td>
+            <td class="eps-num">$0.45</td>
+            <td class="eps-num eps-miss">$0.27</td>
+            <td><span class="badge badge-miss">Miss</span></td>
+            <td class="sector">EV / Auto</td>
+          </tr>
+          <tr class="row-beat">
+            <td class="ticker">GOOGL</td>
+            <td class="company-name">Alphabet (Google)<span class="company-zh">字母（Google）</span></td>
+            <td class="date-main">Apr 29, 2026<span class="date-tpe">TPE Apr 30 · 06:00</span></td>
+            <td class="eps-num">$2.02</td>
+            <td class="eps-num eps-beat">$2.81</td>
+            <td><span class="badge badge-beat">Beat</span></td>
+            <td class="sector">Tech / Ads / AI</td>
+          </tr>
+          <tr class="row-today">
+            <td class="ticker">MSFT</td>
+            <td class="company-name">Microsoft<span class="company-zh">微軟</span></td>
+            <td class="date-main">Apr 30, 2026<span class="date-tpe">TPE May 1 · 06:00</span></td>
+            <td class="eps-num">$4.06</td>
+            <td class="eps-na">Reporting today</td>
+            <td><span class="badge badge-today">Today</span></td>
+            <td class="sector">Tech / Cloud</td>
+          </tr>
+          <tr class="row-today">
+            <td class="ticker">META</td>
+            <td class="company-name">Meta Platforms<span class="company-zh">Meta</span></td>
+            <td class="date-main">Apr 30, 2026<span class="date-tpe">TPE May 1 · 06:00</span></td>
+            <td class="eps-num">$6.82</td>
+            <td class="eps-na">Reporting today</td>
+            <td><span class="badge badge-today">Today</span></td>
+            <td class="sector">Tech / Social</td>
+          </tr>
+          <tr class="row-today">
+            <td class="ticker">QCOM</td>
+            <td class="company-name">Qualcomm<span class="company-zh">高通</span></td>
+            <td class="date-main">Apr 30, 2026<span class="date-tpe">TPE May 1 · 06:00</span></td>
+            <td class="eps-num">$2.43</td>
+            <td class="eps-na">Reporting today</td>
+            <td><span class="badge badge-today">Today</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+          <tr class="row-today">
+            <td class="ticker">LLY</td>
+            <td class="company-name">Eli Lilly<span class="company-zh">禮來製藥</span></td>
+            <td class="date-main">Apr 30, 2026<span class="date-tpe">TPE May 1 · 06:00</span></td>
+            <td class="eps-num">$6.79</td>
+            <td class="eps-na">Reporting today</td>
+            <td><span class="badge badge-today">Today</span></td>
+            <td class="sector">Healthcare</td>
+          </tr>
+          <tr class="row-upcoming">
+            <td class="ticker">AAPL</td>
+            <td class="company-name">Apple<span class="company-zh">蘋果</span></td>
+            <td class="date-main">May 1, 2026<span class="date-tpe">TPE May 2 · 06:00</span></td>
+            <td class="eps-num">$1.62</td>
+            <td class="eps-na">—</td>
+            <td><span class="badge badge-upcoming">Upcoming</span></td>
+            <td class="sector">Tech / Consumer</td>
+          </tr>
+          <tr class="row-upcoming">
+            <td class="ticker">AMZN</td>
+            <td class="company-name">Amazon<span class="company-zh">亞馬遜</span></td>
+            <td class="date-main">May 1, 2026<span class="date-tpe">TPE May 2 · 06:00</span></td>
+            <td class="eps-num">$1.64</td>
+            <td class="eps-na">—</td>
+            <td><span class="badge badge-upcoming">Upcoming</span></td>
+            <td class="sector">E-comm / Cloud</td>
+          </tr>
+          <tr class="row-upcoming">
+            <td class="ticker">AMD</td>
+            <td class="company-name">Advanced Micro Devices<span class="company-zh">超微半導體</span></td>
+            <td class="date-main">~May 6, 2026<span class="date-tpe">TPE ~May 7 · 06:00</span></td>
+            <td class="eps-num">$0.94</td>
+            <td class="eps-na">—</td>
+            <td><span class="badge badge-upcoming">Upcoming</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+          <tr class="row-upcoming">
+            <td class="ticker">NVDA</td>
+            <td class="company-name">NVIDIA<span class="company-zh">輝達</span></td>
+            <td class="date-main">~May 28, 2026<span class="date-tpe">TPE ~May 29 · 06:00</span></td>
+            <td class="eps-num">~$0.94</td>
+            <td class="eps-na">—</td>
+            <td><span class="badge badge-upcoming">Upcoming</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="l-swatch" style="background:var(--amber)"></div>Reporting today</div>
+      <div class="legend-item"><div class="l-swatch" style="background:var(--green)"></div>Beat estimates</div>
+      <div class="legend-item"><div class="l-swatch" style="background:var(--red)"></div>Missed estimates</div>
+      <div class="legend-item"><div class="l-swatch" style="background:var(--border)"></div>Upcoming</div>
+    </div>
+  </div>
+
+  <!-- Q3 2026 -->
+  <div id="q3" class="q-panel q-amber">
+    <div class="q-meta">
+      <div>
+        <div class="q-title">Q3 FY2026 — Reporting Jul – Aug 2026</div>
+        <div class="q-desc">Fiscal Q2 2026 results. Approximate dates based on prior-year cadence.</div>
+      </div>
+      <div class="q-updated">Updated Apr 2026</div>
+    </div>
+    <div class="cal-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Company</th>
+            <th>Est. Report Date</th>
+            <th>EPS Estimate</th>
+            <th>EPS Actual</th>
+            <th>Result</th>
+            <th>Sector</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-tbd">
+            <td class="ticker">TSMC</td>
+            <td class="company-name">TSMC<span class="company-zh">台積電</span></td>
+            <td class="date-main">~Jul 17, 2026<span class="date-tpe">TPE ~Jul 17</span></td>
+            <td class="eps-na">TBD</td><td class="eps-na">—</td>
+            <td><span class="badge badge-tbd">TBD</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+          <tr class="row-tbd">
+            <td class="ticker">GOOGL</td>
+            <td class="company-name">Alphabet<span class="company-zh">字母</span></td>
+            <td class="date-main">~Jul 29, 2026<span class="date-tpe">TPE ~Jul 30</span></td>
+            <td class="eps-na">TBD</td><td class="eps-na">—</td>
+            <td><span class="badge badge-tbd">TBD</span></td>
+            <td class="sector">Tech / Ads / AI</td>
+          </tr>
+          <tr class="row-tbd">
+            <td class="ticker">META</td>
+            <td class="company-name">Meta Platforms<span class="company-zh">Meta</span></td>
+            <td class="date-main">~Jul 30, 2026<span class="date-tpe">TPE ~Jul 31</span></td>
+            <td class="eps-na">TBD</td><td class="eps-na">—</td>
+            <td><span class="badge badge-tbd">TBD</span></td>
+            <td class="sector">Tech / Social</td>
+          </tr>
+          <tr class="row-tbd">
+            <td class="ticker">MSFT</td>
+            <td class="company-name">Microsoft<span class="company-zh">微軟</span></td>
+            <td class="date-main">~Jul 30, 2026<span class="date-tpe">TPE ~Jul 31</span></td>
+            <td class="eps-na">TBD</td><td class="eps-na">—</td>
+            <td><span class="badge badge-tbd">TBD</span></td>
+            <td class="sector">Tech / Cloud</td>
+          </tr>
+          <tr class="row-tbd">
+            <td class="ticker">AAPL</td>
+            <td class="company-name">Apple<span class="company-zh">蘋果</span></td>
+            <td class="date-main">~Aug 1, 2026<span class="date-tpe">TPE ~Aug 2</span></td>
+            <td class="eps-na">TBD</td><td class="eps-na">—</td>
+            <td><span class="badge badge-tbd">TBD</span></td>
+            <td class="sector">Tech / Consumer</td>
+          </tr>
+          <tr class="row-tbd">
+            <td class="ticker">AMZN</td>
+            <td class="company-name">Amazon<span class="company-zh">亞馬遜</span></td>
+            <td class="date-main">~Aug 1, 2026<span class="date-tpe">TPE ~Aug 2</span></td>
+            <td class="eps-na">TBD</td><td class="eps-na">—</td>
+            <td><span class="badge badge-tbd">TBD</span></td>
+            <td class="sector">E-comm / Cloud</td>
+          </tr>
+          <tr class="row-tbd">
+            <td class="ticker">NVDA</td>
+            <td class="company-name">NVIDIA<span class="company-zh">輝達</span></td>
+            <td class="date-main">~Aug 27, 2026<span class="date-tpe">TPE ~Aug 28</span></td>
+            <td class="eps-na">TBD</td><td class="eps-na">—</td>
+            <td><span class="badge badge-tbd">TBD</span></td>
+            <td class="sector">Semiconductors</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="placeholder">
+      <div class="placeholder-title">Estimates and confirmed dates will be added in June 2026</div>
+      <div class="placeholder-sub">Dates above are approximate. Always confirm at the company's investor relations page before trading.</div>
+    </div>
+  </div>
+
+  <!-- Q4 2026 -->
+  <div id="q4" class="q-panel q-indigo">
+    <div class="q-meta">
+      <div>
+        <div class="q-title">Q4 FY2026 — Reporting Oct – Nov 2026</div>
+        <div class="q-desc">Fiscal Q3 2026 results. Dates not yet available.</div>
+      </div>
+      <div class="q-updated">Updated Apr 2026</div>
+    </div>
+    <div class="placeholder">
+      <div class="placeholder-title">Q4 2026 reporting dates will be published in September 2026</div>
+      <div class="placeholder-sub">Companies typically announce earnings dates 2–4 weeks in advance. This page will be updated when dates are confirmed.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Earnings Calendar 2026 &nbsp;·&nbsp; Manually curated — verify dates at company IR pages before trading
+</footer>
+
+<script>
+function showQ(id) {
+  document.querySelectorAll('.q-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`.tab[data-q="${id}"]`).classList.add('active');
+}
+</script>
+</body>
+</html>

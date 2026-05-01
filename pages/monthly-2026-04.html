@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Overview · April 2026 · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 48px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+
+.hero-period {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 10px;
+  letter-spacing: 0.03em;
+}
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.meta-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* ── Section color themes ── */
+.sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
+.sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
+.sec-amber  { --sc: #b87820; --sc-light: #fdf4e7; --sc-border: #e8c88a; }
+.sec-indigo { --sc: #5560a8; --sc-light: #f0f0fc; --sc-border: #c0c4ec; }
+
+.section-card {
+  border: 1px solid var(--sc-border);
+  border-top: 4px solid var(--sc);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc);
+  background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface) 65%);
+  padding: 14px 24px;
+  margin: 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+.section-body {
+  padding: 24px 28px;
+}
+.sub-heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sc);
+  margin: 22px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--sc-border);
+}
+.sub-heading:first-child { margin-top: 0; }
+.section-body p {
+  margin-bottom: 12px;
+  color: var(--text-med);
+  font-size: 14px;
+  line-height: 1.75;
+}
+.section-body strong { color: var(--text); }
+
+/* Impact callout */
+.impact-line {
+  background: var(--sc-light);
+  border-left: 3px solid var(--sc);
+  padding: 8px 14px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 4px 0 10px;
+  font-size: 13.5px;
+  color: var(--text-med);
+  line-height: 1.6;
+}
+
+/* Numbered items */
+.num-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.num-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--sc);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.num-body { flex: 1; }
+.num-title {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.num-body p { margin-bottom: 6px; font-size: 13.5px; }
+
+/* Bullet lists */
+.overview-list {
+  margin: 0 0 14px 0;
+  padding-left: 20px;
+}
+.overview-list li {
+  margin-bottom: 7px;
+  color: var(--text-med);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 10px 0 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--sc-border);
+}
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.overview-table thead tr {
+  background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface-off) 65%);
+  border-bottom: 1px solid var(--sc-border);
+}
+.overview-table th {
+  padding: 9px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sc);
+  text-align: left;
+  white-space: nowrap;
+}
+.overview-table td {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  color: var(--text-med);
+  border-bottom: 1px solid var(--border-light);
+}
+.overview-table tr:last-child td { border-bottom: none; }
+.overview-table tbody tr:hover { background: var(--surface-off); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="income-statement-guide.html">Income Statement Guide</a></li>
+    <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Monthly Overview · Auto-generated</div>
+  <p class="hero-period">April 2026 Preview &nbsp;·&nbsp; March 2026 Review</p>
+  <h1>Market Overview</h1>
+  <p class="hero-sub">Monthly review of the past month and preview of what's ahead — key events, index performance, earnings, and directional views. Bilingual: English &amp; 繁體中文.</p>
+</div>
+
+<div class="content">
+  <div class="meta-row">
+    <span class="meta-label">Generated by The Signal Desk · AI-assisted analysis</span>
+    <span class="meta-label">Last updated: April 30, 2026 · 17:18 Taipei</span>
+  </div>
+
+  <div class="section-card sec-teal"><h2 class="section-title">MONTHLY REVIEW: March 2026 / March 2026 市場回顧</h2><div class="section-body">
+<p>March was powered by a resumption of rate‑cut optimism after the Fed’s dovish pause, while tech earnings blew past expectations, sending the Nasdaq soaring.  The rally was also amplified by a weaker dollar, which helped U.S. exporters and commodity exporters alike.</p>
+<p>3 月因美聯儲暫緩加息、轉向降息預期而重燃市場熱情，同時科技財報普遍好於預期，推升 Nasdaq 大幅上漲。美元走弱亦提振美國出口與商品出口國的表現。</p>
+<h3 class="sub-heading">📊 Index Performance / 指數表現</h3>
+<div class="table-wrap"><table class="overview-table"><thead>
+<tr><th>Index / 指數</th><th>Monthly Return / 月報酬</th><th>Key Driver / 主要驅動</th></tr>
+</thead><tbody>
+<tr><td>S&amp;P 500 (標普500)</td><td>+9.3%</td><td>Fed’s dovish tone and strong corporate earnings / 美聯儲鴿派語調與企業盈餘強勁</td></tr>
+<tr><td>Nasdaq (那斯達克)</td><td>+14.3%</td><td>Cloud &amp; AI earnings beat expectations / 雲端與 AI 財報大幅好於預期</td></tr>
+<tr><td>Dow Jones (道瓊工業)</td><td>+5.4%</td><td>Industrial demand rebound and weaker dollar / 工業需求回升與美元走弱</td></tr>
+<tr><td>TWSE (台灣加權)</td><td>+23.9%</td><td>Chip‑fab capacity expansion and export surge / 晶圓代工擴產與出口激增</td></tr>
+<tr><td>Hang Seng (香港恒生)</td><td>+5.3%</td><td>Mainland policy support and commodity price steadiness / 內地政策扶持與大宗商品價格穩定</td></tr>
+<tr><td>USD Index (美元指數)</td><td>-1.0%</td><td>Market betting on future rate cuts / 市場預期未來降息</td></tr>
+<tr><td>Gold (黃金)</td><td>-1.6%</td><td>Stronger equity market pulling funds away / 股市走強吸走資金</td></tr>
+<tr><td>WTI Oil (WTI原油)</td><td>-1.8%</td><td>Slight demand dip and higher inventories / 需求小幅下降、庫存上升</td></tr>
+</tbody></table></div>
+<h3 class="sub-heading">🔑 3 Events That Defined the Month / 定義本月的3件大事</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>Federal Reserve “Pause‑Then‑Cut” Signal</strong> / <strong>美聯儲「暫停‑再降」訊號</strong></p><p>The Fed kept rates steady in early March and signaled the first cut could arrive by Q3, instantly lifting risk‑on sentiment.  This encouraged investors to move into growth stocks and emerging‑market equities.</p><p>美聯儲在三月初維持利率不變，並暗示第三季可能首次降息，立刻提升了風險偏好，資金流向成長股與新興市場股票。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>AI‑Driven Earnings Beat Across Tech</strong> / <strong>AI 推動的科技財報普遍超預期</strong></p><p>Companies like Nvidia, Microsoft and Alphabet posted earnings well above estimates, driven by AI‑related cloud demand.  The surprise propelled the Nasdaq to a 14% monthly gain.</p><p>Nvidia、Microsoft、Alphabet 等公司因 AI 雲端需求強勁，財報遠超預期，推動 Nasdaq 本月上漲 14%。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>Taiwan Chip‑Fab Export Surge</strong> / <strong>台灣晶圓代工出口激增</strong></p><p>Global chip shortage eased, allowing Taiwan’s fabs to ship record volumes to the U.S. and Europe, sending the TWSE up almost 24% for the month.</p><p>全球晶片短缺緩解，使台灣代工廠向美國與歐洲出貨創新高，帶動台指月漲近 24%。</p></div></div>
+<h3 class="sub-heading">📰 5 Key Market News / 5 則重要市場新聞</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>U.S. Consumer Confidence Hits 5‑Month High</strong> / <strong>美國消費者信心創 5 個月新高</strong></p><p class="impact-line">📌 Market Impact: Retail and consumer‑discretionary stocks rallied, lifting the S&amp;P 500’s consumer sector to +11% for the month.</p><p class="impact-line">📌 市場影響：零售與非必需消費股大幅上漲，帶動標普500消費板塊本月漲幅 11%。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>Eurozone Manufacturing PMI Improves to 49.2</strong> / <strong>歐元區製造業採購經理人指數升至 49.2</strong></p><p class="impact-line">📌 Market Impact: Euro‑linked exporters gained, while the Euro weakened, adding pressure to the USD Index.</p><p class="impact-line">📌 市場影響：歐元區出口股受惠，歐元走弱，進一步壓低美元指數。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>China Announces New 5‑Year Tech Investment Plan</strong> / <strong>中國公布新 5 年科技投資計畫</strong></p><p class="impact-line">📌 Market Impact: Chinese chip and AI firms saw buying interest, pushing the Hang Seng Tech sub‑index up 7%.</p><p class="impact-line">📌 市場影響：中國半導體與 AI 企業受資金青睞，香港恒生科技子指數上漲 7%。</p></div></div>
+<div class="num-item"><span class="num-badge">4</span><div class="num-body"><p class="num-title"><strong>U.S. Treasury Yields Dip Below 4% on Rate‑Cut Hopes</strong> / <strong>美國國債收益率因降息預期跌破 4%</strong></p><p class="impact-line">📌 Market Impact: Bond‑sensitive utilities and REITs rose, while high‑yield stocks faced modest outflows.</p><p class="impact-line">📌 市場影響：債券敏感的公用事業與不動產投資信託上漲，高收益股稍有資金流出。</p></div></div>
+<div class="num-item"><span class="num-badge">5</span><div class="num-body"><p class="num-title"><strong>Gold Prices Slip as Equities Gain Momentum</strong> / <strong>隨著股市加速，黃金價格回跌</strong></p><p class="impact-line">📌 Market Impact: Safe‑haven allocations shifted back to equities, reinforcing the USD’s modest decline.</p><p class="impact-line">📌 市場影響：避險資金回流股市，進一步支撐美元小幅走弱。</p></div></div>
+</div></div>
+<div class="section-card sec-blue"><h2 class="section-title">MONTHLY PREVIEW: April 2026 / April 2026 市場展望</h2><div class="section-body">
+<p>April will revolve around whether the Fed’s “pause‑then‑cut” narrative holds up amid new inflation data, and how the tech earnings season reacts to the AI hype.</p>
+<p>4 月的焦點在於美聯儲的「暫停‑再降」說法是否能在新通膨數據面前站住腳，以及科技財報季對 AI 熱潮的回應。</p>
+<h3 class="sub-heading">📅 Key Events &amp; Earnings / 重要事件與財報</h3>
+<ul class="overview-list">
+<li><strong>April 30 2024 10:00 AM ET / 4月30日 10:00 AM ET (台北時間 4月30日 晚上10:00 TPE)</strong> — KLA Corp (KLAC), Mastercard (MA), Amazon (AMZN), Alphabet (GOOGL), Microsoft (MSFT), MediaTek (2454.TW), Qualcomm (QCOM), Eli Lilly (LLY), Meta (META) earnings release / 財報公布</li>
+<li><strong>May 1 2024 08:30 AM ET / 5月1日 08:30 AM ET (台北時間 5月1日 20:30 TPE)</strong> — Exxon Mobil (XOM), Apple (AAPL), Chevron (CVX) earnings release / 財報公布</li>
+<li><strong>May 6 2024 09:00 AM ET / 5月6日 09:00 AM ET (台北時間 5月6日 21:00 TPE)</strong> — Advanced Micro Devices (AMD) earnings / 財報公布</li>
+</ul>
+<h3 class="sub-heading">🎯 3 Themes to Watch / 本月3大觀察主題</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>AI‑Driven Revenue Momentum</strong> / <strong>AI 驅動的營收動能</strong></p><p>Investors will gauge whether AI spending translates into sustainable top‑line growth for cloud giants and chip makers. A second quarter of double‑digit growth would reinforce the bullish case.</p><p>投資人將觀察 AI 支出是否真正轉化為雲端巨頭與晶片製造商的持續營收增長，若第二季收入再現兩位數增長，將強化多頭預期。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>Fed Rate‑Cut Timeline</strong> / <strong>美聯儲降息時間表</strong></p><p>The market is pricing a June rate cut; any hint of a delay will likely trigger a short‑term sell‑off in growth stocks and a rally in value‑oriented sectors.</p><p>市場已將降息預期壓在六月份，若出現延期訊號，成長股可能短期回檔，價值板塊則可能受惠。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>China’s Tech Policy Surge</strong> / <strong>中國科技政策激增</strong></p><p>New subsidies and tax breaks for semiconductor R&amp;D could lift Asian chip makers and create spill‑over effects for global supply chains.</p><p>新的半導體研發補貼與稅收減免可能提振亞洲晶片廠，並波及全球供應鏈。</p></div></div>
+<h3 class="sub-heading">📈 Directional View / 方向性判斷</h3>
+<p>I’m <strong>bullish</strong> on April, expecting the equity rally to continue as long as the Fed sticks to its cut roadmap.  The catalyst is the upcoming wave of AI‑related earnings; the risk is a surprise uptick in core inflation that forces the Fed to pause cuts.</p>
+<p>我對四月份持<strong>看漲</strong>觀點，只要美聯儲遵守降息路線，股市仍有上行空間。催化劑是 AI 相關財報的再度利好，風險則是核心通膨意外回升迫使美聯儲暫緩降息。</p>
+</div></div>
+<div class="section-card sec-amber"><h2 class="section-title">INVESTOR LENS / 投資人視角</h2><div class="section-body">
+<h3 class="sub-heading">🏛️ Long‑term Market Perspective / 長期市場視野</h3>
+<p>From the Buffett viewpoint, the market today is <strong>fairly valued</strong> – some names are cheap, but the overall price reflects a mix of growth optimism and modest rate‑cut hopes.  A patient investor would keep solid businesses he understands, add a few bargains in consumer staples, and hold cash for any sudden dips.  The single most important thing is to watch <strong>earnings consistency</strong> – a company that can keep delivering solid profits year after year is the real moat.</p>
+<p>從巴菲特的角度看，現在的市場<strong>相對合理</strong>——部分個股便宜，但整體價格已反映出成長樂觀與適度降息預期。耐心的投資人應持有自己了解的優良企業，適度添倉消費必需品中的低估標的，並保留現金以應對突發回檔。最重要的是觀察<strong>盈餘穩定性</strong>——能年年穩定產生利潤的公司才是真正的護城河。</p>
+<h3 class="sub-heading">🔍 Sector Value Scan / 板塊價值掃描</h3>
+<ul class="overview-list">
+<li><strong>Consumer Staples / 必需消費</strong>: Strong brand loyalty gives these firms a wide moat; today they trade at a discount to their 5‑year average, offering a reasonable buy zone.</li>
+</ul>
+<p><strong>必需消費</strong>：品牌忠誠度高形成寬闊護城河，股價相較過去五年平均有折價，屬於可買入區間。</p>
+<ul class="overview-list">
+<li><strong>Financials / 金融</strong>: Banks remain low‑cost producers with solid balance sheets, but valuation is near fair; best to stay on the sidelines until rate‑cut clarity arrives.</li>
+</ul>
+<p><strong>金融</strong>：銀行因低成本運營與資產負債表健康，具備競爭優勢，估值已接近平價，建議等利率走向更明朗再考慮。</p>
+<ul class="overview-list">
+<li><strong>Technology – AI Chipmakers / 科技—AI 晶片</strong>: Moat is still forming; valuations are premium but justified by growth expectations.  Treat as growth plays, not core value holdings.</li>
+</ul>
+<p><strong>科技—AI 晶片</strong>：護城河仍在構建中，估值偏高但因成長預期而合理，屬於成長股，不適合作為核心價值持股。</p>
+</div></div>
+<div class="section-card sec-indigo"><h2 class="section-title">ANALYST CONSENSUS VIEW / 分析師共識觀點</h2><div class="section-body">
+<h3 class="sub-heading">📊 Market Sentiment &amp; Positioning / 市場情緒與部位配置</h3>
+<p>Wall Street is <strong>overweight</strong> on technology and consumer discretionary, while remaining <strong>underweight</strong> on energy and utilities.  The bullish case hinges on sustained AI spending and a smooth Fed rate‑cut path; the bearish case warns of sticky inflation forcing the Fed to keep rates higher longer, which would hurt growth valuations.</p>
+<p>華爾街普遍<strong>超配</strong>科技與非必需消費，<strong>低配</strong>能源與公用事業。看多的理由是 AI 支出持續與美聯儲順利降息，看空的顧慮則是通膨頑固，迫使美聯儲維持較高利率，將衝擊成長估值。</p>
+<h3 class="sub-heading">⚡ Key Risks to Monitor / 重要風險事項</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>Unexpected Core Inflation Spike</strong> / <strong>核心通膨意外上升</strong>：If CPI jumps above expectations, the Fed may pause cuts, triggering a sell‑off in growth stocks.</p><p>若核心通膨意外高於預期，美聯儲可能暫緩降息，將導致成長股拋售。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>AI Spending Pull‑Back</strong> / <strong>AI 投資縮減</strong>：A slowdown in corporate AI budgets would cut revenue guidance for cloud and chip firms, hurting the Nasdaq.</p><p>若企業減少 AI 投資，雲端與晶片公司營收指引下調，將壓低 Nasdaq。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>Geopolitical Tension Around Taiwan</strong> / <strong>台海地緣政治緊張</strong>：Escalation could disrupt semiconductor supply chains and spike volatility in Asian markets.</p><p>若台海緊張升級，可能干擾半導體供應鏈，導致亞洲市場波動加劇。</p></div></div>
+</div></div>
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Market Overview &nbsp;·&nbsp; April 2026 Preview · March 2026 Review &nbsp;·&nbsp; 2026-04-30
+</footer>
+
+</body>
+</html>

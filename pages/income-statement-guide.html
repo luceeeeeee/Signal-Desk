@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Income Statement Guide · The Signal Desk</title>
+<style>
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-mid:   #4a8a74;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --indigo:       #5560a8;
+  --amber:        #b87820;
+  --amber-bg:     #fdf4e7;
+  --green:        #2a7a50;
+  --green-bg:     #e8f5ee;
+  --red:          #b84040;
+  --blue:         #3a72b0;
+  --blue-bg:      #eaf2fb;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* ── Nav ─────────────────────────────────────────────── */
+nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.nav-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.nav-links {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 5px 12px;
+  border-radius: 20px;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+
+/* ── Hero ────────────────────────────────────────────── */
+.hero {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 60px 48px 44px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-light);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.hero-desc {
+  font-size: 16px;
+  color: var(--text-med);
+  max-width: 580px;
+  line-height: 1.65;
+  margin-bottom: 8px;
+}
+.hero-desc-zh {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 560px;
+  line-height: 1.65;
+}
+.hero-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 36px 0 0;
+}
+
+/* ── Content ─────────────────────────────────────────── */
+.content {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 44px 48px 80px;
+}
+
+/* ── Waterfall card ──────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+.card-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.card-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.card-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+.card-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.card-body {
+  padding: 28px;
+}
+
+/* Waterfall rows */
+.wf-row {
+  display: grid;
+  grid-template-columns: 175px 1fr 96px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.wf-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-med);
+  line-height: 1.3;
+}
+.wf-label span {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.wf-track {
+  background: var(--surface-off);
+  border: 1px solid var(--border-light);
+  height: 34px;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.wf-bar {
+  height: 100%;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Menlo', 'SF Mono', monospace;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.bar-rev { background: var(--blue);    color: #fff; width: 100%; }
+.bar-gp  { background: var(--accent);  color: #fff; width: 46%;  }
+.bar-op  { background: var(--amber);   color: #fff; width: 31%;  }
+.bar-net { background: var(--red);     color: #fff; width: 26%;  }
+
+.wf-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Menlo', 'SF Mono', monospace;
+  text-align: right;
+}
+.wf-connector {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 2px 0 2px 187px;
+  margin-bottom: 4px;
+  font-family: 'Menlo', 'SF Mono', monospace;
+}
+
+.wf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+}
+.wf-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-med);
+}
+.wf-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── Metric sections ─────────────────────────────────── */
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.metric-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-off) 100%);
+}
+.metric-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-light);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  flex-shrink: 0;
+  font-family: 'Menlo', 'SF Mono', monospace;
+}
+.metric-head-text h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.metric-head-zh {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* ── Per-metric color themes (Option 1 + 4 mix) ─────── */
+.m-blue   { --mc: #3a72b0; --mc-light: #eaf2fb; --mc-border: #b8d4f0; }
+.m-teal   { --mc: #2e6b58; --mc-light: #eaf3f0; --mc-border: #c6ddd6; }
+.m-amber  { --mc: #b87820; --mc-light: #fdf4e7; --mc-border: #e8c88a; }
+.m-red    { --mc: #b84040; --mc-light: #fceaea; --mc-border: #e8aaaa; }
+.m-indigo { --mc: #5560a8; --mc-light: #f0f0fc; --mc-border: #c0c4ec; }
+
+/* Accent strip — 4px colored top border */
+.metric-card.m-blue,
+.metric-card.m-teal,
+.metric-card.m-amber,
+.metric-card.m-red,
+.metric-card.m-indigo { border-top: 4px solid var(--mc); }
+
+/* Gradient header using metric color */
+.metric-card.m-blue .metric-head,
+.metric-card.m-teal .metric-head,
+.metric-card.m-amber .metric-head,
+.metric-card.m-red .metric-head,
+.metric-card.m-indigo .metric-head {
+  background: linear-gradient(135deg, var(--mc-light) 0%, var(--surface) 65%);
+}
+
+/* Badge tinted to metric color */
+.metric-card.m-blue .metric-badge,
+.metric-card.m-teal .metric-badge,
+.metric-card.m-amber .metric-badge,
+.metric-card.m-red .metric-badge,
+.metric-card.m-indigo .metric-badge {
+  background: var(--mc-light);
+  border-color: var(--mc-border);
+  color: var(--mc);
+}
+
+/* Cell labels, callout accent, strong text — all follow metric color */
+.metric-card.m-blue .cell-label,
+.metric-card.m-teal .cell-label,
+.metric-card.m-amber .cell-label,
+.metric-card.m-red .cell-label,
+.metric-card.m-indigo .cell-label { color: var(--mc); }
+
+.metric-card.m-blue .example-callout,
+.metric-card.m-teal .example-callout,
+.metric-card.m-amber .example-callout,
+.metric-card.m-red .example-callout,
+.metric-card.m-indigo .example-callout { border-left-color: var(--mc); }
+
+.metric-card.m-blue .example-callout .big-num,
+.metric-card.m-teal .example-callout .big-num,
+.metric-card.m-amber .example-callout .big-num,
+.metric-card.m-red .example-callout .big-num,
+.metric-card.m-indigo .example-callout .big-num { color: var(--mc); }
+
+.metric-card.m-blue .cell-text strong,
+.metric-card.m-teal .cell-text strong,
+.metric-card.m-amber .cell-text strong,
+.metric-card.m-red .cell-text strong,
+.metric-card.m-indigo .cell-text strong { color: var(--mc); }
+
+.metric-card.m-blue .zh-note strong,
+.metric-card.m-teal .zh-note strong,
+.metric-card.m-amber .zh-note strong,
+.metric-card.m-red .zh-note strong,
+.metric-card.m-indigo .zh-note strong { color: var(--mc); }
+
+.metric-card.m-blue .why-list strong,
+.metric-card.m-teal .why-list strong,
+.metric-card.m-amber .why-list strong,
+.metric-card.m-red .why-list strong,
+.metric-card.m-indigo .why-list strong { color: var(--mc); }
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: none;
+}
+.metric-cell {
+  padding: 22px 26px;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+.metric-cell:nth-child(even) { border-right: none; }
+.metric-cell.full {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+.metric-cell:last-child,
+.metric-cell.full:last-child { border-bottom: none; }
+
+.cell-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.cell-text {
+  font-size: 14px;
+  color: var(--text-med);
+  line-height: 1.68;
+}
+.cell-text strong { color: var(--accent); font-weight: 600; }
+
+.formula-box {
+  background: var(--surface-off);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  font-family: 'Menlo', 'SF Mono', monospace;
+  font-size: 12.5px;
+  color: var(--green);
+  line-height: 2;
+  margin-top: 2px;
+}
+
+.example-callout {
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+}
+.example-callout .big-num {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--accent);
+  font-family: 'Menlo', 'SF Mono', monospace;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+.example-callout .big-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.why-list { list-style: none; }
+.why-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--text-med);
+  line-height: 1.6;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
+}
+.why-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.why-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+.why-list strong { color: var(--text); font-weight: 600; }
+.zh-note { display: block; margin-top: 4px; color: var(--text-muted); font-size: 13px; line-height: 1.55; }
+.zh-note strong { color: var(--accent); font-weight: 600; }
+.gloss-item .zh-dd { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+
+/* EPS calc grid */
+.eps-calc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+.eps-tile {
+  flex: 1;
+  min-width: 100px;
+  background: var(--surface-off);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+.eps-tile.result {
+  border-color: var(--accent-light);
+  background: var(--accent-bg);
+}
+.eps-tile .tlabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+.eps-tile .tval { font-size: 19px; font-weight: 800; color: var(--accent); font-family: 'Menlo', 'SF Mono', monospace; line-height: 1.1; }
+.eps-tile.result .tval { font-size: 22px; }
+.eps-tile .tsub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.eps-op { font-size: 22px; color: var(--text-muted); font-weight: 300; }
+
+/* ── Glossary ────────────────────────────────────────── */
+.glossary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 28px 32px;
+  margin-top: 36px;
+}
+.glossary-card h3 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+.gloss-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 32px;
+}
+.gloss-item dt {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 3px;
+}
+.gloss-item dd {
+  font-size: 13px;
+  color: var(--text-med);
+  line-height: 1.55;
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 26px 48px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface);
+}
+
+@media (max-width: 640px) {
+  nav, .hero, .content, footer { padding-left: 20px; padding-right: 20px; }
+  .metric-grid { grid-template-columns: 1fr; }
+  .metric-cell:nth-child(even) { border-right: none; }
+  .gloss-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 26px; }
+  .wf-row { grid-template-columns: 110px 1fr 60px; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="income-statement-guide.html" class="active">Income Statement Guide</a></li>
+    <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Reference Guide · Vol. I</div>
+  <h1>How to Read an<br>Income Statement</h1>
+  <p class="hero-desc">Every earnings report comes with numbers that most headlines skip past. This guide explains what each one actually means — in plain language, with real examples.</p>
+  <p class="hero-desc-zh">每份財報都有許多數字，但大多數標題報導都會略過。本指南用日常語言加上真實案例，幫你看懂每一個關鍵數字。</p>
+  <div class="hero-divider"></div>
+</div>
+
+<div class="content">
+
+  <!-- Waterfall overview -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-eyebrow">The Big Picture / 整體概覽</div>
+      <div class="card-title">Where does $1 of revenue end up?</div>
+      <div class="card-subtitle">Based on Apple FY2024 — for every $100 collected from customers / 以蘋果FY2024為例——每收到100元</div>
+    </div>
+    <div class="card-body">
+      <div class="wf-row">
+        <div class="wf-label">Revenue / 營收<span>Total collected · 向客戶收到的全部款項</span></div>
+        <div class="wf-track"><div class="wf-bar bar-rev">$100</div></div>
+        <div class="wf-value" style="color:var(--blue)">$100</div>
+      </div>
+      <div class="wf-connector">↓ minus cost of making the product / 扣除生產成本（零組件、製造）</div>
+      <div class="wf-row">
+        <div class="wf-label">Gross Profit / 毛利<span>After production costs · 扣除生產成本後</span></div>
+        <div class="wf-track"><div class="wf-bar bar-gp">$46</div></div>
+        <div class="wf-value" style="color:var(--accent)">$46</div>
+      </div>
+      <div class="wf-connector">↓ minus salaries, offices, R&amp;D, marketing / 扣除薪資、辦公室、研發、行銷</div>
+      <div class="wf-row">
+        <div class="wf-label">Operating Income / 營業利益<span>After running the business · 扣除日常營運費用後</span></div>
+        <div class="wf-track"><div class="wf-bar bar-op">$31</div></div>
+        <div class="wf-value" style="color:var(--amber)">$31</div>
+      </div>
+      <div class="wf-connector">↓ minus interest on debt &amp; taxes / 扣除利息及所得稅</div>
+      <div class="wf-row">
+        <div class="wf-label">Net Income / 淨利<span>Final profit · 最終純利，屬於股東</span></div>
+        <div class="wf-track"><div class="wf-bar bar-net">$26</div></div>
+        <div class="wf-value" style="color:var(--red)">$26</div>
+      </div>
+      <div class="wf-legend">
+        <div class="wf-legend-item"><div class="wf-swatch" style="background:var(--blue)"></div>Revenue — 100%</div>
+        <div class="wf-legend-item"><div class="wf-swatch" style="background:var(--accent)"></div>Gross Profit — 46%</div>
+        <div class="wf-legend-item"><div class="wf-swatch" style="background:var(--amber)"></div>Operating Income — 31%</div>
+        <div class="wf-legend-item"><div class="wf-swatch" style="background:var(--red)"></div>Net Income — 26%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 01 Revenue -->
+  <div class="metric-card m-blue">
+    <div class="metric-head">
+      <div class="metric-badge">01</div>
+      <div class="metric-head-text">
+        <h2>Revenue &nbsp;/&nbsp; 營收</h2>
+        <div class="metric-head-zh">Total Sales · 總銷售額</div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-cell">
+        <div class="cell-label">Plain Language / 白話說明</div>
+        <div class="cell-text">Revenue is the <strong>total amount of money collected from customers</strong> before paying for anything — product sales, subscriptions, services, every dollar in the door.<br><br>營收是公司向客戶收取的<strong>所有款項總和</strong>，尚未扣除任何費用。包含商品銷售、訂閱費、服務費——所有進帳金額。</div>
+      </div>
+      <div class="metric-cell">
+        <div class="cell-label">Formula / 公式</div>
+        <div class="formula-box">Revenue = Units Sold × Price Per Unit<br>
+(or sum of all income streams)<br><br>
+營收 = 銷售數量 × 單價<br>（或所有收入來源加總）</div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Real Example — Apple FY2024 / 真實案例</div>
+        <div class="example-callout">
+          <span class="big-label">Total Revenue</span>
+          <span class="big-num">$391B</span>
+          <div class="cell-text">Apple collected $391 billion — from iPhones ($201B), Services ($96B), Macs, iPads, and Wearables. Revenue grew 2% vs. FY2023. This tells you the company is still growing, but slowly.<br><br>蘋果收入3,910億美元——來自iPhone（2,010億）、服務（960億）、Mac、iPad及穿戴裝置。營收年增2%，公司仍在成長，但速度偏慢。</div>
+        </div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Why It Matters / 為什麼重要</div>
+        <ul class="why-list">
+          <li><span class="why-icon">📏</span><div><strong>Size signal:</strong> Revenue tells you how big the business actually is. $400B and $4B are fundamentally different companies.<span class="zh-note"><strong>規模指標：</strong>營收告訴你這間公司到底有多大。3,940億美元和40億美元是完全不同等級的公司。</span></div></li>
+          <li><span class="why-icon">📈</span><div><strong>Growth rate matters more than absolute size:</strong> 20% revenue growth often excites investors more than a large but flat revenue base.<span class="zh-note"><strong>成長率比絕對數字更重要：</strong>20%的營收成長往往比一個龐大但停滯的營收基礎更令投資人興奮。</span></div></li>
+          <li><span class="why-icon">⚠️</span><div><strong>Revenue alone doesn't mean profit:</strong> A company can generate $1B in revenue and still lose money. Always read revenue alongside margin numbers.<span class="zh-note"><strong>光有營收不代表有利潤：</strong>一間公司可以有10億美元的營收卻仍然虧損。務必同時看利潤率數字。</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 Gross Margin -->
+  <div class="metric-card m-teal">
+    <div class="metric-head">
+      <div class="metric-badge">02</div>
+      <div class="metric-head-text">
+        <h2>Gross Margin &nbsp;/&nbsp; 毛利率</h2>
+        <div class="metric-head-zh">Profit after production costs · 扣除生產成本後的利潤</div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-cell">
+        <div class="cell-label">Plain Language / 白話說明</div>
+        <div class="cell-text">Gross margin is how much money is <strong>left after paying to make or deliver the product</strong> — just the direct cost of producing what was sold. Excludes salaries, offices, everything else.<br><br>毛利率是扣除<strong>生產或交付產品的直接成本</strong>後剩下的錢——只算製造銷售出去的東西所需的直接費用，不含薪資及辦公室等。</div>
+      </div>
+      <div class="metric-cell">
+        <div class="cell-label">Formula / 公式</div>
+        <div class="formula-box">Gross Margin % =<br>
+(Revenue − Cost of Goods Sold)<br>
+──────────────────────────── × 100<br>
+          Revenue<br><br>
+毛利率 = (營收 − 銷貨成本) ÷ 營收 × 100</div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Real Example — Apple FY2024 / 真實案例</div>
+        <div class="example-callout">
+          <span class="big-label">Gross Margin</span>
+          <span class="big-num">46%</span>
+          <div class="cell-text">For every <strong>$100 Apple collected</strong>, $54 went to components, manufacturing, and delivery. <strong>$46 remained.</strong> Compare: Spotify ~27%, NVIDIA 70%+. Higher gross margin = stronger pricing power and production efficiency.<br><br>蘋果每收100元，54元用於零組件、製造與配送，<strong>剩下46元</strong>。對比：Spotify約27%，NVIDIA超過70%。毛利率愈高，代表定價能力愈強、生產效率愈高。</div>
+        </div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Why It Matters / 為什麼重要</div>
+        <ul class="why-list">
+          <li><span class="why-icon">🏰</span><div><strong>Moat indicator:</strong> Companies with consistent 60%+ gross margins usually have a strong competitive advantage — customers can't easily switch to something cheaper.<span class="zh-note"><strong>護城河指標：</strong>持續維持60%以上毛利率的公司，通常擁有強大的競爭優勢——客戶不容易轉換到更便宜的替代品。</span></div></li>
+          <li><span class="why-icon">📉</span><div><strong>Shrinking margin is a warning:</strong> If gross margin falls quarter over quarter, the company is likely cutting prices to compete, or input costs are rising faster than it can pass on.<span class="zh-note"><strong>毛利率下滑是警訊：</strong>若毛利率連續幾季下降，通常代表公司正在降價競爭，或原物料成本上漲速度超過其轉嫁能力。</span></div></li>
+          <li><span class="why-icon">🔄</span><div><strong>Compare within the same industry:</strong> 20% is excellent for a grocery chain, mediocre for a software company. Always compare apples to apples.<span class="zh-note"><strong>同業比較才有意義：</strong>20%的毛利率對超市連鎖業者而言非常優秀，但對軟體公司卻算普通。比較時務必在同一個產業內比。</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 Operating Margin -->
+  <div class="metric-card m-amber">
+    <div class="metric-head">
+      <div class="metric-badge">03</div>
+      <div class="metric-head-text">
+        <h2>Operating Margin &nbsp;/&nbsp; 營業利益率</h2>
+        <div class="metric-head-zh">Profit after running the full business · 扣除所有日常運營費用後的利潤</div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-cell">
+        <div class="cell-label">Plain Language / 白話說明</div>
+        <div class="cell-text">Operating margin is what's left after <strong>also paying for salaries, offices, R&amp;D, and marketing</strong> — the full cost of running the business day to day, not just making the product.<br><br>營業利益率是還要<strong>再扣掉薪資、辦公室、研發及行銷費用</strong>後的剩餘——日常經營整個公司的成本，不只是製造產品而已。</div>
+      </div>
+      <div class="metric-cell">
+        <div class="cell-label">Formula / 公式</div>
+        <div class="formula-box">Operating Margin % =<br>
+Operating Income<br>
+─────────────── × 100<br>
+    Revenue<br><br>
+營業利益率 = 營業利益 ÷ 營收 × 100</div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Real Example — Apple FY2024 / 真實案例</div>
+        <div class="example-callout">
+          <span class="big-label">Operating Margin</span>
+          <span class="big-num">31%</span>
+          <div class="cell-text">After paying ~$120B in operating expenses (R&amp;D, retail, marketing, staff), Apple's operating income was ~$120B on $391B in revenue. For every <strong>$100 in sales, $31 remained</strong> after running the entire company. Most large companies operate at 10–20%.<br><br>支付約1,200億美元的營業費用（研發、零售、行銷、員工）後，每100元銷售中有<strong>31元留下</strong>。多數大公司的營業利益率僅10–20%。</div>
+        </div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Why It Matters / 為什麼重要</div>
+        <ul class="why-list">
+          <li><span class="why-icon">⚖️</span><div><strong>Operating leverage:</strong> When revenue grows but expenses stay flat, operating margin expands — every new dollar of revenue drops almost directly to profit. This is the "scale effect."<span class="zh-note"><strong>營運槓桿效應：</strong>當營收成長但費用維持不變，營業利益率就會擴大——每多一元的收入幾乎直接轉化為利潤。這就是所謂的「規模效應」。</span></div></li>
+          <li><span class="why-icon">🔍</span><div><strong>More complete than gross margin:</strong> A company can have a high gross margin but still burn cash if it overspends on marketing or R&amp;D. Operating margin reveals whether management is disciplined.<span class="zh-note"><strong>比毛利率更全面：</strong>一間公司可以有很高的毛利率，但若行銷或研發支出過度，仍然會燒錢。營業利益率揭示管理層是否有節制地控制費用。</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 Net Margin -->
+  <div class="metric-card m-red">
+    <div class="metric-head">
+      <div class="metric-badge">04</div>
+      <div class="metric-head-text">
+        <h2>Net Margin &nbsp;/&nbsp; 淨利率</h2>
+        <div class="metric-head-zh">Final profit — after everything · 扣除所有項目後的最終利潤</div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-cell">
+        <div class="cell-label">Plain Language / 白話說明</div>
+        <div class="cell-text">Net margin is the <strong>final profit — after paying everything including interest on debt and income taxes.</strong> It's the number that belongs to shareholders. Everything above is a stepping stone to get here.<br><br>淨利率是<strong>最終利潤——扣除所有費用包含債務利息及所得稅</strong>之後的餘額。這個數字屬於股東。上方所有行都是為了算出這個數字。</div>
+      </div>
+      <div class="metric-cell">
+        <div class="cell-label">Formula / 公式</div>
+        <div class="formula-box">Net Margin % =<br>
+Net Income<br>
+─────────── × 100<br>
+  Revenue<br><br>
+淨利率 = 淨利潤 ÷ 營收 × 100</div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Real Example — Apple FY2024 / 真實案例</div>
+        <div class="example-callout">
+          <span class="big-label">Net Margin</span>
+          <span class="big-num">26%</span>
+          <div class="cell-text">Apple's net income was ~$101B on $391B revenue. For every <strong>$100 collected, $26 was pure profit.</strong> For context: average S&amp;P 500 company nets ~$10. A supermarket like Walmart nets $2–3. Apple's 26% is elite-tier.<br><br>蘋果淨利約1,010億美元。每100元收入中，<strong>有26元是純利潤</strong>。標普500平均約10元，沃爾瑪僅2–3元。蘋果的26%屬於頂尖水準。</div>
+        </div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Why It Matters / 為什麼重要</div>
+        <ul class="why-list">
+          <li><span class="why-icon">💰</span><div><strong>This is what investors actually own:</strong> Net income flows to shareholders via buybacks or dividends, or gets reinvested for future growth.<span class="zh-note"><strong>這才是投資人真正擁有的：</strong>淨利潤透過回購或股息流向股東，或重新投入以支持未來成長。</span></div></li>
+          <li><span class="why-icon">📊</span><div><strong>Benchmark by sector:</strong> Software: 20–40% is normal. Retail: 2–5%. Banking: 15–25%. Pharma: 15–30%. Never judge a margin without knowing the industry.<span class="zh-note"><strong>按產業對標：</strong>軟體業20–40%屬正常；零售業2–5%；銀行業15–25%；製藥業15–30%。判斷利潤率前，務必先了解所在產業。</span></div></li>
+          <li><span class="why-icon">🧨</span><div><strong>One-time items can distort:</strong> A company might show high net income from an asset sale — not real earnings. Always check if the profit came from ongoing operations.<span class="zh-note"><strong>一次性項目會扭曲數字：</strong>公司可能因出售資產而顯示高淨利——但那不是真實的營業利潤。務必確認利潤是否來自持續性的核心業務。</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 EPS -->
+  <div class="metric-card m-indigo">
+    <div class="metric-head">
+      <div class="metric-badge">05</div>
+      <div class="metric-head-text">
+        <h2>EPS — Earnings Per Share &nbsp;/&nbsp; 每股盈餘</h2>
+        <div class="metric-head-zh">How much each share earned · 每持有一股可賺取多少利潤</div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-cell">
+        <div class="cell-label">Plain Language / 白話說明</div>
+        <div class="cell-text">EPS answers: <strong>"If I own one share, how much of the company's profit do I own?"</strong> Total profit divided by total shares — makes it possible to compare companies of wildly different sizes.<br><br>EPS回答：<strong>「如果我持有一股，我擁有多少利潤？」</strong>總利潤除以股份數量——讓你能比較規模差異極大的公司。</div>
+      </div>
+      <div class="metric-cell">
+        <div class="cell-label">Formula / 公式</div>
+        <div class="formula-box">EPS =<br>
+    Net Income<br>
+───────────────────────<br>
+Diluted Shares Outstanding<br><br>
+每股盈餘 = 淨利潤 ÷ 稀釋後流通股數</div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Real Example — Apple FY2024 / 真實案例</div>
+        <div class="eps-calc">
+          <div class="eps-tile">
+            <div class="tlabel">Net Income</div>
+            <div class="tval">$101B</div>
+            <div class="tsub">Total profit</div>
+          </div>
+          <div class="eps-op">÷</div>
+          <div class="eps-tile">
+            <div class="tlabel">Shares Outstanding</div>
+            <div class="tval">15.4B</div>
+            <div class="tsub">Diluted shares</div>
+          </div>
+          <div class="eps-op">=</div>
+          <div class="eps-tile result">
+            <div class="tlabel">EPS</div>
+            <div class="tval">$6.57</div>
+            <div class="tsub">per share earned</div>
+          </div>
+        </div>
+        <div class="cell-text">If analysts expected $6.43 and Apple delivered $6.57, that is a <strong>"beat"</strong> — the stock typically rises. If it delivered $6.30, that is a <strong>"miss"</strong> — the stock typically falls. The beat/miss is often more important than the absolute EPS number.<br><br>若分析師預期6.43美元而蘋果交出6.57美元，稱為<strong>「超越預期」</strong>——股價通常上漲。若僅6.30美元，稱為<strong>「不及預期」</strong>——股價通常下跌。超越或不及預期往往比EPS絕對數字更重要。</div>
+      </div>
+      <div class="metric-cell full">
+        <div class="cell-label">Why It Matters / 為什麼重要</div>
+        <ul class="why-list">
+          <li><span class="why-icon">🔢</span><div><strong>The most-watched number on earnings day:</strong> Analysts set an EPS estimate before results. The entire market reacts to whether the company beat or missed that estimate.<span class="zh-note"><strong>財報日最受關注的數字：</strong>分析師在業績公布前設定EPS預期。整個市場的反應取決於公司是否超越或不及這個預期。</span></div></li>
+          <li><span class="why-icon">📐</span><div><strong>Enables fair comparison:</strong> NVIDIA and a small chipmaker both report EPS. The size of each company doesn't matter — you compare what each single share delivers.<span class="zh-note"><strong>讓比較變得公平：</strong>NVIDIA和一家小型晶片商都用EPS報告。公司規模不重要——你比較的是每一股所帶來的盈利能力。</span></div></li>
+          <li><span class="why-icon">📉</span><div><strong>P/E ratio is built on EPS:</strong> P/E = Stock Price ÷ EPS. If EPS rises, P/E falls — the stock becomes relatively cheaper even if the price stays flat.<span class="zh-note"><strong>本益比建立在EPS之上：</strong>本益比 = 股價 ÷ EPS。若EPS上升，本益比下降——即使股價不變，股票也變得相對便宜。</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Glossary -->
+  <div class="glossary-card">
+    <h3>Quick Reference / 速查表</h3>
+    <div class="gloss-grid">
+      <dl class="gloss-item"><dt>Beat / 超越預期</dt><dd>Actual results came in higher than what analysts predicted. Usually positive for the stock price.</dd><dd class="zh-dd">實際業績高於分析師預測。通常對股價有正面影響。</dd></dl>
+      <dl class="gloss-item"><dt>Miss / 不及預期</dt><dd>Actual results came in lower than analyst estimates. Usually negative for the stock price.</dd><dd class="zh-dd">實際業績低於分析師預期。通常對股價有負面影響。</dd></dl>
+      <dl class="gloss-item"><dt>YoY / 年增率</dt><dd>Year-over-year: compares this quarter to the same quarter last year. Removes seasonal effects.</dd><dd class="zh-dd">年對年比較：將本季與去年同季相比。消除季節性影響，反映真實成長趨勢。</dd></dl>
+      <dl class="gloss-item"><dt>QoQ / 季增率</dt><dd>Quarter-over-quarter: compares this quarter to the previous quarter. Shows short-term momentum.</dd><dd class="zh-dd">季對季比較：將本季與上一季相比。顯示短期動能與近期趨勢變化。</dd></dl>
+      <dl class="gloss-item"><dt>Guidance / 業績展望</dt><dd>Management's forecast for the next quarter or year. Often moves the stock more than current results.</dd><dd class="zh-dd">管理層對下一季或下一年度的業績預測。往往比當前業績更能左右股價走勢。</dd></dl>
+      <dl class="gloss-item"><dt>Consensus / 市場共識</dt><dd>Average of all analyst estimates. "Beating consensus" means beating this average.</dd><dd class="zh-dd">所有分析師預測的平均值。「超越市場共識」即表示業績高於此平均預期。</dd></dl>
+      <dl class="gloss-item"><dt>P/E Ratio / 本益比</dt><dd>Stock price ÷ EPS. How much investors pay per $1 of earnings. Lower = relatively cheaper.</dd><dd class="zh-dd">股價 ÷ EPS。投資人為每1美元盈利所付的價格。數字越低，股票相對越便宜。</dd></dl>
+      <dl class="gloss-item"><dt>Diluted Shares / 稀釋後股數</dt><dd>Total shares including stock options and convertibles — the conservative EPS denominator.</dd><dd class="zh-dd">包含股票選擇權及可轉換債券的總股數——計算EPS時採用的保守分母。</dd></dl>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Reference Guide &nbsp;·&nbsp; 2026 &nbsp;&nbsp;|&nbsp;&nbsp; Data: Apple 10-K FY2024 · For educational use only
+</footer>
+
+</body>
+</html>

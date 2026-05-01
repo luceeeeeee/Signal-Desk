@@ -1,0 +1,30 @@
+{
+  "schedule": {
+    "tw_briefing_time": "08:30",
+    "us_briefing_time": "21:00",
+    "timezone": "Asia/Taipei"
+  },
+  "notifications": {
+    "briefing": {
+      "channel": "email",
+      "recipient": "FILL_IN_YOUR_EMAIL"
+    },
+    "intraday_alert": {
+      "channel": "line",
+      "recipient": "FILL_IN_LINE_USER_ID"
+    }
+  },
+  "intraday": {
+    "polling_interval_minutes": 5,
+    "alert_cooldown_hours": 4
+  },
+  "analysis": {
+    "model": "claude-sonnet-4-6",
+    "max_news_items": 35,
+    "briefing_max_tokens": 5500,
+    "alert_max_tokens": 1200
+  },
+  "site": {
+    "base_url": "FILL_IN_NETLIFY_URL"
+  }
+}

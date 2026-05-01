@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Picks · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 48px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+
+.tp-list {
+  display: flex; flex-direction: column; gap: 2px; margin-bottom: 48px;
+}
+.tp-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 200px 180px 110px;
+  gap: 16px; align-items: center;
+  background: var(--surface); border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); padding: 16px 20px;
+  transition: box-shadow 0.15s;
+}
+.tp-row:hover { box-shadow: var(--shadow); }
+.tp-rank {
+  font-size: 13px; font-weight: 700; color: var(--text-muted); text-align: center;
+}
+.tp-identity { display: flex; flex-direction: column; gap: 2px; }
+.tp-ticker {
+  font-size: 16px; font-weight: 700; color: var(--accent);
+  text-decoration: none; letter-spacing: 0.02em;
+}
+.tp-ticker:hover { text-decoration: underline; }
+.tp-name { font-size: 12px; color: var(--text-med); }
+.tp-sector { font-size: 11px; color: var(--text-muted); }
+.tp-score-col { display: flex; flex-direction: column; gap: 4px; }
+.tp-score { font-size: 22px; font-weight: 800; line-height: 1; }
+.tp-score-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.tp-pillars { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.tp-pillar-row {
+  display: grid; grid-template-columns: 44px 1fr 28px;
+  gap: 4px; align-items: center;
+  font-size: 10px; color: var(--text-muted);
+}
+.tp-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tp-metric-item { display: flex; flex-direction: column; gap: 1px; }
+.tp-m-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.tp-m-val { font-size: 13px; font-weight: 600; color: var(--text); }
+.tp-price-col { display: flex; flex-direction: column; gap: 2px; text-align: right; }
+.tp-price { font-size: 16px; font-weight: 700; }
+.tp-change { font-size: 12px; font-weight: 600; }
+.tp-cap { font-size: 11px; color: var(--text-muted); }
+.tp-header {
+  display: grid; grid-template-columns: 36px 1fr 200px 180px 110px;
+  gap: 16px; padding: 8px 20px;
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  border-bottom: 2px solid var(--border); margin-bottom: 8px;
+}
+.rationale-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px 36px; margin-bottom: 32px;
+}
+.rationale-card h2 {
+  font-size: 16px; font-weight: 700; margin-bottom: 18px;
+  color: var(--accent); letter-spacing: 0.02em;
+}
+.rationale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.rationale-item h3 {
+  font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text);
+}
+.rationale-item p {
+  font-size: 13px; line-height: 1.7; color: var(--text-med);
+}
+.score-legend {
+  display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-med);
+}
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+@media (max-width: 760px) {
+  .tp-row, .tp-header { grid-template-columns: 1fr; }
+  .tp-rank { display: none; }
+  .rationale-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="top-picks.html" class="active">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="watchlist.html">My Watchlist</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Conviction Screener · Auto-updated nightly</div>
+  <h1>Top Picks</h1>
+  <p class="hero-sub">The algorithm — not the editor — surfaces these 12 stocks from a universe of 67 well-known companies. Every stock shown scores ≥ 75/100 on a three-pillar conviction model: business Quality, Growth trajectory, and Financial Health. No human override.</p>
+</div>
+
+<div class="content">
+
+  <div class="score-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2e6b58"></div>Strong Conviction (75–100)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#b87820"></div>Moderate (55–74)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#b84040"></div>Weak (35–54)</div>
+  </div>
+
+  <div class="tp-header">
+    <div></div>
+    <div>Company</div>
+    <div>Conviction Score</div>
+    <div>Key Metrics</div>
+    <div style="text-align:right">Price</div>
+  </div>
+
+  <div class="tp-list">
+
+  <div class="tp-row">
+    <div class="tp-rank">#1</div>
+    <div class="tp-identity">
+      <a href="stock-nvda.html" class="tp-ticker">NVDA</a>
+      <span class="tp-name">NVIDIA Corporation</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">100</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>33/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>34/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>33/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+73%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+27%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">17.8x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+34.9%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$199.57</span>
+      <span class="tp-change" style="color:#b84040">-4.63%</span>
+      <span class="tp-cap">$4851B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#2</div>
+    <div class="tp-identity">
+      <a href="stock-tsm.html" class="tp-ticker">TSM</a>
+      <span class="tp-name">Taiwan Semiconductor Manufactur</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">90</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:79%;"></div></div>
+          <span>26/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>34/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:91%;"></div></div>
+          <span>30/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+35%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+18%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">20.5x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+17.0%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$396.06</span>
+      <span class="tp-change" style="color:#2e6b58">+0.57%</span>
+      <span class="tp-cap">$2054B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#3</div>
+    <div class="tp-identity">
+      <a href="stock-isrg.html" class="tp-ticker">ISRG</a>
+      <span class="tp-name">Intuitive Surgical, Inc.</span>
+      <span class="tp-sector">Healthcare</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">87</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:70%;"></div></div>
+          <span>23/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:91%;"></div></div>
+          <span>31/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>33/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+23%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+21%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">38.8x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+26.1%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$457.61</span>
+      <span class="tp-change" style="color:#2e6b58">+0.83%</span>
+      <span class="tp-cap">$162B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#4</div>
+    <div class="tp-identity">
+      <a href="stock-lrcx.html" class="tp-ticker">LRCX</a>
+      <span class="tp-name">Lam Research Corporation</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">86</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:88%;"></div></div>
+          <span>29/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>34/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:70%;"></div></div>
+          <span>23/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+24%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+20%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">32.7x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+19.3%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$257.86</span>
+      <span class="tp-change" style="color:#2e6b58">+3.66%</span>
+      <span class="tp-cap">$322B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#5</div>
+    <div class="tp-identity">
+      <a href="stock-msft.html" class="tp-ticker">MSFT</a>
+      <span class="tp-name">Microsoft Corporation</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">79</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:79%;"></div></div>
+          <span>26/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:91%;"></div></div>
+          <span>31/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:67%;"></div></div>
+          <span>22/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+18%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+12%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">21.1x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+40.0%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$407.78</span>
+      <span class="tp-change" style="color:#b84040">-3.93%</span>
+      <span class="tp-cap">$3029B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#6</div>
+    <div class="tp-identity">
+      <a href="stock-v.html" class="tp-ticker">V</a>
+      <span class="tp-name">Visa Inc.</span>
+      <span class="tp-sector">Financial Services</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">79</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>33/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:91%;"></div></div>
+          <span>31/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:45%;"></div></div>
+          <span>15/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+17%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+49%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">22.5x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+20.0%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$329.84</span>
+      <span class="tp-change" style="color:#b84040">-1.50%</span>
+      <span class="tp-cap">$627B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#7</div>
+    <div class="tp-identity">
+      <a href="stock-mu.html" class="tp-ticker">MU</a>
+      <span class="tp-name">Micron Technology, Inc.</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">77</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:58%;"></div></div>
+          <span>19/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>34/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:73%;"></div></div>
+          <span>24/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+196%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+5%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">5.1x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+6.6%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$517.16</span>
+      <span class="tp-change" style="color:#b84040">-0.25%</span>
+      <span class="tp-cap">$583B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#8</div>
+    <div class="tp-identity">
+      <a href="stock-avgo.html" class="tp-ticker">AVGO</a>
+      <span class="tp-name">Broadcom Inc.</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">76</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:91%;"></div></div>
+          <span>30/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>34/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:36%;"></div></div>
+          <span>12/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+30%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+37%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">23.0x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+13.9%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$417.43</span>
+      <span class="tp-change" style="color:#2e6b58">+2.95%</span>
+      <span class="tp-cap">$1976B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#9</div>
+    <div class="tp-identity">
+      <a href="stock-asml.html" class="tp-ticker">ASML</a>
+      <span class="tp-name">ASML Holding N.V. - New York Re</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">75</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:88%;"></div></div>
+          <span>29/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:71%;"></div></div>
+          <span>24/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:67%;"></div></div>
+          <span>22/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+13%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+24%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">30.1x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+15.5%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$1438.99</span>
+      <span class="tp-change" style="color:#2e6b58">+3.22%</span>
+      <span class="tp-cap">$555B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#10</div>
+    <div class="tp-identity">
+      <a href="stock-meta.html" class="tp-ticker">META</a>
+      <span class="tp-name">Meta Platforms, Inc.</span>
+      <span class="tp-sector">Communication Services</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">75</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:79%;"></div></div>
+          <span>26/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:79%;"></div></div>
+          <span>27/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:67%;"></div></div>
+          <span>22/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+24%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+12%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">16.9x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+39.7%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$611.91</span>
+      <span class="tp-change" style="color:#b84040">-8.55%</span>
+      <span class="tp-cap">$1553B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#11</div>
+    <div class="tp-identity">
+      <a href="stock-adbe.html" class="tp-ticker">ADBE</a>
+      <span class="tp-name">Adobe Inc.</span>
+      <span class="tp-sector">Technology</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">75</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:100%;"></div></div>
+          <span>33/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:59%;"></div></div>
+          <span>20/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:67%;"></div></div>
+          <span>22/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+12%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+38%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">9.3x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+33.3%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$246.10</span>
+      <span class="tp-change" style="color:#2e6b58">+1.04%</span>
+      <span class="tp-cap">$99B</span>
+    </div>
+  </div>
+  <div class="tp-row">
+    <div class="tp-rank">#12</div>
+    <div class="tp-identity">
+      <a href="stock-dxcm.html" class="tp-ticker">DXCM</a>
+      <span class="tp-name">DexCom, Inc.</span>
+      <span class="tp-sector">Healthcare</span>
+    </div>
+    <div class="tp-score-col">
+      <span class="tp-score" style="color:#2e6b58">75</span>
+      <span class="tp-score-label">Strong Conviction</span>
+      <div class="tp-pillars">
+        <div class="tp-pillar-row">
+          <span>Quality</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:79%;"></div></div>
+          <span>26/33</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Growth</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:79%;"></div></div>
+          <span>27/34</span>
+        </div>
+        <div class="tp-pillar-row">
+          <span>Health</span>
+          <div style="background:#e8efea;border-radius:4px;height:6px;width:100%;"><div style="background:var(--accent);border-radius:4px;height:6px;width:67%;"></div></div>
+          <span>22/33</span>
+        </div>
+      </div>
+    </div>
+    <div class="tp-metrics">
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Rev Growth</span>
+        <span class="tp-m-val">+13%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-val">+15%</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Fwd P/E</span>
+        <span class="tp-m-val">19.8x</span>
+      </div>
+      <div class="tp-metric-item">
+        <span class="tp-m-label">Analyst Upside</span>
+        <span class="tp-m-val" style="color:#2e6b58">+45.9%</span>
+      </div>
+    </div>
+    <div class="tp-price-col">
+      <span class="tp-price">$59.55</span>
+      <span class="tp-change" style="color:#2e6b58">+3.46%</span>
+      <span class="tp-cap">$23B</span>
+    </div>
+  </div>
+  </div>
+
+  <div class="rationale-card">
+    <h2>How the Score Works / 評分邏輯說明</h2>
+    <div class="rationale-grid">
+      <div class="rationale-item">
+        <h3>🏆 Quality Pillar (33 pts)</h3>
+        <p>Measures how efficiently the business converts capital into profit. High ROIC (Return on Invested Capital ≥ 15%) means every dollar reinvested earns strong returns — a hallmark of durable businesses. High FCF margin means the company generates real cash, not just accounting profit. High gross margin reflects pricing power.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">衡量企業將資本轉化為利潤的效率。高投資資本回報率（ROIC ≥ 15%）代表每一美元再投資都能產生強勁回報——這是持久型企業的標誌。高自由現金流利潤率代表企業創造真實現金，而非僅有帳面利潤。高毛利率反映定價能力。</p>
+      </div>
+      <div class="rationale-item">
+        <h3>📈 Growth Pillar (34 pts)</h3>
+        <p>Tracks whether the business is expanding fast enough to justify investment. Revenue growth ≥ 10% signals real demand momentum, not just margin engineering. Earnings growth ≥ 10% confirms the top-line expansion is flowing through to shareholders — not being consumed by costs.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">追蹤企業是否以足夠快的速度擴張以證明投資值得。營收增長 ≥ 10% 代表真實需求動能，而非單純靠利潤率工程。盈利增長 ≥ 10% 確認頂線擴張正在流向股東，而非被成本消耗。</p>
+      </div>
+      <div class="rationale-item">
+        <h3>🏦 Health Pillar (33 pts)</h3>
+        <p>Assesses balance sheet resilience. A strong cash-to-debt ratio means the company can survive downturns and invest through cycles. A high equity ratio means the business is largely self-funded. Analyst upside reflects Wall Street's collective view on whether the stock is fairly priced.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">評估資產負債表韌性。強勁的現金對債務比率意味著公司能在低迷期存活並跨周期投資。高股東權益比率意味著企業主要依靠自有資金運營。分析師上行空間反映華爾街對股票是否合理定價的集體看法。</p>
+      </div>
+      <div class="rationale-item">
+        <h3>⚠️ What this screen does NOT do</h3>
+        <p>This is a fundamentals filter, not a buy signal. A high score means the business is financially sound — it does not account for valuation (a great company at a sky-high price can still be a poor investment), near-term catalysts, or macro risks. Always read the full company page and form your own view.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">這是基本面篩選器，不是買入信號。高分意味著業務財務健康——但不考慮估值（高價買入優質公司仍可能是糟糕投資）、近期催化劑或宏觀風險。請閱讀完整公司頁面並自行判斷。</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Top Picks &nbsp;·&nbsp; Algorithmically screened, not editorially selected &nbsp;·&nbsp; 2026-05-01
+</footer>
+</body>
+</html>

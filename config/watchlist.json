@@ -1,0 +1,39 @@
+{
+  "watchlist": [
+    {
+      "ticker": "2330.TW",
+      "name": "TSMC / 台積電",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "Core semiconductor holding"
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA",
+      "market": "US",
+      "currency": "USD",
+      "note": "AI infrastructure play"
+    },
+    {
+      "ticker": "QQQ",
+      "name": "Invesco QQQ ETF",
+      "market": "US",
+      "currency": "USD",
+      "note": "Nasdaq-100 broad exposure"
+    },
+    {
+      "ticker": "SPY",
+      "name": "SPDR S&P 500 ETF",
+      "market": "US",
+      "currency": "USD",
+      "note": "S&P 500 broad exposure"
+    },
+    {
+      "ticker": "0050.TW",
+      "name": "元大台灣50 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "TW50 ETF"
+    }
+  ]
+}

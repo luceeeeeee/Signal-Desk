@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>News Sources · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 48px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+
+.stats-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 22px;
+  box-shadow: var(--shadow-sm);
+  min-width: 130px;
+}
+.stat-val {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--accent);
+  font-family: 'Menlo', 'SF Mono', monospace;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.region-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.region-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-off) 100%);
+}
+.region-flag { font-size: 20px; line-height: 1; }
+.region-title-block { flex: 1; }
+.region-title {
+  font-size: 14px; font-weight: 700; color: var(--text); display: block;
+}
+.region-zh {
+  font-size: 11px; color: var(--text-muted); display: block; margin-top: 1px;
+}
+.region-count {
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 2px 10px; border-radius: 20px;
+}
+
+.src-table { width: 100%; border-collapse: collapse; }
+.src-table thead tr { background: var(--surface-off); border-bottom: 1px solid var(--border-light); }
+.src-table th {
+  padding: 9px 20px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); text-align: left;
+}
+.src-table td {
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 13px;
+}
+.src-table tr:last-child td { border-bottom: none; }
+.src-table tbody tr:hover { background: var(--accent-bg); }
+.src-name { font-weight: 500; color: var(--text); }
+.src-lang { font-size: 12px; }
+.src-link a {
+  font-size: 11px; color: var(--accent); text-decoration: none;
+  font-weight: 600; letter-spacing: 0.04em;
+}
+.src-link a:hover { text-decoration: underline; }
+
+.note {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px 20px;
+  font-size: 13px; color: var(--text-muted); margin-top: 28px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="watchlist.html">My Watchlist</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html" class="active">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Live Data · Auto-updated</div>
+  <h1>News Sources</h1>
+  <p class="hero-sub">Every briefing draws from 29 RSS feeds across 7 regions. This page is automatically regenerated whenever a new source is added to the system.</p>
+</div>
+
+<div class="content">
+
+  <div class="stats-row">
+    <div class="stat-tile">
+      <div class="stat-val">29</div>
+      <div class="stat-label">Total Sources</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-val">7</div>
+      <div class="stat-label">Regions Covered</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-val">20</div>
+      <div class="stat-label">English Sources</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-val">9</div>
+      <div class="stat-label">Chinese Sources</div>
+    </div>
+  </div>
+
+
+  <div class="region-card" style="border-top:4px solid #3a72b0;">
+    <div class="region-head" style="background:linear-gradient(135deg,#eaf2fb 0%,var(--surface) 65%);">
+      <span class="region-flag">🇺🇸</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#3a72b0">United States</span>
+        <span class="region-zh">美國</span>
+      </div>
+      <span class="region-count" style="color:#3a72b0;background:#eaf2fb;border-color:#b8d4f0">7 sources</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#eaf2fb 0%,var(--surface-off) 65%); border-bottom:1px solid #b8d4f0;">
+          <th style="color:#3a72b0">Source</th>
+          <th style="color:#3a72b0">Language</th>
+          <th style="color:#3a72b0">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">WSJ Markets</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://feeds.wsj.com/wsj/xml/rss/3_7031.xml" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">CNBC Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.cnbc.com/id/100003114/device/rss/rss.html" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">MarketWatch</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://feeds.marketwatch.com/marketwatch/marketpulse/" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">Yahoo Finance</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://finance.yahoo.com/news/rssindex" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">Fortune</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://fortune.com/feed/fortune-feeds/" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">Barron's</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.barrons.com/news/rss_news.xml" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">Seeking Alpha</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://seekingalpha.com/market_currents.xml" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #2e6b58;">
+    <div class="region-head" style="background:linear-gradient(135deg,#eaf3f0 0%,var(--surface) 65%);">
+      <span class="region-flag">🌐</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#2e6b58">Global / Multi</span>
+        <span class="region-zh">全球／綜合</span>
+      </div>
+      <span class="region-count" style="color:#2e6b58;background:#eaf3f0;border-color:#c6ddd6">7 sources</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#eaf3f0 0%,var(--surface-off) 65%); border-bottom:1px solid #c6ddd6;">
+          <th style="color:#2e6b58">Source</th>
+          <th style="color:#2e6b58">Language</th>
+          <th style="color:#2e6b58">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">Bloomberg Markets</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://feeds.bloomberg.com/markets/news.rss" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">Reuters Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://feeds.reuters.com/reuters/businessNews" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">Reuters Finance</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://feeds.reuters.com/reuters/financialsNews" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">FT Markets</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.ft.com/markets?format=rss" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">CNBC World Economy</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.cnbc.com/id/20910258/device/rss/rss.html" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">AP Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://apnews.com/hub/financial-markets" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">鉅亨網總經</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://news.cnyes.com/rss/news/cat/macro" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #b87820;">
+    <div class="region-head" style="background:linear-gradient(135deg,#fdf4e7 0%,var(--surface) 65%);">
+      <span class="region-flag">🇬🇧</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#b87820">UK & Europe</span>
+        <span class="region-zh">英國及歐洲</span>
+      </div>
+      <span class="region-count" style="color:#b87820;background:#fdf4e7;border-color:#e8c88a">3 sources</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#fdf4e7 0%,var(--surface-off) 65%); border-bottom:1px solid #e8c88a;">
+          <th style="color:#b87820">Source</th>
+          <th style="color:#b87820">Language</th>
+          <th style="color:#b87820">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">BBC Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://feeds.bbci.co.uk/news/business/rss.xml" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">BBC Technology</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://feeds.bbci.co.uk/news/technology/rss.xml" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">The Guardian Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.theguardian.com/uk/business/rss" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #2a7a7a;">
+    <div class="region-head" style="background:linear-gradient(135deg,#e8f5f5 0%,var(--surface) 65%);">
+      <span class="region-flag">🌏</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#2a7a7a">Asia-Pacific</span>
+        <span class="region-zh">亞太地區</span>
+      </div>
+      <span class="region-count" style="color:#2a7a7a;background:#e8f5f5;border-color:#a8d8d8">1 source</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#e8f5f5 0%,var(--surface-off) 65%); border-bottom:1px solid #a8d8d8;">
+          <th style="color:#2a7a7a">Source</th>
+          <th style="color:#2a7a7a">Language</th>
+          <th style="color:#2a7a7a">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">Nikkei Asia</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://asia.nikkei.com/rss/feed/ixrss.aspx" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #5560a8;">
+    <div class="region-head" style="background:linear-gradient(135deg,#f0f0fc 0%,var(--surface) 65%);">
+      <span class="region-flag">🇸🇬</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#5560a8">Singapore</span>
+        <span class="region-zh">新加坡</span>
+      </div>
+      <span class="region-count" style="color:#5560a8;background:#f0f0fc;border-color:#c0c4ec">2 sources</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#f0f0fc 0%,var(--surface-off) 65%); border-bottom:1px solid #c0c4ec;">
+          <th style="color:#5560a8">Source</th>
+          <th style="color:#5560a8">Language</th>
+          <th style="color:#5560a8">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">Channel NewsAsia</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=10416" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">Business Times SG</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.businesstimes.com.sg/rss/all" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #b84040;">
+    <div class="region-head" style="background:linear-gradient(135deg,#fceaea 0%,var(--surface) 65%);">
+      <span class="region-flag">🇭🇰</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#b84040">Hong Kong</span>
+        <span class="region-zh">香港</span>
+      </div>
+      <span class="region-count" style="color:#b84040;background:#fceaea;border-color:#e8aaaa">1 source</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#fceaea 0%,var(--surface-off) 65%); border-bottom:1px solid #e8aaaa;">
+          <th style="color:#b84040">Source</th>
+          <th style="color:#b84040">Language</th>
+          <th style="color:#b84040">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">SCMP Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+              <td class="src-link"><a href="https://www.scmp.com/rss/11/feed" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #7a5030;">
+    <div class="region-head" style="background:linear-gradient(135deg,#f8f0e8 0%,var(--surface) 65%);">
+      <span class="region-flag">🇹🇼</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#7a5030">Taiwan</span>
+        <span class="region-zh">台灣</span>
+      </div>
+      <span class="region-count" style="color:#7a5030;background:#f8f0e8;border-color:#d8bca0">8 sources</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#f8f0e8 0%,var(--surface-off) 65%); border-bottom:1px solid #d8bca0;">
+          <th style="color:#7a5030">Source</th>
+          <th style="color:#7a5030">Language</th>
+          <th style="color:#7a5030">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">科技新報 TechNews</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://technews.tw/feed/" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">鉅亨網台股</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://news.cnyes.com/rss/news/cat/tw_stock" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">鉅亨網美股</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://news.cnyes.com/rss/news/cat/us_stock" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">經濟日報</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://money.udn.com/rssfeed/news/2/1003?ch=money" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">工商時報</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://www.ctee.com.tw/rss/news.rss" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">MoneyDJ</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://www.moneydj.com/KMDJ/RSSFeed/RSSFeed.aspx?cat=ALLNEWS" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">中央社財經</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://www.cna.com.tw/rss/aall.aspx" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+            <tr>
+              <td class="src-name">數位時代</td>
+              <td class="src-lang" style="color:#3d5449;">繁體中文</td>
+              <td class="src-link"><a href="https://www.bnext.com.tw/rss" target="_blank" rel="noopener">Feed URL ↗</a></td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    📡 &nbsp;This page is auto-generated from the live source list each time the briefing system starts. Adding a new RSS feed to the system will automatically appear here on the next run. Last updated: May 01, 2026 · 13:31 Taipei.
+  </div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; News Sources &nbsp;·&nbsp; Auto-generated 2026-05-01
+</footer>
+
+</body>
+</html>

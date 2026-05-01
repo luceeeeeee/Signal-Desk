@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NVDA · Company Analysis · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 48px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+
+/* ── Hero ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  text-decoration: none; margin-bottom: 18px; letter-spacing: 0.03em;
+}
+.back-link:hover { text-decoration: underline; }
+.co-ticker { font-size: 40px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.co-name   { font-size: 15px; color: var(--text-muted); margin: 4px 0 12px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.hero-badge {
+  display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 8px;
+  font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; border: 1px solid transparent;
+}
+.badge-price { background: var(--surface); border-color: var(--border); color: var(--text); }
+.badge-up    { background: #eaf3f0; border-color: #c6ddd6; color: #2e6b58; }
+.badge-dn    { background: #fceaea; border-color: #e8aaaa; color: #b84040; }
+.hero-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
+.hero-tag    { font-size: 11px; color: var(--text-muted); background: var(--surface-off); border: 1px solid var(--border-light); padding: 3px 10px; border-radius: 20px; }
+
+/* ── KPI tiles ── */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.kpi-val   { font-size: 22px; font-weight: 900; font-family: 'Menlo','SF Mono',monospace; line-height: 1.1; margin-bottom: 4px; }
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+.kpi-sub   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Conviction score card ── */
+.cs-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.cs-card-header { padding: 14px 24px; border-bottom: 1px solid var(--border-light); }
+.cs-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.cs-card-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cs-body { display: flex; flex-wrap: wrap; gap: 32px; padding: 24px 28px; }
+.cs-score-col { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.cs-score-num { font-size: 64px; font-weight: 900; line-height: 1; font-family: 'Menlo','SF Mono',monospace; }
+.cs-score-denom { font-size: 12px; color: var(--text-muted); }
+.cs-score-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; text-align: center; }
+.cs-pillars-col { flex: 1; min-width: 180px; }
+.cs-pillar { margin-bottom: 18px; }
+.cs-pillar:last-child { margin-bottom: 0; }
+.cs-pillar-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.cs-pillar-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.cs-pillar-pts  { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'Menlo','SF Mono',monospace; }
+.cs-bar-track { height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.cs-bar-fill  { height: 100%; border-radius: 4px; }
+.cs-pillar-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.cs-checks-col { min-width: 200px; }
+.cs-check { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 12px; }
+.cs-check:last-child { margin-bottom: 0; }
+.cs-check-icon  { font-size: 11px; font-weight: 700; width: 14px; flex-shrink: 0; }
+.cs-check-name  { flex: 1; color: var(--text-med); }
+.cs-check-val   { font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); min-width: 40px; text-align: right; }
+.cs-check-thresh { font-size: 10px; color: var(--text-muted); }
+
+/* ── Metrics grid ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+@media(max-width:740px) { .metrics-grid { grid-template-columns: 1fr; } }
+.m-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow-sm); }
+.mc-blue  { border-top: 4px solid #3a72b0; }
+.mc-teal  { border-top: 4px solid #2e6b58; }
+.mc-amber { border-top: 4px solid #b87820; }
+.mc-blue .m-title  { color: #3a72b0; border-bottom-color: #b8d4f0; }
+.mc-teal .m-title  { color: #2e6b58; border-bottom-color: #c6ddd6; }
+.mc-amber .m-title { color: #b87820; border-bottom-color: #e8c88a; }
+.m-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+.m-row  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.m-label { font-size: 12px; color: var(--text-muted); flex: 1; line-height: 1.4; }
+.m-val  { font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); white-space: nowrap; }
+.m-def  { font-size: 11px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; padding: 5px 9px; background: var(--surface-off); border-radius: var(--radius-sm); border-left: 2px solid var(--border); }
+.flag-pass { font-size: 10px; font-weight: 700; color: #2e6b58; background: #eaf3f0; border: 1px solid #c6ddd6; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+.flag-warn { font-size: 10px; font-weight: 700; color: #b87820; background: #fdf4e7; border: 1px solid #e8c88a; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+/* ── 52-week range ── */
+.range-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.range-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 16px; }
+.range-bar-track { position: relative; height: 8px; background: var(--border-light); border-radius: 4px; margin-bottom: 12px; }
+.range-bar-fill  { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #c6ddd6, var(--accent)); border-radius: 4px; }
+.range-dot { position: absolute; top: 50%; width: 14px; height: 14px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.range-labels strong { color: var(--accent); }
+
+/* ── Analyst & Ownership ── */
+.ao-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.ao-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+@media(max-width:620px) { .ao-grid { grid-template-columns: 1fr; } }
+.ao-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-light); }
+.ao-row   { font-size: 13px; color: var(--text-med); margin-bottom: 7px; line-height: 1.5; }
+.ao-row strong { color: var(--text); }
+.rec-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.rec-buy  { background: #eaf3f0; color: #2e6b58; border: 1px solid #c6ddd6; }
+.rec-hold { background: #fdf4e7; color: #b87820; border: 1px solid #e8c88a; }
+.rec-sell { background: #fceaea; color: #b84040; border: 1px solid #e8aaaa; }
+
+/* ── Quarterly trend ── */
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.q-card-head { padding: 13px 22px; border-bottom: 1px solid var(--border-light); background: var(--surface-off); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); }
+.q-table { width: 100%; border-collapse: collapse; }
+.q-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: left; border-bottom: 1px solid var(--border-light); }
+.q-table td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); color: var(--text-med); }
+.q-table tr:last-child td { border-bottom: none; }
+.q-table tbody tr:hover { background: var(--surface-off); }
+.q-period { font-weight: 600; color: var(--text); font-size: 12px; white-space: nowrap; }
+.q-mono   { font-family: 'Menlo','SF Mono',monospace; font-weight: 600; }
+.q-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.q-bar-track { width: 70px; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.q-bar-fill  { height: 100%; background: var(--accent); border-radius: 3px; }
+.q-pos { color: #2e6b58; font-weight: 600; }
+.q-neg { color: #b84040; font-weight: 600; }
+
+/* ── Narrative section cards ── */
+.sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
+.sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
+.sec-amber  { --sc: #b87820; --sc-light: #fdf4e7; --sc-border: #e8c88a; }
+.sec-indigo { --sc: #5560a8; --sc-light: #f0f0fc; --sc-border: #c0c4ec; }
+.sec-rose   { --sc: #b84040; --sc-light: #fceaea; --sc-border: #e8aaaa; }
+.section-card {
+  border: 1px solid var(--sc-border); border-top: 4px solid var(--sc);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  margin-bottom: 28px; overflow: hidden; background: var(--surface);
+}
+.section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--sc); background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface) 65%);
+  padding: 14px 28px; margin: 0; border-bottom: 1px solid var(--sc-border);
+}
+.section-body { padding: 28px 32px; }
+.section-body p { font-size: 15px; line-height: 1.85; color: var(--text-med); margin-bottom: 14px; }
+.section-body p:last-child { margin-bottom: 0; }
+.section-body strong { color: var(--text); }
+.sub-heading { font-size: 14px; font-weight: 700; color: var(--sc); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--sc-border); }
+.sub-heading:first-child { margin-top: 0; }
+.impact-line { background: var(--sc-light); border-left: 3px solid var(--sc); padding: 10px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 4px 0 14px; font-size: 14.5px; color: var(--text-med); line-height: 1.7; }
+.num-item  { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 22px; }
+.num-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--sc); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.num-body  { flex: 1; }
+.num-title { font-weight: 700; color: var(--text); margin-bottom: 6px; font-size: 15px; }
+.num-body p { margin-bottom: 8px; font-size: 14px; }
+.overview-list { margin: 0 0 16px 0; padding-left: 20px; }
+.overview-list li { margin-bottom: 11px; color: var(--text-med); font-size: 15px; line-height: 1.78; }
+.table-wrap { overflow-x: auto; margin: 10px 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--sc-border); }
+.overview-table { width: 100%; border-collapse: collapse; }
+.overview-table thead tr { background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface-off) 65%); border-bottom: 1px solid var(--sc-border); }
+.overview-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--sc); text-align: left; white-space: nowrap; }
+.overview-table td { padding: 11px 16px; font-size: 14px; color: var(--text-med); border-bottom: 1px solid var(--border-light); }
+.overview-table tr:last-child td { border-bottom: none; }
+.overview-table tbody tr:hover { background: var(--surface-off); }
+
+/* ── Narrative section label ── */
+.narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="watchlist.html">My Watchlist</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <a class="back-link" href="watchlist.html">← Watchlist</a>
+  <div class="co-ticker">NVDA</div>
+  <div class="co-name">NVIDIA Corporation</div>
+  <div class="hero-badges">
+    <span class="hero-badge badge-price">$131.38</span>
+    <span class="hero-badge badge-up">+2.24%</span>
+  </div>
+  <div class="hero-tags"><span class="hero-tag">Market Cap: $3210.0B</span><span class="hero-tag">Technology</span><span class="hero-tag">Semiconductors</span><span class="hero-tag">USD</span></div>
+</div>
+
+<div class="content">
+
+  <div class="kpi-row"><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">+78.1%</div><div class="kpi-label">Revenue Growth</div><div class="kpi-sub">Annual YoY</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">43.1%</div><div class="kpi-label">FCF Margin</div><div class="kpi-sub">≥20% is strong</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">31.2%</div><div class="kpi-label">ROIC</div><div class="kpi-sub">≥15% is strong</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">+27.1%</div><div class="kpi-label">Analyst Upside</div><div class="kpi-sub">BUY</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">Upper Range</div><div class="kpi-label">52-Week Range</div><div class="kpi-sub">72% of range</div></div><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">1.62</div><div class="kpi-label">Beta</div><div class="kpi-sub">Elevated</div></div></div>
+
+  <div class="cs-card" style="border-top:4px solid #2e6b58;border:1px solid #c6ddd6;border-top:4px solid #2e6b58">
+    <div class="cs-card-header" style="background:linear-gradient(135deg,#eaf3f0 0%,var(--surface) 65%)">
+      <div class="cs-card-title" style="color:#2e6b58">Conviction Score</div>
+      <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork</div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-score-col">
+        <div class="cs-score-num" style="color:#2e6b58">100</div>
+        <div class="cs-score-denom">/ 100</div>
+        <div class="cs-score-label" style="color:#2e6b58">Strong Conviction</div>
+      </div>
+      <div class="cs-pillars-col"><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Quality</span><span class="cs-pillar-pts">33 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#2e6b58"></div></div><p class="cs-pillar-sub">ROIC · FCF Margin · Gross Margin</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Growth</span><span class="cs-pillar-pts">34 / 34</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#2e6b58"></div></div><p class="cs-pillar-sub">Revenue Growth · Earnings Growth</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Health</span><span class="cs-pillar-pts">33 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#2e6b58"></div></div><p class="cs-pillar-sub">Cash vs Debt · Equity Ratio · Analyst Upside</p></div></div>
+      <div class="cs-checks-col"><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">ROIC</span><span class="cs-check-val">31%</span><span class="cs-check-thresh">≥15%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Rev Growth</span><span class="cs-check-val">+78%</span><span class="cs-check-thresh">≥10%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">FCF Margin</span><span class="cs-check-val">43%</span><span class="cs-check-thresh">≥20%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Gross Margin</span><span class="cs-check-val">75%</span><span class="cs-check-thresh">≥40%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">ROE</span><span class="cs-check-val">126%</span><span class="cs-check-thresh">≥15%</span></div></div>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="m-card mc-blue">
+      <div class="m-title">Valuation</div>
+      <div class="m-row"><span class="m-label">Forward P/E</span><span class="m-val">26.8</span></div><p class="m-def">Investors pay this many dollars for every $1 projected to be earned next year. Lower = cheaper relative to earnings.</p><div class="m-row"><span class="m-label">Trailing P/E</span><span class="m-val">38.2</span></div><p class="m-def">Same concept, but based on the last 12 months of actual reported earnings — no estimates involved.</p><div class="m-row"><span class="m-label">PEG Ratio</span><span class="m-val">1.42</span></div><p class="m-def">P/E divided by the growth rate. Below 1.0 often signals the stock is cheap relative to how fast it's growing.</p><div class="m-row"><span class="m-label">Price / Book</span><span class="m-val">28.4x</span></div><p class="m-def">Share price vs book value of company assets. Above 5x means a large premium — justified only if returns on equity are high.</p><div class="m-row"><span class="m-label">Analyst Target</span><span class="m-val">$167.00 <span class="flag-pass">+27.1%</span></span></div><p class="m-def">Wall Street consensus price target. Current recommendation: <strong>BUY</strong>.</p>
+    </div>
+    <div class="m-card mc-teal">
+      <div class="m-title">Quality &amp; Profitability</div>
+      <div class="m-row"><span class="m-label">ROIC</span><span class="m-val">31.2%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Return on Invested Capital — profit generated per dollar put to work. Above 15% separates great businesses from average ones.</p><div class="m-row"><span class="m-label">FCF Margin</span><span class="m-val">43.1%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Free cash left after all operating costs as a % of revenue. Businesses above 20% generate cash even through downturns.</p><div class="m-row"><span class="m-label">Gross Margin</span><span class="m-val">74.8%<span class="flag-pass">✓</span></span></div><p class="m-def">Revenue minus cost of goods sold. Higher = more pricing power. Above 40% typically indicates a differentiated product.</p><div class="m-row"><span class="m-label">Operating Margin</span><span class="m-val">61.8%</span></div><p class="m-def">What remains after paying staff, rent, and all operating costs — before interest and taxes.</p><div class="m-row"><span class="m-label">Net Margin</span><span class="m-val">55.7%</span></div><p class="m-def">The bottom line: final profit as a % of revenue after every expense including taxes.</p><div class="m-row"><span class="m-label">ROE</span><span class="m-val">126.3%<span class="flag-pass">✓</span></span></div><p class="m-def">Return on Equity — net income divided by shareholders' equity. Above 15% shows efficient use of investor capital.</p>
+    </div>
+    <div class="m-card mc-amber">
+      <div class="m-title">Financial Health</div>
+      <div class="m-row"><span class="m-label">Cash on Hand</span><span class="m-val">$34.8B</span></div><div class="m-row"><span class="m-label">Total Debt</span><span class="m-val">$8.5B</span></div><div class="m-row"><span class="m-label">Cash / Debt</span><span class="m-val">4.1x<span class="flag-pass">✓ Covered</span></span></div><p class="m-def">Times cash covers total debt. Above 1x means the company can pay off all debt immediately from its cash pile.</p><div class="m-row"><span class="m-label">Equity Ratio</span><span class="m-val">66%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Shareholders' equity as % of total assets. Higher = less reliance on borrowed money to fund the business.</p><div class="m-row"><span class="m-label">Current Ratio</span><span class="m-val">4.2<span class="flag-pass">✓</span></span></div><p class="m-def">Short-term assets vs short-term liabilities. Above 1.5 = strong liquidity buffer; below 1.0 = potential cash crunch.</p><div class="m-row"><span class="m-label">Working Capital</span><span class="m-val">$35.2B&nbsp;<span class="flag-pass">Positive</span></span></div><p class="m-def">Day-to-day cash buffer. Positive means the company can fund operations without tapping credit lines.</p><div class="m-row"><span class="m-label">Retained Earnings</span><span class="m-val">$29.8B</span></div><p class="m-def">Cumulative profits reinvested in the business over its lifetime — a proxy for long-term wealth creation.</p>
+    </div>
+  </div>
+
+  
+<div class="range-card">
+  <div class="range-title">52-Week Price Range</div>
+  <div class="range-bar-track">
+    <div class="range-bar-fill" style="width:71.9%"></div>
+    <div class="range-dot" style="left:71.9%"></div>
+  </div>
+  <div class="range-labels">
+    <span>Low: $75.61</span>
+    <span><strong>Current: $131.38</strong> &nbsp;(72% of range)</span>
+    <span>High: $153.13</span>
+  </div>
+</div>
+
+  
+<div class="ao-card">
+  <div class="ao-grid">
+    <div><div class="ao-title">Analyst Consensus</div><div class="ao-row"><strong>62</strong> analysts covering this stock</div><div class="ao-row">Consensus: <span class="rec-pill rec-buy">Strong Buy</span> (mean 1.5/5)</div><div class="ao-row">Target: <strong>$167.00</strong> (+27.1% upside)</div></div>
+    <div><div class="ao-title">Ownership</div><div class="ao-row">Insider ownership: <strong>3.86%</strong></div><div class="ao-row">Institutional: <strong>65.3%</strong></div><div class="ao-row">Short interest: <strong>1.1%</strong></div></div>
+    <div><div class="ao-title">Market Profile</div><div class="ao-row">Beta: <strong>1.62</strong> — higher-vol than market</div><div class="ao-row">PEG ratio: <strong>1.42</strong> — fair</div><div class="ao-row">Dividend yield: <strong>0.03%</strong></div><div class="ao-row">Market cap: <strong>$3210.0B</strong></div></div>
+  </div>
+</div>
+
+  <div class="q-card"><div class="q-card-head">Quarterly Trend · Last 2 Quarters</div><table class="q-table"><thead><tr><th>Quarter</th><th>Revenue</th><th>Trend / QoQ</th><th>Gross Margin</th><th>Net Income</th></tr></thead><tbody><tr><td><span class="q-period">Jan '25</span></td><td class="q-mono">$39.3B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:100%"></div></div><span class="q-pos">+12.1%</span></div></td><td class="q-mono">74.8%</td><td class="q-mono">$22.1B</td></tr><tr><td><span class="q-period">Oct '24</span></td><td class="q-mono">$35.1B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:89%"></div></div></div></td><td class="q-mono">74.5%</td><td class="q-mono">$19.3B</td></tr></tbody></table></div>
+
+  <p class="narrative-label">Analyst Briefing · AI-generated · May 01, 2026 · 13:31 Taipei</p>
+  <div class="section-card sec-indigo"><h2 class="section-title">BUSINESS OVERVIEW</h2><div class="section-body">
+<p>NVIDIA dominates the AI accelerator market with ~85% GPU market share, underpinned by the CUDA ecosystem built over a decade. No competitor has matched its full-stack AI platform.</p>
+<p>輝達主導AI加速器市場，GPU市佔率約85%，核心支撐是耗時十年打造的CUDA軟體生態系統，目前無競爭對手能媲美其全端AI平台。</p>
+</div></div>
+<div class="section-card sec-blue"><h2 class="section-title">RECENT DEVELOPMENTS</h2><div class="section-body">
+<p>Q4 FY2025 revenue hit $39.3B (+78% YoY). Blackwell GPU ramp accelerated; Q1 FY2026 guided to ~$43B. H20 export restrictions to China tightened in April 2025.</p>
+<p>2025財年Q4營收達393億美元（年增78%）。Blackwell GPU量產加速，Q1 FY2026指引約430億美元。H20晶片對中國出口限制於2025年4月再度收緊。</p>
+</div></div>
+<div class="section-card sec-teal"><h2 class="section-title">CATALYSTS</h2><div class="section-body">
+<ul class="overview-list">
+<li><strong>Blackwell Ultra ramp</strong>: 40% higher ASPs, 4× inference throughput vs H100; $300B+ hyperscaler capex creates multi-quarter demand pull.</li>
+<li><strong>Software recurring revenue</strong>: NIM microservices + AI Enterprise could add $5-8B high-margin annual stream by 2026.</li>
+<li><strong>Sovereign AI programs</strong>: EU, Japan, India government GPU clusters diversify away from US hyperscaler concentration.</li>
+</ul>
+<ul class="overview-list">
+<li>【Blackwell Ultra量產】：平均售價較H100高出40%，推理效能提升4倍；超大規模業者逾3000億美元資本支出創造多季度需求。</li>
+<li>【軟體經常性收入】：NIM微服務與AI企業版2026年前可增加每年50-80億美元高利潤營收。</li>
+<li>【主權AI計畫】：歐盟、日本、印度政府GPU叢集多元化收入來源。</li>
+</ul>
+</div></div>
+<div class="section-card sec-rose"><h2 class="section-title">RISKS</h2><div class="section-body">
+<ul class="overview-list">
+<li><strong>China export restrictions</strong>: H20 ban removes $12-15B annually; escalation could expand to other regions.</li>
+<li><strong>Hyperscaler in-house silicon</strong>: Google TPU, AWS Trainium shifts could compress TAM 15-25% in 2026-2027.</li>
+<li><strong>Valuation compression</strong>: At 26× forward P/E, any guidance miss could re-rate to 18-20× (~$90-100).</li>
+</ul>
+<ul class="overview-list">
+<li>【中國出口管制】：H20禁令每年減少120-150億美元收入，若升級可能擴及其他地區。</li>
+<li>【超大規模業者自研晶片】：Google TPU、AWS Trainium轉移可能使目標市場縮減15-25%。</li>
+<li>【估值壓縮】：以26倍預期本益比計算，業績不如預期可能重新定價至18-20倍（約90-100美元）。</li>
+</ul>
+</div></div>
+<div class="section-card sec-amber"><h2 class="section-title">CONCLUSION</h2><div class="section-body">
+<p>NVIDIA is the clearest AI infrastructure beneficiary. China export risk is the key near-term overhang; if stable, $167 target is credible in 12 months. Better entry around $110-115 (20× forward). 5-year moat durability: strong — CUDA network effects compound.</p>
+<p>輝達是AI基礎設施最明確的受益者。中國出口管制是近期主要隱憂；若穩定，12個月內167美元目標價可期。110-115美元（20倍預期本益比）為更佳進場點。5年護城河耐久性強勁——CUDA網路效應持續複利。</p>
+</div></div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; NVDA Company Analysis &nbsp;·&nbsp; 2026-05-01 &nbsp;·&nbsp;
+  <a href="watchlist.html" style="color:var(--accent);text-decoration:none">← Back to Watchlist</a>
+</footer>
+
+</body>
+</html>
