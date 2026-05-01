@@ -33,17 +33,19 @@ body {
 }
 nav {
   background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 48px; display: flex; align-items: center;
+  padding: 0 40px; display: flex; align-items: center;
   justify-content: space-between; height: 56px;
   position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
-.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
-.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
 .nav-links a {
   font-size: 12px; color: var(--text-muted); text-decoration: none;
-  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 .nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
 .nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -167,18 +169,18 @@ footer {
   </div>
   <ul class="nav-links">
     <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
     <li><a href="top-picks.html">Top Picks</a></li>
     <li><a href="sector-leaders.html">Sector Leaders</a></li>
-    <li><a href="watchlist.html">My Watchlist</a></li>
     <li><a href="income-statement-guide.html">Statement Guide</a></li>
     <li><a href="news-sources.html" class="active">News Sources</a></li>
   </ul>
 </nav>
 
 <div class="hero">
-  <div class="pill">Live Data · Auto-updated</div>
-  <h1>News Sources</h1>
-  <p class="hero-sub">Every briefing draws from 29 RSS feeds across 7 regions. This page is automatically regenerated whenever a new source is added to the system.</p>
+  <div class="pill">Live Data · 即時資料 · Auto-updated</div>
+  <h1>News Sources &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">新聞來源</span></h1>
+  <p class="hero-sub">Every briefing draws from 29 RSS feeds across 7 regions. Automatically regenerated whenever a new source is added.<br><span style="font-size:13px;color:var(--text-muted)">每份簡報從 29 個 RSS 來源抓取，涵蓋 7 個地區。新增來源時自動更新。</span></p>
 </div>
 
 <div class="content">
@@ -497,7 +499,7 @@ footer {
   </div>
 
   <div class="note">
-    📡 &nbsp;This page is auto-generated from the live source list each time the briefing system starts. Adding a new RSS feed to the system will automatically appear here on the next run. Last updated: May 01, 2026 · 13:31 Taipei.
+    📡 &nbsp;This page is auto-generated from the live source list each time the briefing system starts. Adding a new RSS feed to the system will automatically appear here on the next run. Last updated: May 01, 2026 · 16:15 Taipei.
   </div>
 
 </div>

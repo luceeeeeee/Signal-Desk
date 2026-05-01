@@ -62,17 +62,19 @@ body {
 }
 nav {
   background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 48px; display: flex; align-items: center;
+  padding: 0 40px; display: flex; align-items: center;
   justify-content: space-between; height: 56px;
   position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
-.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
-.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
 .nav-links a {
   font-size: 12px; color: var(--text-muted); text-decoration: none;
-  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 .nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
 .nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -101,9 +103,9 @@ footer {
 
 _NAV_ITEMS = [
     ("earnings-calendar-2026.html", "Earnings Calendar"),
+    ("market.html",                 "Market"),
     ("top-picks.html",              "Top Picks"),
     ("sector-leaders.html",         "Sector Leaders"),
-    ("watchlist.html",              "My Watchlist"),
     ("income-statement-guide.html", "Statement Guide"),
     ("news-sources.html",           "News Sources"),
 ]
@@ -287,9 +289,9 @@ def generate_news_sources_page(feeds: list) -> None:
 {_nav_html("news-sources.html")}
 
 <div class="hero">
-  <div class="pill">Live Data · Auto-updated</div>
-  <h1>News Sources</h1>
-  <p class="hero-sub">Every briefing draws from {total} RSS feeds across {len([r for r in REGION_ORDER if grouped.get(r)])} regions. This page is automatically regenerated whenever a new source is added to the system.</p>
+  <div class="pill">Live Data · 即時資料 · Auto-updated</div>
+  <h1>News Sources &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">新聞來源</span></h1>
+  <p class="hero-sub">Every briefing draws from {total} RSS feeds across {len([r for r in REGION_ORDER if grouped.get(r)])} regions. Automatically regenerated whenever a new source is added.<br><span style="font-size:13px;color:var(--text-muted)">每份簡報從 {total} 個 RSS 來源抓取，涵蓋 {len([r for r in REGION_ORDER if grouped.get(r)])} 個地區。新增來源時自動更新。</span></p>
 </div>
 
 <div class="content">
@@ -758,6 +760,432 @@ def generate_monthly_overview_page(content: str, month_review: str, month_previe
     return filename
 
 
+# ── Market overview page ──────────────────────────────────────────────────────
+
+MAJOR_INDICES = [
+    {"ticker": "^GSPC",  "name": "S&P 500",        "name_zh": "標普500",     "region": "US"},
+    {"ticker": "^IXIC",  "name": "Nasdaq 100",      "name_zh": "納斯達克",    "region": "US"},
+    {"ticker": "^DJI",   "name": "Dow Jones",       "name_zh": "道瓊工業",    "region": "US"},
+    {"ticker": "^RUT",   "name": "Russell 2000",    "name_zh": "羅素2000",    "region": "US"},
+    {"ticker": "^TWII",  "name": "TAIEX",           "name_zh": "台灣加權指數", "region": "TW"},
+    {"ticker": "^HSI",   "name": "Hang Seng",       "name_zh": "恆生指數",    "region": "HK"},
+    {"ticker": "^N225",  "name": "Nikkei 225",      "name_zh": "日經225",     "region": "JP"},
+    {"ticker": "^FTSE",  "name": "FTSE 100",        "name_zh": "富時100",     "region": "UK"},
+]
+
+COMMODITY_TICKERS = [
+    {"ticker": "GC=F",  "name": "Gold",       "name_zh": "黃金",     "unit": "$/oz"},
+    {"ticker": "CL=F",  "name": "Crude Oil",  "name_zh": "原油",     "unit": "$/bbl"},
+    {"ticker": "BTC-USD","name": "Bitcoin",   "name_zh": "比特幣",   "unit": "USD"},
+    {"ticker": "DX-Y.NYB","name": "USD Index","name_zh": "美元指數", "unit": "pts"},
+]
+
+
+def fetch_market_page_data() -> dict:
+    """Fetch all data needed for the market page."""
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        import yfinance as yf
+
+    result = {"indices": [], "commodities": [], "vix": None, "treasury_10y": None, "treasury_2y": None, "sectors": []}
+
+    # VIX
+    try:
+        info = yf.Ticker("^VIX").info
+        result["vix"] = info.get("regularMarketPrice") or info.get("previousClose")
+    except Exception:
+        pass
+
+    # 10Y & 2Y Treasury
+    for key, sym in [("treasury_10y", "^TNX"), ("treasury_2y", "^IRX")]:
+        try:
+            info = yf.Ticker(sym).info
+            result[key] = info.get("regularMarketPrice") or info.get("previousClose")
+        except Exception:
+            pass
+
+    # Major indices
+    for idx in MAJOR_INDICES:
+        try:
+            info = yf.Ticker(idx["ticker"]).info
+            price = info.get("regularMarketPrice") or info.get("currentPrice") or info.get("previousClose")
+            prev  = info.get("previousClose") or info.get("regularMarketPreviousClose")
+            chg   = round((price - prev) / prev * 100, 2) if price and prev and prev > 0 else None
+            result["indices"].append({**idx, "price": price, "change_pct": chg})
+        except Exception:
+            result["indices"].append({**idx, "price": None, "change_pct": None})
+
+    # Commodities & crypto
+    for c in COMMODITY_TICKERS:
+        try:
+            info = yf.Ticker(c["ticker"]).info
+            price = info.get("regularMarketPrice") or info.get("currentPrice") or info.get("previousClose")
+            prev  = info.get("previousClose") or info.get("regularMarketPreviousClose")
+            chg   = round((price - prev) / prev * 100, 2) if price and prev and prev > 0 else None
+            result["commodities"].append({**c, "price": price, "change_pct": chg})
+        except Exception:
+            result["commodities"].append({**c, "price": None, "change_pct": None})
+
+    # Sector ETFs (reuse existing)
+    from src.fetchers.prices import fetch_market_sentiment
+    sentiment = fetch_market_sentiment()
+    result["sectors"] = sentiment.get("sectors", [])
+
+    # Top news headlines
+    try:
+        from src.fetchers.news import fetch_news
+        result["news"] = fetch_news(hours_back=24, max_items=15)
+    except Exception:
+        result["news"] = []
+
+    return result
+
+
+def generate_market_page(data: dict = None) -> str:
+    """Generate pages/market.html — live market dashboard."""
+    if data is None:
+        data = fetch_market_page_data()
+
+    now = datetime.now(tz=TAIPEI_TZ)
+    updated = now.strftime("%B %d, %Y · %H:%M Taipei")
+
+    def _chg_color(v):
+        if v is None: return "var(--text-muted)"
+        return "#2e6b58" if v >= 0 else "#b84040"
+
+    def _chg_str(v):
+        if v is None: return "—"
+        return f"{'+'if v>=0 else ''}{v:.2f}%"
+
+    def _fmt_price(p, unit=""):
+        if p is None: return "—"
+        if p >= 10000: return f"{p:,.0f}"
+        if p >= 100:   return f"{p:,.2f}"
+        return f"{p:.4f}" if p < 1 else f"{p:.2f}"
+
+    # ── VIX card ──
+    vix = data.get("vix")
+    if vix:
+        if vix > 30:   vix_label, vix_color = "Extreme Fear / 極度恐慌", "#b84040"
+        elif vix > 20: vix_label, vix_color = "Fear / 恐慌", "#e07820"
+        elif vix > 15: vix_label, vix_color = "Neutral / 中性", "#b87820"
+        else:          vix_label, vix_color = "Greed / 貪婪", "#2e6b58"
+    else:
+        vix_label, vix_color = "N/A", "var(--text-muted)"
+
+    vix_html = f"""
+  <div class="mk-card mk-fear">
+    <div class="mk-card-title">Fear Gauge · 恐慌指數</div>
+    <div class="mk-big" style="color:{vix_color}">{f'{vix:.1f}' if vix else '—'}</div>
+    <div class="mk-label" style="color:{vix_color}">VIX — {vix_label}</div>
+    <p class="mk-note">VIX measures expected market volatility over the next 30 days. Above 20 = fear; below 15 = complacency.<br>VIX衡量未來30天的預期市場波動性。高於20代表恐慌；低於15代表自滿。</p>
+  </div>"""
+
+    # ── Treasury yields card ──
+    t10 = data.get("treasury_10y")
+    t2  = data.get("treasury_2y")
+    spread = round(t10 - t2, 2) if t10 and t2 else None
+    spread_note = ""
+    if spread is not None:
+        if spread < 0:
+            spread_note = "⚠️ Inverted yield curve — historically precedes recessions / 殖利率曲線倒掛——歷史上為衰退前兆"
+        else:
+            spread_note = "Normal yield curve / 正常殖利率曲線"
+
+    yields_html = f"""
+  <div class="mk-card mk-yields">
+    <div class="mk-card-title">Treasury Yields · 美國公債殖利率</div>
+    <div class="mk-yield-row">
+      <div class="mk-yield-item">
+        <span class="mk-yield-val">{f'{t10:.2f}%' if t10 else '—'}</span>
+        <span class="mk-yield-label">10-Year / 10年期</span>
+      </div>
+      <div class="mk-yield-item">
+        <span class="mk-yield-val">{f'{t2:.2f}%' if t2 else '—'}</span>
+        <span class="mk-yield-label">2-Year / 2年期</span>
+      </div>
+      <div class="mk-yield-item">
+        <span class="mk-yield-val" style="color:{'#b84040' if spread and spread < 0 else '#2e6b58'}">{f'{spread:+.2f}%' if spread is not None else '—'}</span>
+        <span class="mk-yield-label">Spread / 利差</span>
+      </div>
+    </div>
+    <p class="mk-note">{spread_note}<br>Higher 10Y yields raise borrowing costs and pressure growth stocks. / 10年期殖利率上升會提高借貸成本並壓縮成長股估值。</p>
+  </div>"""
+
+    # ── Index table ──
+    idx_rows = ""
+    for idx in data["indices"]:
+        p = idx.get("price")
+        c = idx.get("change_pct")
+        idx_rows += f"""
+    <tr>
+      <td><strong>{idx['name']}</strong><br><span style="font-size:11px;color:var(--text-muted)">{idx['name_zh']} · {idx['region']}</span></td>
+      <td style="text-align:right;font-weight:600">{_fmt_price(p)}</td>
+      <td style="text-align:right;font-weight:600;color:{_chg_color(c)}">{_chg_str(c)}</td>
+    </tr>"""
+
+    indices_html = f"""
+  <div class="mk-card mk-full">
+    <div class="mk-card-title">Global Indices · 全球指數</div>
+    <table class="mk-table">
+      <thead><tr><th>Index / 指數</th><th style="text-align:right">Price / 價格</th><th style="text-align:right">Change / 漲跌</th></tr></thead>
+      <tbody>{idx_rows}</tbody>
+    </table>
+  </div>"""
+
+    # ── Commodities ──
+    com_rows = ""
+    for c in data["commodities"]:
+        p = c.get("price")
+        chg = c.get("change_pct")
+        com_rows += f"""
+    <tr>
+      <td><strong>{c['name']}</strong><br><span style="font-size:11px;color:var(--text-muted)">{c['name_zh']} · {c['unit']}</span></td>
+      <td style="text-align:right;font-weight:600">{_fmt_price(p)}</td>
+      <td style="text-align:right;font-weight:600;color:{_chg_color(chg)}">{_chg_str(chg)}</td>
+    </tr>"""
+
+    commodities_html = f"""
+  <div class="mk-card mk-half">
+    <div class="mk-card-title">Commodities & Crypto · 大宗商品與加密貨幣</div>
+    <table class="mk-table">
+      <thead><tr><th>Asset / 資產</th><th style="text-align:right">Price</th><th style="text-align:right">Change</th></tr></thead>
+      <tbody>{com_rows}</tbody>
+    </table>
+  </div>"""
+
+    # ── Sector rotation ──
+    sectors = [s for s in data.get("sectors", []) if s.get("change_pct") is not None]
+    sectors_sorted = sorted(sectors, key=lambda x: x["change_pct"], reverse=True)
+    sector_rows = ""
+    for s in sectors_sorted:
+        c = s["change_pct"]
+        bar_w = min(abs(c) * 8, 100)
+        bar_color = "#2e6b58" if c >= 0 else "#b84040"
+        sector_rows += f"""
+    <div class="sec-row">
+      <span class="sec-name">{s['name']} <span style="color:var(--text-muted);font-size:11px">{s['name_zh']}</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:{bar_w}%;background:{bar_color};{'margin-left:auto' if c < 0 else ''}"></div>
+      </div>
+      <span class="sec-val" style="color:{bar_color}">{'+'if c>=0 else ''}{c:.1f}%</span>
+    </div>"""
+
+    sectors_html = f"""
+  <div class="mk-card mk-half">
+    <div class="mk-card-title">Sector Rotation · 板塊輪動</div>
+    <div class="sec-list">{sector_rows}</div>
+  </div>"""
+
+    # ── News section ──
+    news_items = data.get("news", [])
+    if news_items:
+        news_rows = ""
+        for item in news_items:
+            source    = item.get("source", "")
+            title     = item.get("title", "")
+            summary   = item.get("summary", "")
+            published = item.get("published", "")
+            region    = item.get("region", "")
+            pub_str   = published[:16] if published else ""
+            news_rows += f"""
+      <div class="news-item">
+        <span class="news-source">{source}{f' · {region}' if region else ''}{f' · {pub_str}' if pub_str else ''}</span>
+        <span class="news-title">{title}</span>
+        {f'<span class="news-impact">{summary[:220]}</span>' if summary and len(summary) > len(title) + 10 else ''}
+      </div>"""
+        news_html = f"""
+  <div class="mk-card mk-full" style="margin-top:0;border-top:4px solid #5560a8;">
+    <div class="mk-card-title">Latest Headlines · 最新頭條 (24h)</div>
+    <div class="news-list">{news_rows}
+    </div>
+  </div>"""
+    else:
+        news_html = ""
+
+    # ── Weekly review & preview ──
+    month_label = now.strftime("%B %Y")
+    week_num    = now.isocalendar()[1]
+
+    # Review: this week's index moves
+    review_rows = ""
+    for idx in data["indices"][:5]:
+        c = idx.get("change_pct")
+        cc = "#2e6b58" if c and c >= 0 else "#b84040"
+        cs = f'{"+" if c and c>=0 else ""}{c:.1f}%' if c is not None else "—"
+        review_rows += f"""
+      <div class="week-item">
+        <div class="week-date">{idx['region']}</div>
+        <strong>{idx['name']}</strong> &nbsp;
+        <span style="color:{cc};font-weight:700">{cs}</span>
+        <span style="color:var(--text-muted);font-size:11px"> today</span>
+      </div>"""
+    review_html = f"""
+    <div class="week-card review">
+      <div class="week-title">📊 This Week's Moves · 本週行情 (Week {week_num})</div>
+      {review_rows}
+    </div>"""
+
+    # Preview: upcoming earnings from calendar
+    try:
+        from src.fetchers.earnings import fetch_earnings_calendar
+        upcoming = fetch_earnings_calendar(days_ahead=7)[:6]
+    except Exception:
+        upcoming = []
+
+    preview_rows = ""
+    for e in upcoming:
+        date_str = e.get("date", "")
+        ticker   = e.get("ticker", "")
+        name     = e.get("name", ticker)
+        when     = e.get("time", "")
+        preview_rows += f"""
+      <div class="week-item">
+        <div class="week-date">{date_str} {f'· {when}' if when else ''}</div>
+        <strong>{ticker}</strong> — {name[:30]}
+      </div>"""
+
+    if not preview_rows:
+        preview_rows = '<div class="week-item" style="color:var(--text-muted)">No major earnings this week.</div>'
+
+    preview_html = f"""
+    <div class="week-card preview">
+      <div class="week-title">📅 Upcoming This Week · 本週重要事件</div>
+      {preview_rows}
+    </div>"""
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market · The Signal Desk</title>
+<style>
+{SHARED_CSS}
+
+.mk-grid {{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}}
+.mk-card {{
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 28px;
+}}
+.mk-full {{ grid-column: 1 / -1; }}
+.mk-half {{ grid-column: span 1; }}
+.mk-fear {{ border-top: 4px solid #b84040; }}
+.mk-yields {{ border-top: 4px solid #3a72b0; }}
+.mk-card-title {{
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
+}}
+.mk-big {{ font-size: 52px; font-weight: 800; line-height: 1; margin-bottom: 6px; }}
+.mk-label {{ font-size: 14px; font-weight: 600; margin-bottom: 12px; }}
+.mk-note {{ font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-top: 12px; }}
+.mk-yield-row {{ display: flex; gap: 24px; margin-bottom: 8px; }}
+.mk-yield-item {{ display: flex; flex-direction: column; gap: 3px; }}
+.mk-yield-val {{ font-size: 26px; font-weight: 800; }}
+.mk-yield-label {{ font-size: 11px; color: var(--text-muted); }}
+.mk-table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+.mk-table th {{
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 6px 0 10px; border-bottom: 2px solid var(--border); text-align: left;
+}}
+.mk-table td {{
+  padding: 10px 0; border-bottom: 1px solid var(--border-light); vertical-align: top;
+}}
+.mk-table tr:last-child td {{ border-bottom: none; }}
+.sec-list {{ display: flex; flex-direction: column; gap: 8px; }}
+.sec-row {{ display: grid; grid-template-columns: 140px 1fr 52px; gap: 8px; align-items: center; }}
+.sec-name {{ font-size: 12px; font-weight: 600; }}
+.sec-bar-wrap {{ height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; }}
+.sec-bar {{ height: 6px; border-radius: 3px; min-width: 2px; }}
+.sec-val {{ font-size: 12px; font-weight: 700; text-align: right; }}
+.last-updated {{ font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }}
+@media (max-width: 680px) {{
+  .mk-grid {{ grid-template-columns: 1fr; }}
+  .mk-full, .mk-half {{ grid-column: span 1; }}
+}}
+.news-list {{ display: flex; flex-direction: column; gap: 0; }}
+.news-item {{
+  padding: 16px 0; border-bottom: 1px solid var(--border-light);
+  display: flex; flex-direction: column; gap: 5px;
+}}
+.news-item:last-child {{ border-bottom: none; }}
+.news-source {{
+  font-size: 10px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}}
+.news-title {{ font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }}
+.news-impact {{ font-size: 12px; color: var(--text-med); line-height: 1.6; margin-top: 2px; }}
+.news-time {{ font-size: 11px; color: var(--text-muted); }}
+.week-grid {{
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;
+}}
+.week-card {{
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 28px;
+}}
+.week-card.review {{ border-top: 4px solid #3a72b0; }}
+.week-card.preview {{ border-top: 4px solid #2e6b58; }}
+.week-title {{
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;
+}}
+.week-item {{ padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 13px; }}
+.week-item:last-child {{ border-bottom: none; }}
+.week-date {{ font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }}
+@media (max-width: 680px) {{
+  .week-grid {{ grid-template-columns: 1fr; }}
+}}
+</style>
+</head>
+<body>
+
+{_nav_html("market.html")}
+
+<div class="hero">
+  <div class="pill">Live Data · 即時數據 · Auto-updated</div>
+  <h1>Market Overview &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">市場總覽</span></h1>
+  <p class="hero-sub">Real-time pulse on global markets — fear gauge, yields, major indices, sector rotation, key assets, and latest headlines. Refreshed with every briefing cycle.<br><span style="font-size:13px;color:var(--text-muted)">全球市場即時脈動——恐慌指數、殖利率、主要指數、板塊輪動、關鍵資產與最新頭條。每次簡報後同步更新。</span></p>
+</div>
+
+<div class="content">
+  <p class="last-updated">Last updated: {updated}</p>
+
+  <div class="mk-grid">
+    {vix_html}
+    {yields_html}
+    {indices_html}
+    {commodities_html}
+    {sectors_html}
+  </div>
+
+  {news_html}
+
+  <div class="week-grid">
+    {review_html}
+    {preview_html}
+  </div>
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Market Overview &nbsp;·&nbsp; {now.strftime('%Y-%m-%d')}
+</footer>
+</body>
+</html>"""
+
+    out_path = os.path.join(PAGES_DIR, "market.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"[Pages] market.html updated")
+    return "market.html"
+
+
 # ── Top Picks screener ────────────────────────────────────────────────────────
 
 TOP_PICKS_UNIVERSE = [
@@ -880,8 +1308,11 @@ def fetch_top_picks_data() -> list:
             continue
 
     results.sort(key=lambda x: x["_cs"]["score"], reverse=True)
-    qualified = [r for r in results if r["_cs"]["score"] >= 75][:30]
-    return qualified
+    # Take top 30 by score; include all ≥75 (Strong Conviction) plus fill to 30 with Moderate (≥55)
+    strong = [r for r in results if r["_cs"]["score"] >= 75]
+    moderate = [r for r in results if 55 <= r["_cs"]["score"] < 75]
+    combined = (strong + moderate)[:30]
+    return combined
 
 
 def generate_top_picks_page(picks: list = None) -> str:
@@ -1080,9 +1511,9 @@ def generate_top_picks_page(picks: list = None) -> str:
 {_nav_html("top-picks.html")}
 
 <div class="hero">
-  <div class="pill">Conviction Screener · Auto-updated nightly</div>
-  <h1>Top Picks</h1>
-  <p class="hero-sub">The algorithm — not the editor — surfaces these {count} stocks from a universe of {len(TOP_PICKS_UNIVERSE)} well-known companies. Every stock shown scores ≥ 75/100 on a three-pillar conviction model: business Quality, Growth trajectory, and Financial Health. No human override.</p>
+  <div class="pill">Conviction Screener · 精選評分篩選 · Auto-updated nightly</div>
+  <h1>Top Picks &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">精選標的</span></h1>
+  <p class="hero-sub">The algorithm — not the editor — surfaces these {count} stocks from a universe of {len(TOP_PICKS_UNIVERSE)} companies. Stocks must score ≥ 55 / 100 on a three-pillar conviction model (Quality, Growth, Financial Health), ranked by score. Top 30 only — no human override.<br><span style="font-size:13px;color:var(--text-muted)">由演算法從 {len(TOP_PICKS_UNIVERSE)} 支股票中篩選，評分須達 55/100（品質、成長、財務健康三大支柱），依分數排序，最多顯示前 30 名。</span></p>
 </div>
 
 <div class="content">
@@ -1142,7 +1573,7 @@ def generate_top_picks_page(picks: list = None) -> str:
     out_path = os.path.join(PAGES_DIR, "top-picks.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"[Pages] top-picks.html updated — {count} stocks qualify (≥75 conviction)")
+    print(f"[Pages] top-picks.html updated — {count} stocks qualify (≥55 conviction, top 30)")
     return "top-picks.html"
 
 
@@ -1281,7 +1712,7 @@ def fetch_sector_leaders_data() -> list:
                 members.append(cache[t])
         members.sort(key=lambda x: x["_cs"]["score"], reverse=True)
         if members:
-            result.append({**group, "members": members})
+            result.append({**group, "members": members[:5]})
     return result
 
 
@@ -1455,9 +1886,9 @@ def generate_sector_leaders_page(groups: list = None) -> str:
 {_nav_html("sector-leaders.html")}
 
 <div class="hero">
-  <div class="pill">Peer Comparison · Auto-updated nightly</div>
-  <h1>Sector Leaders</h1>
-  <p class="hero-sub">Within each sector, stocks are ranked by conviction score — Quality, Growth, and Financial Health combined. The 👑 leader is the most fundamentally sound stock in that peer group right now. Use this to compare, not to buy blind.</p>
+  <div class="pill">Peer Comparison · 同類比較 · Auto-updated nightly</div>
+  <h1>Sector Leaders &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">產業領袖</span></h1>
+  <p class="hero-sub">Within each sector, stocks are ranked by conviction score — Quality, Growth, and Financial Health combined. The 👑 leader is the most fundamentally sound stock in that peer group right now. Top 5 per group. Use this to compare, not to buy blind.<br><span style="font-size:13px;color:var(--text-muted)">各產業股票依評分排序——品質、成長、財務健康三項合計。👑 代表當前該同類中基本面最強的股票。每組最多顯示前 5 名。</span></p>
 </div>
 
 <div class="content">
@@ -2290,7 +2721,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str) -> str:
 {_nav_html()}
 
 <div class="hero">
-  <a class="back-link" href="watchlist.html">← Watchlist</a>
+  <a class="back-link" href="top-picks.html">← Top Picks</a>
   <div class="co-ticker">{ticker}</div>
   <div class="co-name">{name}</div>
   <div class="hero-badges">
@@ -2348,7 +2779,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str) -> str:
 
 <footer>
   The Signal Desk &nbsp;·&nbsp; {ticker} Company Analysis &nbsp;·&nbsp; {now.strftime('%Y-%m-%d')} &nbsp;·&nbsp;
-  <a href="watchlist.html" style="color:var(--accent);text-decoration:none">← Back to Watchlist</a>
+  <a href="top-picks.html" style="color:var(--accent);text-decoration:none">← Back to Top Picks</a>
 </footer>
 
 </body>

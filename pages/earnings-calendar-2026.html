@@ -48,7 +48,7 @@ body {
 nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 48px;
+  padding: 0 40px; overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -65,10 +65,10 @@ nav {
 }
 .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
-.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
 .nav-links a {
   font-size: 12px; color: var(--text-muted); text-decoration: none;
-  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s; white-space: nowrap;
 }
 .nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
 .nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -264,7 +264,7 @@ footer {
   background: var(--surface);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 620px) {
   nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
   th:nth-child(7), td:nth-child(7) { display: none; } /* hide sector */
   .hero h1 { font-size: 22px; }
@@ -280,8 +280,11 @@ footer {
     <span class="nav-name">The Signal Desk</span>
   </div>
   <ul class="nav-links">
-    <li><a href="income-statement-guide.html">Income Statement Guide</a></li>
     <li><a href="earnings-calendar-2026.html" class="active">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
     <li><a href="news-sources.html">News Sources</a></li>
   </ul>
 </nav>

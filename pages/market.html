@@ -33,17 +33,19 @@ body {
 }
 nav {
   background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 48px; display: flex; align-items: center;
+  padding: 0 40px; display: flex; align-items: center;
   justify-content: space-between; height: 56px;
   position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
-.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
-.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
 .nav-links a {
   font-size: 12px; color: var(--text-muted); text-decoration: none;
-  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 .nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
 .nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -161,20 +163,19 @@ footer {
     <li><a href="market.html" class="active">Market</a></li>
     <li><a href="top-picks.html">Top Picks</a></li>
     <li><a href="sector-leaders.html">Sector Leaders</a></li>
-    <li><a href="watchlist.html">My Watchlist</a></li>
     <li><a href="income-statement-guide.html">Statement Guide</a></li>
     <li><a href="news-sources.html">News Sources</a></li>
   </ul>
 </nav>
 
 <div class="hero">
-  <div class="pill">Live Data · Auto-updated</div>
-  <h1>Market Overview</h1>
-  <p class="hero-sub">Real-time pulse on global markets — fear gauge, yields, major indices, sector rotation, key assets, and latest headlines. Refreshed with every briefing cycle.</p>
+  <div class="pill">Live Data · 即時數據 · Auto-updated</div>
+  <h1>Market Overview &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">市場總覽</span></h1>
+  <p class="hero-sub">Real-time pulse on global markets — fear gauge, yields, major indices, sector rotation, key assets, and latest headlines. Refreshed with every briefing cycle.<br><span style="font-size:13px;color:var(--text-muted)">全球市場即時脈動——恐慌指數、殖利率、主要指數、板塊輪動、關鍵資產與最新頭條。每次簡報後同步更新。</span></p>
 </div>
 
 <div class="content">
-  <p class="last-updated">Last updated: May 01, 2026 · 16:03 Taipei</p>
+  <p class="last-updated">Last updated: May 01, 2026 · 16:18 Taipei</p>
 
   <div class="mk-grid">
     
@@ -246,8 +247,8 @@ footer {
     </tr>
     <tr>
       <td><strong>FTSE 100</strong><br><span style="font-size:11px;color:var(--text-muted)">富時100 · UK</span></td>
-      <td style="text-align:right;font-weight:600">10,324</td>
-      <td style="text-align:right;font-weight:600;color:#b84040">-0.53%</td>
+      <td style="text-align:right;font-weight:600">10,323</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-0.54%</td>
     </tr></tbody>
     </table>
   </div>
@@ -259,23 +260,23 @@ footer {
       <tbody>
     <tr>
       <td><strong>Gold</strong><br><span style="font-size:11px;color:var(--text-muted)">黃金 · $/oz</span></td>
-      <td style="text-align:right;font-weight:600">4,595.10</td>
-      <td style="text-align:right;font-weight:600;color:#b84040">-0.75%</td>
+      <td style="text-align:right;font-weight:600">4,592.10</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-0.81%</td>
     </tr>
     <tr>
       <td><strong>Crude Oil</strong><br><span style="font-size:11px;color:var(--text-muted)">原油 · $/bbl</span></td>
-      <td style="text-align:right;font-weight:600">104.93</td>
-      <td style="text-align:right;font-weight:600;color:#b84040">-0.13%</td>
+      <td style="text-align:right;font-weight:600">105.47</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+0.38%</td>
     </tr>
     <tr>
       <td><strong>Bitcoin</strong><br><span style="font-size:11px;color:var(--text-muted)">比特幣 · USD</span></td>
-      <td style="text-align:right;font-weight:600">77,054</td>
-      <td style="text-align:right;font-weight:600;color:#2e6b58">+0.98%</td>
+      <td style="text-align:right;font-weight:600">77,338</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+1.35%</td>
     </tr>
     <tr>
       <td><strong>USD Index</strong><br><span style="font-size:11px;color:var(--text-muted)">美元指數 · pts</span></td>
-      <td style="text-align:right;font-weight:600">98.01</td>
-      <td style="text-align:right;font-weight:600;color:#b84040">-0.04%</td>
+      <td style="text-align:right;font-weight:600">98.07</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+0.01%</td>
     </tr></tbody>
     </table>
   </div>
@@ -361,6 +362,21 @@ footer {
     <div class="mk-card-title">Latest Headlines · 最新頭條 (24h)</div>
     <div class="news-list">
       <div class="news-item">
+        <span class="news-source">科技新報 TechNews · TW · 2026-05-01 16:16</span>
+        <span class="news-title">擴大封殺中國科技業，美國 FCC 全票通過禁止中國實驗室檢測銷美電子產品</span>
+        <span class="news-impact">美中科技戰的防堵網進一步收緊，美國聯邦通訊委員會（FCC）於 30 日全票無異議通過一項新提案，未來將實質禁止 […]</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">Seeking Alpha · US · 2026-05-01 16:12</span>
+        <span class="news-title">Stock index futures muted as investors look to start May on optimistic note</span>
+        
+      </div>
+      <div class="news-item">
+        <span class="news-source">The Guardian Business · UK · 2026-05-01 16:04</span>
+        <span class="news-title">UK house prices in surprise increase; NatWest braces for slowing economy – business live</span>
+        <span class="news-impact">Live, rolling coverage of business, economics and financial markets as average house price rose 0.4% in April and NatWest sets aside £140m Here’s more on  NatWest ’s economic modelling in response to the  Iran war : the </span>
+      </div>
+      <div class="news-item">
         <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 16:00</span>
         <span class="news-title">How Taiwan Became the World's Most Perilous Geopolitical Chokepoint</span>
         
@@ -369,6 +385,11 @@ footer {
         <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 16:00</span>
         <span class="news-title">Odd Lots: How Taiwan Could Become a Global Chokepoint (Podcast)</span>
         <span class="news-impact">The closure of the Strait of Hormuz has highlighted the potential for long-running theoretical chokepoints to turn into reality, with dramatic results for both geopolitics and the global economy. But the hypothetical sce</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 16:00</span>
+        <span class="news-title">ECB’s Kocher Says Interest-Rate Hold Gives Time to Assess Risks</span>
+        <span class="news-impact">The European Central Bank’s decision to hold interest rate this week provides policymakers with more time to assess whether the Middle East crisis triggers prolonged inflation, according to Governing Council member Marti</span>
       </div>
       <div class="news-item">
         <span class="news-source">Seeking Alpha · US · 2026-05-01 15:53</span>
@@ -389,6 +410,31 @@ footer {
         <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 15:43</span>
         <span class="news-title">Nagel Favors ECB June Hike Unless Outlook Improves Markedly</span>
         <span class="news-impact">The European Central Bank will need to increase interest rates in June if there isn’t a significant change in the outlook, according to Bundesbank President Joachim Nagel.</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">Seeking Alpha · US · 2026-05-01 15:43</span>
+        <span class="news-title">NexPoint Real Estate Finance outlines Q2 CAD midpoint of $0.54 following $242M TRS refinancing</span>
+        
+      </div>
+      <div class="news-item">
+        <span class="news-source">BBC Business · UK · 2026-05-01 15:43</span>
+        <span class="news-title">Billions of meals at risk due to Iran war, says fertiliser boss</span>
+        <span class="news-impact">A shortage of fertiliser due to the Iran conflict could reduce crop yields and push prices higher, says the boss of Yara.</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 15:41</span>
+        <span class="news-title">Aluminum Facing 'Very Large Supply Hole,' JPM Says</span>
+        <span class="news-impact">Greg Shearer, JPMorgan base and precious metals research head, discusses the aluminum market and the impact the conflict in the Middle East on prices. "Our outlook in the very near term is still for prices to move up tow</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 15:38</span>
+        <span class="news-title">Yen Intervention Faces Headwind from Higher Energy Prices: 3-Minutes MLIV</span>
+        <span class="news-impact">Guy Johnson, Tom Mackenzie and Adam Linton break down today's key themes for analysts and investors on "Bloomberg: The Opening Trade."  (Source: Bloomberg)</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">CNBC Business · US · 2026-05-01 15:38</span>
+        <span class="news-title">Australia and Japan markets climb, looking past Iran war escalation fears</span>
+        <span class="news-impact">This comes as investors took in strong earnings stateside, looking past weaker-than-expected economic data and threats of escalation in Iran.</span>
       </div>
     </div>
   </div>
@@ -439,11 +485,11 @@ footer {
       </div>
       <div class="week-item">
         <div class="week-date"> </div>
-        <strong>XOM</strong> — Exxon Mobil Corporation
+        <strong>AAPL</strong> — Apple Inc.
       </div>
       <div class="week-item">
         <div class="week-date"> </div>
-        <strong>AAPL</strong> — Apple Inc.
+        <strong>XOM</strong> — Exxon Mobil Corporation
       </div>
       <div class="week-item">
         <div class="week-date"> </div>
