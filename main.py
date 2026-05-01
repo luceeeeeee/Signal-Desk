@@ -23,7 +23,7 @@ from src.analysis.claude_analyst import generate_briefing, generate_intraday_ale
 from src.notifications.email_sender import EmailChannel
 from src.notifications.line_sender import LineChannel
 from src.utils.helpers import load_settings, load_watchlist, now_taipei
-from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_watchlist_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, _fetch_monthly_index_data, PAGES_DIR
+from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_watchlist_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, _fetch_monthly_index_data, PAGES_DIR
 from src.fetchers.news import NEWS_FEEDS
 from src.analysis.claude_analyst import generate_monthly_overview
 
@@ -31,6 +31,32 @@ TAIPEI_TZ = ZoneInfo("Asia/Taipei")
 
 # Per-ticker cooldown tracking: ticker -> last alert datetime
 _last_alert_sent: dict = {}
+
+
+def _git_push_pages(label: str = ""):
+    """Commit regenerated pages and push to GitHub → triggers Netlify auto-deploy."""
+    import subprocess
+    repo = os.path.dirname(__file__)
+    try:
+        # Only push if a remote is configured
+        result = subprocess.run(["git", "remote"], capture_output=True, text=True, cwd=repo)
+        if not result.stdout.strip():
+            return  # No remote configured yet — skip silently
+
+        now = now_taipei()
+        msg = f"auto: regenerate pages {now.strftime('%Y-%m-%d %H:%M')} Taipei" + (f" [{label}]" if label else "")
+        subprocess.run(["git", "add", "pages/"], cwd=repo, check=True, capture_output=True)
+
+        # Only commit if there are staged changes
+        diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo)
+        if diff.returncode == 0:
+            return  # Nothing changed
+
+        subprocess.run(["git", "commit", "-m", msg], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "push"], cwd=repo, check=True, capture_output=True)
+        print(f"  [Deploy] Pages pushed to GitHub → Netlify deploying...")
+    except Exception as e:
+        print(f"  [Deploy] Git push skipped: {e}")
 
 
 def run_company_pages(prices: list = None):
@@ -49,6 +75,7 @@ def run_company_pages(prices: list = None):
         except Exception as e:
             print(f"  [Company Page] {ticker} failed: {e}")
     generate_watchlist_page(prices)
+    _git_push_pages("company-pages")
 
 
 def run_monthly_overview():
@@ -72,6 +99,7 @@ def run_monthly_overview():
     content = generate_monthly_overview(month_review, month_preview, index_data, earnings_text)
     filename = generate_monthly_overview_page(content, month_review, month_preview)
     print(f"  Monthly overview page: pages/{filename}")
+    _git_push_pages("monthly-overview")
     return filename
 
 
@@ -120,6 +148,8 @@ def run_briefing(market: str):
 
     ch.send(subject=subject, body=briefing, recipient=recipient)
     print(f"  [{market}] Briefing sent via {channel_name}.")
+    generate_market_page()
+    _git_push_pages(f"{market}-briefing")
 
 
 def run_intraday_check():
@@ -231,26 +261,33 @@ if __name__ == "__main__":
         id="signal_outcome_update",
         name="Signal Outcome Tracker",
     )
+    # Market page: daily at 05:00 Taipei (standalone, also runs after each briefing)
+    scheduler.add_job(
+        lambda: (generate_market_page(), _git_push_pages("market-daily")),
+        CronTrigger(hour=5, minute=0, timezone=tz),
+        id="market_daily",
+        name="Market Page Daily Refresh",
+    )
+    # Top Picks screener: daily at 05:30 Taipei
+    scheduler.add_job(
+        lambda: (generate_top_picks_page(), _git_push_pages("top-picks")),
+        CronTrigger(hour=5, minute=30, timezone=tz),
+        id="top_picks",
+        name="Top Picks Screener",
+    )
+    # Sector Leaders: daily at 05:40 Taipei
+    scheduler.add_job(
+        lambda: (generate_sector_leaders_page(), _git_push_pages("sector-leaders")),
+        CronTrigger(hour=5, minute=40, timezone=tz),
+        id="sector_leaders",
+        name="Sector Leaders Page",
+    )
     # Company analysis pages: daily at 06:00 Taipei
     scheduler.add_job(
         run_company_pages,
         CronTrigger(hour=6, minute=0, timezone=tz),
         id="company_pages",
         name="Company Analysis Pages",
-    )
-    # Top Picks screener: nightly at 06:30 Taipei (after company pages)
-    scheduler.add_job(
-        generate_top_picks_page,
-        CronTrigger(hour=6, minute=30, timezone=tz),
-        id="top_picks",
-        name="Top Picks Screener",
-    )
-    # Sector Leaders: nightly at 06:45 Taipei
-    scheduler.add_job(
-        generate_sector_leaders_page,
-        CronTrigger(hour=6, minute=45, timezone=tz),
-        id="sector_leaders",
-        name="Sector Leaders Page",
     )
     # Monthly overview: 1st of each month at 05:00 Taipei
     scheduler.add_job(
@@ -299,6 +336,10 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(PAGES_DIR, "sector-leaders.html")):
         print("  Generating Sector Leaders page...")
         generate_sector_leaders_page()
+
+    # Always regenerate market page on startup (live data)
+    print("  Generating Market page...")
+    generate_market_page()
 
     # Start LINE bot webhook server in background thread
     line_bot_port = int(os.environ.get("LINE_BOT_PORT", 5001))

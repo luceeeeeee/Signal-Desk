@@ -33,17 +33,19 @@ body {
 }
 nav {
   background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 48px; display: flex; align-items: center;
+  padding: 0 40px; display: flex; align-items: center;
   justify-content: space-between; height: 56px;
   position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
-.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
-.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
 .nav-links a {
   font-size: 12px; color: var(--text-muted); text-decoration: none;
-  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 .nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
 .nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -140,18 +142,18 @@ footer {
   </div>
   <ul class="nav-links">
     <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
     <li><a href="top-picks.html">Top Picks</a></li>
     <li><a href="sector-leaders.html" class="active">Sector Leaders</a></li>
-    <li><a href="watchlist.html">My Watchlist</a></li>
     <li><a href="income-statement-guide.html">Statement Guide</a></li>
     <li><a href="news-sources.html">News Sources</a></li>
   </ul>
 </nav>
 
 <div class="hero">
-  <div class="pill">Peer Comparison · Auto-updated nightly</div>
-  <h1>Sector Leaders</h1>
-  <p class="hero-sub">Within each sector, stocks are ranked by conviction score — Quality, Growth, and Financial Health combined. The 👑 leader is the most fundamentally sound stock in that peer group right now. Use this to compare, not to buy blind.</p>
+  <div class="pill">Peer Comparison · 同類比較 · Auto-updated nightly</div>
+  <h1>Sector Leaders &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">產業領袖</span></h1>
+  <p class="hero-sub">Within each sector, stocks are ranked by conviction score — Quality, Growth, and Financial Health combined. The 👑 leader is the most fundamentally sound stock in that peer group right now. Top 5 per group. Use this to compare, not to buy blind.<br><span style="font-size:13px;color:var(--text-muted)">各產業股票依評分排序——品質、成長、財務健康三項合計。👑 代表當前該同類中基本面最強的股票。每組最多顯示前 5 名。</span></p>
 </div>
 
 <div class="content">
@@ -165,7 +167,7 @@ footer {
         <span class="sl-group-name" style="color:#5560a8">AI & Semiconductors</span>
         <span class="sl-group-zh">AI 與半導體</span>
       </div>
-      <span class="sl-group-count" style="color:#5560a8">10 companies</span>
+      <span class="sl-group-count" style="color:#5560a8">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #5560a8"><strong>Leader:</strong> NVDA — Score 87/100 · Quality 20/33 · Growth 34/34 · Health 33/33</div>
     <div class="sl-members">
@@ -268,101 +270,6 @@ footer {
           <span style="color:#b84040;font-size:11px">-0.25%</span>
         </div>
       </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#5560a8">#6</div>
-        <div class="sl-m-identity">
-          <a href="stock-asml.html" class="sl-m-ticker" style="color:#5560a8">ASML</a>
-          <span class="sl-m-name">ASML Holding N.V. - New York Re</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b87820">62</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b87820;border-radius:3px;height:5px;width:62%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+13% rev</span>
-          <span>+24% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$1438.99</span>
-          <span style="color:#2e6b58;font-size:11px">+3.22%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#5560a8">#7</div>
-        <div class="sl-m-identity">
-          <a href="stock-arm.html" class="sl-m-ticker" style="color:#5560a8">ARM</a>
-          <span class="sl-m-name">Arm Holdings plc</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">53</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:53%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+26% rev</span>
-          <span>+18% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$210.32</span>
-          <span style="color:#2e6b58;font-size:11px">+4.28%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#5560a8">#8</div>
-        <div class="sl-m-identity">
-          <a href="stock-amat.html" class="sl-m-ticker" style="color:#5560a8">AMAT</a>
-          <span class="sl-m-name">Applied Materials, Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">48</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:48%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>-2% rev</span>
-          <span>+15% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$394.49</span>
-          <span style="color:#2e6b58;font-size:11px">+3.11%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#5560a8">#9</div>
-        <div class="sl-m-identity">
-          <a href="stock-qcom.html" class="sl-m-ticker" style="color:#5560a8">QCOM</a>
-          <span class="sl-m-name">QUALCOMM Incorporated</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">29</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:29%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+5% rev</span>
-          <span>+23% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$179.58</span>
-          <span style="color:#2e6b58;font-size:11px">+15.12%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#5560a8">#10</div>
-        <div class="sl-m-identity">
-          <a href="stock-intc.html" class="sl-m-ticker" style="color:#5560a8">INTC</a>
-          <span class="sl-m-name">Intel Corporation</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">20</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:20%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+7% rev</span>
-          <span>-15% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$94.48</span>
-          <span style="color:#b84040;font-size:11px">-0.28%</span>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sl-group" id="big-tech">
@@ -371,7 +278,7 @@ footer {
         <span class="sl-group-name" style="color:#2e6b58">Big Tech & Cloud</span>
         <span class="sl-group-zh">大型科技與雲端</span>
       </div>
-      <span class="sl-group-count" style="color:#2e6b58">9 companies</span>
+      <span class="sl-group-count" style="color:#2e6b58">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #2e6b58"><strong>Leader:</strong> NOW — Score 71/100 · Quality 20/33 · Growth 22/34 · Health 29/33</div>
     <div class="sl-members">
@@ -401,6 +308,25 @@ footer {
       <div class="sl-member">
         <div class="sl-m-rank" style="color:#2e6b58">#2</div>
         <div class="sl-m-identity">
+          <a href="stock-meta.html" class="sl-m-ticker" style="color:#2e6b58">META</a>
+          <span class="sl-m-name">Meta Platforms, Inc.</span>
+        </div>
+        <div class="sl-m-score-wrap">
+          <span class="sl-m-score" style="color:#b87820">69</span>
+          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b87820;border-radius:3px;height:5px;width:69%;"></div></div>
+        </div>
+        <div class="sl-m-metrics">
+          <span>+33% rev</span>
+          <span>+12% FCF</span>
+        </div>
+        <div class="sl-m-price">
+          <span>$611.91</span>
+          <span style="color:#b84040;font-size:11px">-8.55%</span>
+        </div>
+      </div>
+      <div class="sl-member">
+        <div class="sl-m-rank" style="color:#2e6b58">#3</div>
+        <div class="sl-m-identity">
           <a href="stock-msft.html" class="sl-m-ticker" style="color:#2e6b58">MSFT</a>
           <span class="sl-m-name">Microsoft Corporation</span>
         </div>
@@ -418,7 +344,7 @@ footer {
         </div>
       </div>
       <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2e6b58">#3</div>
+        <div class="sl-m-rank" style="color:#2e6b58">#4</div>
         <div class="sl-m-identity">
           <a href="stock-crm.html" class="sl-m-ticker" style="color:#2e6b58">CRM</a>
           <span class="sl-m-name">Salesforce, Inc.</span>
@@ -434,25 +360,6 @@ footer {
         <div class="sl-m-price">
           <span>$176.53</span>
           <span style="color:#b84040;font-size:11px">-2.59%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2e6b58">#4</div>
-        <div class="sl-m-identity">
-          <a href="stock-meta.html" class="sl-m-ticker" style="color:#2e6b58">META</a>
-          <span class="sl-m-name">Meta Platforms, Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b87820">62</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b87820;border-radius:3px;height:5px;width:62%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+24% rev</span>
-          <span>+12% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$611.91</span>
-          <span style="color:#b84040;font-size:11px">-8.55%</span>
         </div>
       </div>
       <div class="sl-member">
@@ -474,82 +381,6 @@ footer {
           <span style="color:#2e6b58;font-size:11px">+1.04%</span>
         </div>
       </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2e6b58">#6</div>
-        <div class="sl-m-identity">
-          <a href="stock-googl.html" class="sl-m-ticker" style="color:#2e6b58">GOOGL</a>
-          <span class="sl-m-name">Alphabet Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b87820">57</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b87820;border-radius:3px;height:5px;width:57%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+18% rev</span>
-          <span>+9% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$384.80</span>
-          <span style="color:#2e6b58;font-size:11px">+9.96%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2e6b58">#7</div>
-        <div class="sl-m-identity">
-          <a href="stock-aapl.html" class="sl-m-ticker" style="color:#2e6b58">AAPL</a>
-          <span class="sl-m-name">Apple Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">52</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:52%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+16% rev</span>
-          <span>+24% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$271.35</span>
-          <span style="color:#2e6b58;font-size:11px">+0.44%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2e6b58">#8</div>
-        <div class="sl-m-identity">
-          <a href="stock-orcl.html" class="sl-m-ticker" style="color:#2e6b58">ORCL</a>
-          <span class="sl-m-name">Oracle Corporation</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">52</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:52%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+22% rev</span>
-          <span>-35% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$161.39</span>
-          <span style="color:#b84040;font-size:11px">-1.49%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2e6b58">#9</div>
-        <div class="sl-m-identity">
-          <a href="stock-amzn.html" class="sl-m-ticker" style="color:#2e6b58">AMZN</a>
-          <span class="sl-m-name">Amazon.com, Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">37</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:37%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+14% rev</span>
-          <span>+3% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$265.06</span>
-          <span style="color:#2e6b58;font-size:11px">+0.77%</span>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sl-group" id="ev-mobility">
@@ -558,7 +389,7 @@ footer {
         <span class="sl-group-name" style="color:#2a7a7a">EV & Mobility</span>
         <span class="sl-group-zh">電動車與出行</span>
       </div>
-      <span class="sl-group-count" style="color:#2a7a7a">6 companies</span>
+      <span class="sl-group-count" style="color:#2a7a7a">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #2a7a7a"><strong>Leader:</strong> TSLA — Score 42/100 · Quality 0/33 · Growth 19/34 · Health 23/33</div>
     <div class="sl-members">
@@ -626,6 +457,25 @@ footer {
       <div class="sl-member">
         <div class="sl-m-rank" style="color:#2a7a7a">#4</div>
         <div class="sl-m-identity">
+          <a href="stock-rivn.html" class="sl-m-ticker" style="color:#2a7a7a">RIVN</a>
+          <span class="sl-m-name">Rivian Automotive, Inc.</span>
+        </div>
+        <div class="sl-m-score-wrap">
+          <span class="sl-m-score" style="color:#b84040">22</span>
+          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:22%;"></div></div>
+        </div>
+        <div class="sl-m-metrics">
+          <span>+11% rev</span>
+          <span>-22% FCF</span>
+        </div>
+        <div class="sl-m-price">
+          <span>$16.40</span>
+          <span style="color:#2e6b58;font-size:11px">+2.12%</span>
+        </div>
+      </div>
+      <div class="sl-member">
+        <div class="sl-m-rank" style="color:#2a7a7a">#5</div>
+        <div class="sl-m-identity">
           <a href="stock-byd.html" class="sl-m-ticker" style="color:#2a7a7a">BYD</a>
           <span class="sl-m-name">Boyd Gaming Corporation</span>
         </div>
@@ -642,44 +492,6 @@ footer {
           <span style="color:#2e6b58;font-size:11px">+0.76%</span>
         </div>
       </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2a7a7a">#5</div>
-        <div class="sl-m-identity">
-          <a href="stock-rivn.html" class="sl-m-ticker" style="color:#2a7a7a">RIVN</a>
-          <span class="sl-m-name">Rivian Automotive, Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">16</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:16%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>-26% rev</span>
-          <span>-15% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$16.40</span>
-          <span style="color:#2e6b58;font-size:11px">+2.12%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#2a7a7a">#6</div>
-        <div class="sl-m-identity">
-          <a href="stock-gm.html" class="sl-m-ticker" style="color:#2a7a7a">GM</a>
-          <span class="sl-m-name">General Motors Company</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">12</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:12%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>-1% rev</span>
-          <span>+12% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$76.89</span>
-          <span style="color:#2e6b58;font-size:11px">+0.35%</span>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sl-group" id="financials">
@@ -688,7 +500,7 @@ footer {
         <span class="sl-group-name" style="color:#3a72b0">Financials & Payments</span>
         <span class="sl-group-zh">金融與支付</span>
       </div>
-      <span class="sl-group-count" style="color:#3a72b0">10 companies</span>
+      <span class="sl-group-count" style="color:#3a72b0">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #3a72b0"><strong>Leader:</strong> V — Score 66/100 · Quality 20/33 · Growth 31/34 · Health 15/33</div>
     <div class="sl-members">
@@ -708,7 +520,7 @@ footer {
         </div>
         <div class="sl-m-metrics">
           <span>+17% rev</span>
-          <span>+49% FCF</span>
+          <span>+48% FCF</span>
         </div>
         <div class="sl-m-price">
           <span>$329.84</span>
@@ -791,101 +603,6 @@ footer {
           <span style="color:#2e6b58;font-size:11px">+2.42%</span>
         </div>
       </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#3a72b0">#6</div>
-        <div class="sl-m-identity">
-          <a href="stock-gs.html" class="sl-m-ticker" style="color:#3a72b0">GS</a>
-          <span class="sl-m-name">Goldman Sachs Group, Inc. (The)</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">43</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:43%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+14% rev</span>
-          <span>— FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$923.77</span>
-          <span style="color:#2e6b58;font-size:11px">+2.01%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#3a72b0">#7</div>
-        <div class="sl-m-identity">
-          <a href="stock-bac.html" class="sl-m-ticker" style="color:#3a72b0">BAC</a>
-          <span class="sl-m-name">Bank of America Corporation</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">42</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:42%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+12% rev</span>
-          <span>— FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$53.46</span>
-          <span style="color:#2e6b58;font-size:11px">+1.10%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#3a72b0">#8</div>
-        <div class="sl-m-identity">
-          <a href="stock-axp.html" class="sl-m-ticker" style="color:#3a72b0">AXP</a>
-          <span class="sl-m-name">American Express Company</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">40</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:40%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+12% rev</span>
-          <span>— FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$323.05</span>
-          <span style="color:#2e6b58;font-size:11px">+2.34%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#3a72b0">#9</div>
-        <div class="sl-m-identity">
-          <a href="stock-jpm.html" class="sl-m-ticker" style="color:#3a72b0">JPM</a>
-          <span class="sl-m-name">JP Morgan Chase & Co.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">36</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:36%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+13% rev</span>
-          <span>— FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$313.23</span>
-          <span style="color:#2e6b58;font-size:11px">+1.29%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#3a72b0">#10</div>
-        <div class="sl-m-identity">
-          <a href="stock-pypl.html" class="sl-m-ticker" style="color:#3a72b0">PYPL</a>
-          <span class="sl-m-name">PayPal Holdings, Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">31</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:31%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+4% rev</span>
-          <span>+10% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$50.14</span>
-          <span style="color:#b84040;font-size:11px">-1.57%</span>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sl-group" id="healthcare">
@@ -894,7 +611,7 @@ footer {
         <span class="sl-group-name" style="color:#7a5030">Healthcare & Biotech</span>
         <span class="sl-group-zh">醫療與生技</span>
       </div>
-      <span class="sl-group-count" style="color:#7a5030">9 companies</span>
+      <span class="sl-group-count" style="color:#7a5030">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #7a5030"><strong>Leader:</strong> ISRG — Score 82/100 · Quality 18/33 · Growth 31/34 · Health 33/33</div>
     <div class="sl-members">
@@ -928,12 +645,12 @@ footer {
           <span class="sl-m-name">DexCom, Inc.</span>
         </div>
         <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b87820">62</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b87820;border-radius:3px;height:5px;width:62%;"></div></div>
+          <span class="sl-m-score" style="color:#b87820">71</span>
+          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b87820;border-radius:3px;height:5px;width:71%;"></div></div>
         </div>
         <div class="sl-m-metrics">
-          <span>+13% rev</span>
-          <span>+15% FCF</span>
+          <span>+15% rev</span>
+          <span>+22% FCF</span>
         </div>
         <div class="sl-m-price">
           <span>$59.55</span>
@@ -997,82 +714,6 @@ footer {
           <span style="color:#2e6b58;font-size:11px">+1.10%</span>
         </div>
       </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#7a5030">#6</div>
-        <div class="sl-m-identity">
-          <a href="stock-pfe.html" class="sl-m-ticker" style="color:#7a5030">PFE</a>
-          <span class="sl-m-name">Pfizer, Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">26</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:26%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>-1% rev</span>
-          <span>+21% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$26.70</span>
-          <span style="color:#2e6b58;font-size:11px">+1.68%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#7a5030">#7</div>
-        <div class="sl-m-identity">
-          <a href="stock-abbv.html" class="sl-m-ticker" style="color:#7a5030">ABBV</a>
-          <span class="sl-m-name">AbbVie Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">25</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:25%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+12% rev</span>
-          <span>— FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$211.32</span>
-          <span style="color:#2e6b58;font-size:11px">+3.64%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#7a5030">#8</div>
-        <div class="sl-m-identity">
-          <a href="stock-mrk.html" class="sl-m-ticker" style="color:#7a5030">MRK</a>
-          <span class="sl-m-name">Merck & Company, Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">19</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:19%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+5% rev</span>
-          <span>— FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$109.18</span>
-          <span style="color:#b84040;font-size:11px">-1.60%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#7a5030">#9</div>
-        <div class="sl-m-identity">
-          <a href="stock-unh.html" class="sl-m-ticker" style="color:#7a5030">UNH</a>
-          <span class="sl-m-name">UnitedHealth Group Incorporated</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">9</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:9%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+2% rev</span>
-          <span>+4% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$370.48</span>
-          <span style="color:#b84040;font-size:11px">-0.07%</span>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sl-group" id="defense">
@@ -1081,7 +722,7 @@ footer {
         <span class="sl-group-name" style="color:#b84040">Defense & Aerospace</span>
         <span class="sl-group-zh">國防與航太</span>
       </div>
-      <span class="sl-group-count" style="color:#b84040">6 companies</span>
+      <span class="sl-group-count" style="color:#b84040">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #b84040"><strong>Leader:</strong> HII — Score 39/100 · Quality 0/33 · Growth 31/34 · Health 8/33</div>
     <div class="sl-members">
@@ -1184,25 +825,6 @@ footer {
           <span style="color:#2e6b58;font-size:11px">+2.20%</span>
         </div>
       </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#b84040">#6</div>
-        <div class="sl-m-identity">
-          <a href="stock-lmt.html" class="sl-m-ticker" style="color:#b84040">LMT</a>
-          <span class="sl-m-name">Lockheed Martin Corporation</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">7</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:7%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+0% rev</span>
-          <span>+5% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$517.97</span>
-          <span style="color:#2e6b58;font-size:11px">+1.60%</span>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sl-group" id="retail">
@@ -1211,7 +833,7 @@ footer {
         <span class="sl-group-name" style="color:#b87820">Retail & Consumer</span>
         <span class="sl-group-zh">零售與消費</span>
       </div>
-      <span class="sl-group-count" style="color:#b87820">8 companies</span>
+      <span class="sl-group-count" style="color:#b87820">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #b87820"><strong>Leader:</strong> COST — Score 50/100 · Quality 0/33 · Growth 34/34 · Health 16/33</div>
     <div class="sl-members">
@@ -1314,63 +936,6 @@ footer {
           <span style="color:#2e6b58;font-size:11px">+2.27%</span>
         </div>
       </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#b87820">#6</div>
-        <div class="sl-m-identity">
-          <a href="stock-hd.html" class="sl-m-ticker" style="color:#b87820">HD</a>
-          <span class="sl-m-name">Home Depot, Inc. (The)</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">10</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:10%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>-4% rev</span>
-          <span>+5% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$328.80</span>
-          <span style="color:#2e6b58;font-size:11px">+1.86%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#b87820">#7</div>
-        <div class="sl-m-identity">
-          <a href="stock-wmt.html" class="sl-m-ticker" style="color:#b87820">WMT</a>
-          <span class="sl-m-name">Walmart Inc.</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">9</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:9%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+6% rev</span>
-          <span>+1% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$131.93</span>
-          <span style="color:#2e6b58;font-size:11px">+3.06%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#b87820">#8</div>
-        <div class="sl-m-identity">
-          <a href="stock-tgt.html" class="sl-m-ticker" style="color:#b87820">TGT</a>
-          <span class="sl-m-name">Target Corporation</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">3</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:3%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>-2% rev</span>
-          <span>+2% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$129.75</span>
-          <span style="color:#2e6b58;font-size:11px">+1.47%</span>
-        </div>
-      </div>
     </div>
   </div>
   <div class="sl-group" id="energy">
@@ -1379,7 +944,7 @@ footer {
         <span class="sl-group-name" style="color:#4a6030">Energy & Utilities</span>
         <span class="sl-group-zh">能源與公用事業</span>
       </div>
-      <span class="sl-group-count" style="color:#4a6030">7 companies</span>
+      <span class="sl-group-count" style="color:#4a6030">5 companies</span>
     </div>
     <div class="sl-leader-note" style="border-left:3px solid #4a6030"><strong>Leader:</strong> D — Score 40/100 · Quality 6/33 · Growth 34/34 · Health 0/33</div>
     <div class="sl-members">
@@ -1447,25 +1012,6 @@ footer {
       <div class="sl-member">
         <div class="sl-m-rank" style="color:#4a6030">#4</div>
         <div class="sl-m-identity">
-          <a href="stock-cop.html" class="sl-m-ticker" style="color:#4a6030">COP</a>
-          <span class="sl-m-name">ConocoPhillips</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">23</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:23%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>-7% rev</span>
-          <span>+12% FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$125.78</span>
-          <span style="color:#b84040;font-size:11px">-1.93%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#4a6030">#5</div>
-        <div class="sl-m-identity">
           <a href="stock-cvx.html" class="sl-m-ticker" style="color:#4a6030">CVX</a>
           <span class="sl-m-name">Chevron Corporation</span>
         </div>
@@ -1483,41 +1029,22 @@ footer {
         </div>
       </div>
       <div class="sl-member">
-        <div class="sl-m-rank" style="color:#4a6030">#6</div>
+        <div class="sl-m-rank" style="color:#4a6030">#5</div>
         <div class="sl-m-identity">
-          <a href="stock-xom.html" class="sl-m-ticker" style="color:#4a6030">XOM</a>
-          <span class="sl-m-name">Exxon Mobil Corporation</span>
+          <a href="stock-cop.html" class="sl-m-ticker" style="color:#4a6030">COP</a>
+          <span class="sl-m-name">ConocoPhillips</span>
         </div>
         <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">15</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:15%;"></div></div>
+          <span class="sl-m-score" style="color:#b84040">18</span>
+          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:18%;"></div></div>
         </div>
         <div class="sl-m-metrics">
-          <span>-1% rev</span>
-          <span>+4% FCF</span>
+          <span>-5% rev</span>
+          <span>+9% FCF</span>
         </div>
         <div class="sl-m-price">
-          <span>$154.33</span>
-          <span style="color:#b84040;font-size:11px">-0.22%</span>
-        </div>
-      </div>
-      <div class="sl-member">
-        <div class="sl-m-rank" style="color:#4a6030">#7</div>
-        <div class="sl-m-identity">
-          <a href="stock-slb.html" class="sl-m-ticker" style="color:#4a6030">SLB</a>
-          <span class="sl-m-name">SLB Limited</span>
-        </div>
-        <div class="sl-m-score-wrap">
-          <span class="sl-m-score" style="color:#b84040">12</span>
-          <div style="background:#e8efea;border-radius:3px;height:5px;flex:1;"><div style="background:#b84040;border-radius:3px;height:5px;width:12%;"></div></div>
-        </div>
-        <div class="sl-m-metrics">
-          <span>+3% rev</span>
-          <span>— FCF</span>
-        </div>
-        <div class="sl-m-price">
-          <span>$56.88</span>
-          <span style="color:#2e6b58;font-size:11px">+2.12%</span>
+          <span>$125.78</span>
+          <span style="color:#b84040;font-size:11px">-1.93%</span>
         </div>
       </div>
     </div>
