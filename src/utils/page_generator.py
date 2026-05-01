@@ -118,10 +118,10 @@ def _nav_html(active: str = "") -> str:
         cls = ' class="active"' if href == active else ""
         links += f'<li><a href="{href}"{cls}>{label}</a></li>\n    '
     return f"""<nav>
-  <div class="nav-brand">
+  <a href="index.html" class="nav-brand" style="text-decoration:none;">
     <div class="nav-dot"></div>
     <span class="nav-name">The Signal Desk</span>
-  </div>
+  </a>
   <ul class="nav-links">
     {links.strip()}
   </ul>
@@ -159,7 +159,6 @@ def generate_news_sources_page(feeds: list) -> None:
             <tr>
               <td class="src-name">{s['name']}</td>
               <td class="src-lang" style="{lang_color}">{lang_label}</td>
-              <td class="src-link"><a href="{s['url']}" target="_blank" rel="noopener">Feed URL ↗</a></td>
             </tr>"""
 
         rc = REGION_COLORS.get(region, {"color": "#2e6b58", "light": "#eaf3f0", "border": "#c6ddd6"})
@@ -981,19 +980,62 @@ def generate_market_page(data: dict = None) -> str:
     # ── News section ──
     news_items = data.get("news", [])
     if news_items:
+        # AI-generated professional impact per headline (single batch call)
+        impacts = {}
+        try:
+            import os, json, re, requests
+            api_key = os.environ.get("OPENROUTER_API_KEY")
+            if api_key:
+                items_text = "\n".join(
+                    f"{i+1}. [{item.get('region','?')}] {item.get('title','')}"
+                    for i, item in enumerate(news_items[:15])
+                )
+                prompt = (
+                    "You are a senior market analyst. For each headline, write ONE sentence "
+                    "(under 25 words) on its likely market impact: sectors/assets affected and "
+                    "bullish/bearish/neutral verdict. Also add the Traditional Chinese translation "
+                    "of your impact sentence.\n\n"
+                    f"Headlines:\n{items_text}\n\n"
+                    'Respond ONLY as valid JSON: {"1": {"en": "...", "zh": "..."}, "2": {...}, ...}'
+                )
+                resp = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                    json={"model": "openai/gpt-oss-120b:free",
+                          "messages": [{"role": "user", "content": prompt}],
+                          "max_tokens": 1200},
+                    timeout=60,
+                )
+                if resp.status_code == 200:
+                    raw = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+                    m = re.search(r'\{.*\}', raw, re.DOTALL)
+                    if m:
+                        impacts = json.loads(m.group())
+        except Exception:
+            pass
+
         news_rows = ""
-        for item in news_items:
+        for i, item in enumerate(news_items):
             source    = item.get("source", "")
             title     = item.get("title", "")
-            summary   = item.get("summary", "")
             published = item.get("published", "")
             region    = item.get("region", "")
             pub_str   = published[:16] if published else ""
+            impact    = impacts.get(str(i + 1), {})
+            impact_en = impact.get("en", "") if isinstance(impact, dict) else str(impact)
+            impact_zh = impact.get("zh", "") if isinstance(impact, dict) else ""
+            impact_html = ""
+            if impact_en:
+                impact_html = (
+                    f'<span class="news-impact">{impact_en}'
+                    + (f' <span style="color:var(--text-muted)">／{impact_zh}</span>' if impact_zh else "")
+                    + '</span>'
+                )
             news_rows += f"""
       <div class="news-item">
         <span class="news-source">{source}{f' · {region}' if region else ''}{f' · {pub_str}' if pub_str else ''}</span>
         <span class="news-title">{title}</span>
-        {f'<span class="news-impact">{summary[:220]}</span>' if summary and len(summary) > len(title) + 10 else ''}
+        {impact_html}
       </div>"""
         news_html = f"""
   <div class="mk-card mk-full" style="margin-top:0;border-top:4px solid #5560a8;">
