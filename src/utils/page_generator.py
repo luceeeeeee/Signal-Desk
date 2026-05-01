@@ -102,7 +102,7 @@ footer {
 
 
 _NAV_ITEMS = [
-    ("earnings-calendar-2026.html", "Earnings Calendar"),
+    ("earnings-calendar.html",      "Earnings Calendar"),
     ("market.html",                 "Market"),
     ("top-picks.html",              "Top Picks"),
     ("sector-leaders.html",         "Sector Leaders"),
@@ -1911,6 +1911,170 @@ def generate_sector_leaders_page(groups: list = None) -> str:
     total_stocks = sum(len(g["members"]) for g in groups)
     print(f"[Pages] sector-leaders.html updated — {len(groups)} groups, {total_stocks} stocks")
     return "sector-leaders.html"
+
+
+# ── Auto Earnings Calendar ────────────────────────────────────────────────────
+
+def generate_earnings_calendar_page() -> str:
+    """Generate pages/earnings-calendar.html — auto-fetched from yfinance."""
+    from src.fetchers.earnings import fetch_earnings_calendar, MAJOR_NAMES
+    from src.utils.helpers import load_watchlist
+    from datetime import date, datetime
+
+    now = datetime.now(tz=TAIPEI_TZ)
+    updated = now.strftime("%B %d, %Y · %H:%M Taipei")
+
+    watchlist_tickers = {item["ticker"] for item in load_watchlist()}
+
+    # Upcoming: 90 days
+    upcoming = fetch_earnings_calendar(days_ahead=90)
+
+    # Group by month
+    months = {}
+    for e in upcoming:
+        try:
+            ed = datetime.strptime(e["earnings_date"], "%Y-%m-%d")
+            key = ed.strftime("%B %Y")
+            months.setdefault(key, []).append(e)
+        except Exception:
+            continue
+
+    def _beat_badge(surprise):
+        if surprise is None:
+            return ""
+        if surprise > 0:
+            return f'<span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +{surprise:.1f}%</span>'
+        return f'<span style="background:#fceaea;color:#b84040;border:1px solid #e8aaaa;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">MISS {surprise:.1f}%</span>'
+
+    def _days_chip(days):
+        if days == 0:
+            return '<span style="background:#fdf4e7;color:#b87820;border:1px solid #e8c88a;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">TODAY</span>'
+        if days == 1:
+            return '<span style="background:#eaf3f0;color:#2e6b58;border:1px solid #c6ddd6;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">TOMORROW</span>'
+        if days <= 7:
+            return f'<span style="background:#f0f0fc;color:#5560a8;border:1px solid #c0c4ec;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">in {days}d</span>'
+        return f'<span style="color:var(--text-muted);font-size:11px">in {days}d</span>'
+
+    months_html = ""
+    total_shown = 0
+    for month_label, events in months.items():
+        rows = ""
+        for e in events:
+            ticker = e["ticker"]
+            is_wl = ticker in watchlist_tickers
+            star = " ★" if is_wl else ""
+            ticker_color = "var(--accent)" if is_wl else "var(--text)"
+            company_page = f'stock-{ticker.lower()}.html'
+            eps_est = f'${e["eps_estimate"]:.2f}' if e.get("eps_estimate") is not None else "—"
+            rev_est = f'${e["revenue_estimate"]/1e9:.1f}B' if e.get("revenue_estimate") else "—"
+            prior_eps = f'${e["prior_eps_actual"]:.2f}' if e.get("prior_eps_actual") is not None else "—"
+            beat = _beat_badge(e.get("prior_surprise_pct"))
+            chip = _days_chip(e.get("days_until", 99))
+            rows += f"""
+      <tr {'style="background:var(--accent-bg)"' if is_wl else ''}>
+        <td style="width:100px;white-space:nowrap">{e['earnings_date']}</td>
+        <td>{chip}</td>
+        <td><a href="{company_page}" style="color:{ticker_color};font-weight:700;text-decoration:none">{ticker}{star}</a></td>
+        <td style="color:var(--text-med)">{e.get('name','')[:30]}</td>
+        <td style="text-align:right;font-weight:600">{eps_est}</td>
+        <td style="text-align:right">{rev_est}</td>
+        <td style="text-align:right">{prior_eps} {beat}</td>
+      </tr>"""
+            total_shown += 1
+
+        months_html += f"""
+  <div class="ec-month">
+    <div class="ec-month-label">{month_label}</div>
+    <table class="ec-table">
+      <thead>
+        <tr>
+          <th>Date</th><th></th><th>Ticker</th><th>Company</th>
+          <th style="text-align:right">EPS Est.</th>
+          <th style="text-align:right">Rev Est.</th>
+          <th style="text-align:right">Prior EPS · Surprise</th>
+        </tr>
+      </thead>
+      <tbody>{rows}
+      </tbody>
+    </table>
+  </div>"""
+
+    if not months_html:
+        months_html = '<p style="color:var(--text-muted);padding:32px 0">No earnings data available for the next 90 days.</p>'
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earnings Calendar · The Signal Desk</title>
+<style>
+{SHARED_CSS}
+.ec-month {{ margin-bottom: 40px; }}
+.ec-month-label {{
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 2px solid var(--accent-light);
+}}
+.ec-table {{
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  background: var(--surface); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow-sm);
+}}
+.ec-table th {{
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  background: var(--surface-off); padding: 8px 12px; text-align: left;
+  border-bottom: 2px solid var(--border);
+}}
+.ec-table td {{
+  padding: 10px 12px; border-bottom: 1px solid var(--border-light);
+  color: var(--text); vertical-align: middle;
+}}
+.ec-table tbody tr:hover {{ background: var(--surface-off); }}
+.ec-table tbody tr:last-child td {{ border-bottom: none; }}
+.legend {{ display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; font-size: 12px; color: var(--text-muted); }}
+.legend-item {{ display: flex; align-items: center; gap: 6px; }}
+@media (max-width: 680px) {{
+  .ec-table th:nth-child(4), .ec-table td:nth-child(4),
+  .ec-table th:nth-child(6), .ec-table td:nth-child(6) {{ display: none; }}
+}}
+</style>
+</head>
+<body>
+
+{_nav_html("earnings-calendar.html")}
+
+<div class="hero">
+  <div class="pill">Auto-updated Daily · 自動每日更新</div>
+  <h1>Earnings Calendar &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">財報日曆</span></h1>
+  <p class="hero-sub">Upcoming earnings for major US stocks + your watchlist, auto-fetched from market data. Next 90 days shown. EPS &amp; revenue estimates from analyst consensus.<br>
+  <span style="font-size:13px;color:var(--text-muted)">主要美股及個人觀察清單財報日期，自動從市場資料抓取，顯示未來 90 天。EPS 及營收預測來自分析師共識。</span></p>
+</div>
+
+<div class="content">
+  <div class="legend">
+    <div class="legend-item"><span style="color:var(--accent);font-weight:700">★ Highlighted rows</span> = your watchlist stocks</div>
+    <div class="legend-item">EPS Est. = analyst EPS consensus for the upcoming quarter</div>
+    <div class="legend-item">Prior EPS = most recent actual result + beat/miss vs estimate</div>
+  </div>
+  <p class="last-updated" style="margin-bottom:28px">Last updated: {updated} &nbsp;·&nbsp; {total_shown} events across 90 days</p>
+
+  {months_html}
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Earnings Calendar &nbsp;·&nbsp; Auto-fetched from yfinance &nbsp;·&nbsp; {now.strftime('%Y-%m-%d')}
+</footer>
+</body>
+</html>"""
+
+    out_path = os.path.join(PAGES_DIR, "earnings-calendar.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"[Pages] earnings-calendar.html updated — {total_shown} events")
+    return "earnings-calendar.html"
 
 
 # ── Watchlist conviction page ─────────────────────────────────────────────────

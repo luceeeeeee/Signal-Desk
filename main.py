@@ -23,7 +23,7 @@ from src.analysis.claude_analyst import generate_briefing, generate_intraday_ale
 from src.notifications.email_sender import EmailChannel
 from src.notifications.line_sender import LineChannel
 from src.utils.helpers import load_settings, load_watchlist, now_taipei
-from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_watchlist_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, _fetch_monthly_index_data, PAGES_DIR
+from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_watchlist_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, _fetch_monthly_index_data, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
 from src.fetchers.news import NEWS_FEEDS
 from src.analysis.claude_analyst import generate_monthly_overview
 
@@ -31,6 +31,41 @@ TAIPEI_TZ = ZoneInfo("Asia/Taipei")
 
 # Per-ticker cooldown tracking: ticker -> last alert datetime
 _last_alert_sent: dict = {}
+
+# ── Narrative cache (hybrid: 7-day + earnings-day exception) ──────────────────
+_NARRATIVE_CACHE_DIR = os.path.join(os.path.dirname(__file__), "cache", "narratives")
+os.makedirs(_NARRATIVE_CACHE_DIR, exist_ok=True)
+
+
+def _narrative_cache_path(ticker: str) -> str:
+    return os.path.join(_NARRATIVE_CACHE_DIR, f"{ticker.lower()}.txt")
+
+
+def _get_cached_narrative(ticker: str, recent_earnings_date: str = None) -> str | None:
+    """Return cached narrative if < 7 days old AND no recent earnings. Else None."""
+    path = _narrative_cache_path(ticker)
+    if not os.path.exists(path):
+        return None
+    age_days = (datetime.now().timestamp() - os.path.getmtime(path)) / 86400
+    if age_days >= 7:
+        return None
+    # Force refresh if stock just reported earnings in the last 7 days
+    if recent_earnings_date:
+        try:
+            from datetime import date
+            ed = datetime.strptime(recent_earnings_date, "%Y-%m-%d").date()
+            days_since = (date.today() - ed).days
+            if 0 <= days_since <= 7:
+                return None  # Fresh earnings → regenerate narrative
+        except Exception:
+            pass
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
+def _save_narrative_cache(ticker: str, narrative: str):
+    with open(_narrative_cache_path(ticker), "w", encoding="utf-8") as f:
+        f.write(narrative)
 
 
 def _git_push_pages(label: str = ""):
@@ -59,23 +94,98 @@ def _git_push_pages(label: str = ""):
         print(f"  [Deploy] Git push skipped: {e}")
 
 
+def _generate_one_company_page(d: dict, recent_earnings_date: str = None):
+    """Generate a single company page, using narrative cache when fresh."""
+    ticker = d.get("ticker", "")
+    try:
+        quarterly = fetch_quarterly_data(ticker)
+        narrative = _get_cached_narrative(ticker, recent_earnings_date)
+        if narrative is None:
+            print(f"  [Company Page] {ticker} — generating narrative...")
+            narrative = generate_company_narrative(ticker, d, quarterly)
+            _save_narrative_cache(ticker, narrative)
+        else:
+            print(f"  [Company Page] {ticker} — using cached narrative")
+        generate_company_page(d, quarterly, narrative)
+    except Exception as e:
+        print(f"  [Company Page] {ticker} failed: {e}")
+
+
 def run_company_pages(prices: list = None):
-    """Generate individual company analysis pages for all watchlist stocks."""
+    """Generate company pages for watchlist stocks with narrative cache."""
     if prices is None:
         prices = fetch_all_prices()
+    # Build a map of recent earnings for cache invalidation
+    try:
+        recent = {e["ticker"]: e["earnings_date"] for e in fetch_earnings_calendar(days_ahead=0)}
+    except Exception:
+        recent = {}
     for d in prices:
         if not d.get("price"):
             continue
         ticker = d.get("ticker", "")
-        print(f"  [Company Page] {ticker}...")
-        try:
-            quarterly = fetch_quarterly_data(ticker)
-            narrative = generate_company_narrative(ticker, d, quarterly)
-            generate_company_page(d, quarterly, narrative)
-        except Exception as e:
-            print(f"  [Company Page] {ticker} failed: {e}")
-    generate_watchlist_page(prices)
+        _generate_one_company_page(d, recent.get(ticker))
     _git_push_pages("company-pages")
+
+
+def run_universe_company_pages():
+    """Generate company pages for the full Top Picks + Sector Leaders universe.
+    Runs weekly — uses narrative cache so AI cost is ~once per week per stock."""
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        import yfinance as yf
+
+    all_tickers = list({t for g in SECTOR_GROUPS for t in g["tickers"]} | set(TOP_PICKS_UNIVERSE))
+    print(f"\n[Universe Pages] Generating pages for {len(all_tickers)} universe stocks...")
+
+    try:
+        recent = {e["ticker"]: e["earnings_date"] for e in fetch_earnings_calendar(days_ahead=0)}
+    except Exception:
+        recent = {}
+
+    for ticker in all_tickers:
+        page_path = os.path.join(PAGES_DIR, f"stock-{ticker.lower()}.html")
+        # Only skip if page exists AND narrative cache is fresh (< 7 days)
+        if os.path.exists(page_path) and _get_cached_narrative(ticker, recent.get(ticker)) is not None:
+            continue
+        try:
+            t = yf.Ticker(ticker)
+            info = t.info or {}
+            price = info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose")
+            if not price:
+                continue
+            prev = info.get("previousClose") or price
+            change_pct = ((price - prev) / prev * 100) if prev else 0.0
+            d = {
+                "ticker": ticker,
+                "name": info.get("shortName") or info.get("longName") or ticker,
+                "price": round(price, 2),
+                "change_pct": round(change_pct, 2),
+                "currency": info.get("currency", "USD"),
+                "sector": info.get("sector", ""),
+                "industry": info.get("industry", ""),
+                "market_cap": info.get("marketCap"),
+                "forward_pe": info.get("forwardPE"),
+                "pe_trailing": info.get("trailingPE"),
+                "beta": info.get("beta"),
+                "dividend_yield": info.get("dividendYield"),
+                "gross_margin": info.get("grossMargins"),
+                "revenue_growth": info.get("revenueGrowth"),
+                "earnings_growth": info.get("earningsGrowth"),
+                "return_on_equity": info.get("returnOnEquity"),
+                "analyst_target": info.get("targetMeanPrice"),
+                "recommendation": info.get("recommendationKey", ""),
+                "week_52_high": info.get("fiftyTwoWeekHigh"),
+                "week_52_low": info.get("fiftyTwoWeekLow"),
+                "total_cash": info.get("totalCash"),
+                "total_debt": info.get("totalDebt"),
+            }
+            _generate_one_company_page(d, recent.get(ticker))
+        except Exception as e:
+            print(f"  [Universe Page] {ticker} failed: {e}")
+
+    _git_push_pages("universe-pages")
 
 
 def run_monthly_overview():
@@ -282,12 +392,26 @@ if __name__ == "__main__":
         id="sector_leaders",
         name="Sector Leaders Page",
     )
-    # Company analysis pages: daily at 06:00 Taipei
+    # Earnings Calendar: daily at 04:50 Taipei (before market page)
+    scheduler.add_job(
+        lambda: (generate_earnings_calendar_page(), _git_push_pages("earnings-calendar")),
+        CronTrigger(hour=4, minute=50, timezone=tz),
+        id="earnings_calendar",
+        name="Earnings Calendar Auto-update",
+    )
+    # Company analysis pages (watchlist): daily at 06:00 Taipei
     scheduler.add_job(
         run_company_pages,
         CronTrigger(hour=6, minute=0, timezone=tz),
         id="company_pages",
         name="Company Analysis Pages",
+    )
+    # Universe company pages (top picks + sector leaders): weekly Sunday 04:00 Taipei
+    scheduler.add_job(
+        run_universe_company_pages,
+        CronTrigger(day_of_week="sun", hour=4, minute=0, timezone=tz),
+        id="universe_pages",
+        name="Universe Company Pages (weekly)",
     )
     # Monthly overview: 1st of each month at 05:00 Taipei
     scheduler.add_job(
@@ -306,11 +430,16 @@ if __name__ == "__main__":
 
     # Regenerate static pages on every startup
     generate_news_sources_page(NEWS_FEEDS)
+
+    # Generate earnings calendar on startup (always fresh)
+    print("  Generating Earnings Calendar page...")
+    generate_earnings_calendar_page()
+
     print("  Fetching prices for watchlist page...")
     _startup_prices = fetch_all_prices()
     generate_watchlist_page(_startup_prices)
 
-    # Generate missing company pages at startup (full AI generation)
+    # Generate missing watchlist company pages at startup
     missing = [
         d for d in _startup_prices
         if d.get("price") and not os.path.exists(
@@ -318,7 +447,7 @@ if __name__ == "__main__":
         )
     ]
     if missing:
-        print(f"  Generating {len(missing)} new company page(s)...")
+        print(f"  Generating {len(missing)} missing watchlist company page(s)...")
         run_company_pages(missing)
 
     # Generate monthly overview if this month's page doesn't exist yet

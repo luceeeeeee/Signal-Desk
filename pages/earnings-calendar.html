@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earnings Calendar · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 40px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+.ec-month { margin-bottom: 40px; }
+.ec-month-label {
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 2px solid var(--accent-light);
+}
+.ec-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  background: var(--surface); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.ec-table th {
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  background: var(--surface-off); padding: 8px 12px; text-align: left;
+  border-bottom: 2px solid var(--border);
+}
+.ec-table td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border-light);
+  color: var(--text); vertical-align: middle;
+}
+.ec-table tbody tr:hover { background: var(--surface-off); }
+.ec-table tbody tr:last-child td { border-bottom: none; }
+.legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; font-size: 12px; color: var(--text-muted); }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+@media (max-width: 680px) {
+  .ec-table th:nth-child(4), .ec-table td:nth-child(4),
+  .ec-table th:nth-child(6), .ec-table td:nth-child(6) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar.html" class="active">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Auto-updated Daily · 自動每日更新</div>
+  <h1>Earnings Calendar &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">財報日曆</span></h1>
+  <p class="hero-sub">Upcoming earnings for major US stocks + your watchlist, auto-fetched from market data. Next 90 days shown. EPS &amp; revenue estimates from analyst consensus.<br>
+  <span style="font-size:13px;color:var(--text-muted)">主要美股及個人觀察清單財報日期，自動從市場資料抓取，顯示未來 90 天。EPS 及營收預測來自分析師共識。</span></p>
+</div>
+
+<div class="content">
+  <div class="legend">
+    <div class="legend-item"><span style="color:var(--accent);font-weight:700">★ Highlighted rows</span> = your watchlist stocks</div>
+    <div class="legend-item">EPS Est. = analyst EPS consensus for the upcoming quarter</div>
+    <div class="legend-item">Prior EPS = most recent actual result + beat/miss vs estimate</div>
+  </div>
+  <p class="last-updated" style="margin-bottom:28px">Last updated: May 01, 2026 · 20:03 Taipei &nbsp;·&nbsp; 34 events across 90 days</p>
+
+  
+  <div class="ec-month">
+    <div class="ec-month-label">May 2026</div>
+    <table class="ec-table">
+      <thead>
+        <tr>
+          <th>Date</th><th></th><th>Ticker</th><th>Company</th>
+          <th style="text-align:right">EPS Est.</th>
+          <th style="text-align:right">Rev Est.</th>
+          <th style="text-align:right">Prior EPS · Surprise</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-05-01</td>
+        <td><span style="background:#fdf4e7;color:#b87820;border:1px solid #e8c88a;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">TODAY</span></td>
+        <td><a href="stock-xom.html" style="color:var(--text);font-weight:700;text-decoration:none">XOM</a></td>
+        <td style="color:var(--text-med)">Exxon Mobil Corporation</td>
+        <td style="text-align:right;font-weight:600">$1.01</td>
+        <td style="text-align:right">$85.3B</td>
+        <td style="text-align:right">$1.71 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +1.1%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-05-01</td>
+        <td><span style="background:#fdf4e7;color:#b87820;border:1px solid #e8c88a;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">TODAY</span></td>
+        <td><a href="stock-cvx.html" style="color:var(--text);font-weight:700;text-decoration:none">CVX</a></td>
+        <td style="color:var(--text-med)">Chevron Corporation</td>
+        <td style="text-align:right;font-weight:600">$0.97</td>
+        <td style="text-align:right">$52.7B</td>
+        <td style="text-align:right">$1.52 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +5.2%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-05-06</td>
+        <td><span style="background:#f0f0fc;color:#5560a8;border:1px solid #c0c4ec;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">in 5d</span></td>
+        <td><a href="stock-amd.html" style="color:var(--text);font-weight:700;text-decoration:none">AMD</a></td>
+        <td style="color:var(--text-med)">Advanced Micro Devices, Inc.</td>
+        <td style="text-align:right;font-weight:600">$1.29</td>
+        <td style="text-align:right">$9.9B</td>
+        <td style="text-align:right">$1.53 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +16.0%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-05-14</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 13d</span></td>
+        <td><a href="stock-2382.tw.html" style="color:var(--text);font-weight:700;text-decoration:none">2382.TW</a></td>
+        <td style="color:var(--text-med)">QUANTA COMPUTER</td>
+        <td style="text-align:right;font-weight:600">$5.06</td>
+        <td style="text-align:right">$690.4B</td>
+        <td style="text-align:right">$5.56 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +24.0%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-05-14</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 13d</span></td>
+        <td><a href="stock-2317.tw.html" style="color:var(--text);font-weight:700;text-decoration:none">2317.TW</a></td>
+        <td style="color:var(--text-med)">HON HAI PRECISION INDUSTRY</td>
+        <td style="text-align:right;font-weight:600">$3.51</td>
+        <td style="text-align:right">$2164.8B</td>
+        <td style="text-align:right">$3.21 <span style="background:#fceaea;color:#b84040;border:1px solid #e8aaaa;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">MISS -27.3%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-05-15</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 14d</span></td>
+        <td><a href="stock-amat.html" style="color:var(--text);font-weight:700;text-decoration:none">AMAT</a></td>
+        <td style="color:var(--text-med)">Applied Materials, Inc.</td>
+        <td style="text-align:right;font-weight:600">$2.67</td>
+        <td style="text-align:right">$7.7B</td>
+        <td style="text-align:right">$2.38 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +7.9%</span></td>
+      </tr>
+      <tr style="background:var(--accent-bg)">
+        <td style="width:100px;white-space:nowrap">2026-05-21</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 20d</span></td>
+        <td><a href="stock-nvda.html" style="color:var(--accent);font-weight:700;text-decoration:none">NVDA ★</a></td>
+        <td style="color:var(--text-med)">NVIDIA Corporation</td>
+        <td style="text-align:right;font-weight:600">$1.77</td>
+        <td style="text-align:right">$78.8B</td>
+        <td style="text-align:right">$1.62 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +5.3%</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ec-month">
+    <div class="ec-month-label">June 2026</div>
+    <table class="ec-table">
+      <thead>
+        <tr>
+          <th>Date</th><th></th><th>Ticker</th><th>Company</th>
+          <th style="text-align:right">EPS Est.</th>
+          <th style="text-align:right">Rev Est.</th>
+          <th style="text-align:right">Prior EPS · Surprise</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-06-04</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 34d</span></td>
+        <td><a href="stock-avgo.html" style="color:var(--text);font-weight:700;text-decoration:none">AVGO</a></td>
+        <td style="color:var(--text-med)">Broadcom Inc.</td>
+        <td style="text-align:right;font-weight:600">$2.39</td>
+        <td style="text-align:right">$22.1B</td>
+        <td style="text-align:right">$2.05 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +1.3%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-06-25</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 55d</span></td>
+        <td><a href="stock-mu.html" style="color:var(--text);font-weight:700;text-decoration:none">MU</a></td>
+        <td style="color:var(--text-med)">Micron Technology, Inc.</td>
+        <td style="text-align:right;font-weight:600">$18.97</td>
+        <td style="text-align:right">$33.5B</td>
+        <td style="text-align:right">$12.20 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +33.2%</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ec-month">
+    <div class="ec-month-label">July 2026</div>
+    <table class="ec-table">
+      <thead>
+        <tr>
+          <th>Date</th><th></th><th>Ticker</th><th>Company</th>
+          <th style="text-align:right">EPS Est.</th>
+          <th style="text-align:right">Rev Est.</th>
+          <th style="text-align:right">Prior EPS · Surprise</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-14</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 74d</span></td>
+        <td><a href="stock-jpm.html" style="color:var(--text);font-weight:700;text-decoration:none">JPM</a></td>
+        <td style="color:var(--text-med)">JP Morgan Chase & Co.</td>
+        <td style="text-align:right;font-weight:600">$5.38</td>
+        <td style="text-align:right">$48.6B</td>
+        <td style="text-align:right">$5.94 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +7.8%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-14</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 74d</span></td>
+        <td><a href="stock-gs.html" style="color:var(--text);font-weight:700;text-decoration:none">GS</a></td>
+        <td style="color:var(--text-med)">Goldman Sachs Group, Inc. (The</td>
+        <td style="text-align:right;font-weight:600">$13.75</td>
+        <td style="text-align:right">$15.8B</td>
+        <td style="text-align:right">$17.55 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +7.1%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-14</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 74d</span></td>
+        <td><a href="stock-bac.html" style="color:var(--text);font-weight:700;text-decoration:none">BAC</a></td>
+        <td style="color:var(--text-med)">Bank of America Corporation</td>
+        <td style="text-align:right;font-weight:600">$1.10</td>
+        <td style="text-align:right">$30.0B</td>
+        <td style="text-align:right">$1.11 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +8.8%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-15</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 75d</span></td>
+        <td><a href="stock-jnj.html" style="color:var(--text);font-weight:700;text-decoration:none">JNJ</a></td>
+        <td style="color:var(--text-med)">Johnson & Johnson</td>
+        <td style="text-align:right;font-weight:600">$2.84</td>
+        <td style="text-align:right">$25.0B</td>
+        <td style="text-align:right">$2.70 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +0.9%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-15</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 75d</span></td>
+        <td><a href="stock-ms.html" style="color:var(--text);font-weight:700;text-decoration:none">MS</a></td>
+        <td style="color:var(--text-med)">Morgan Stanley</td>
+        <td style="text-align:right;font-weight:600">$2.75</td>
+        <td style="text-align:right">$19.1B</td>
+        <td style="text-align:right">$3.43 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +13.7%</span></td>
+      </tr>
+      <tr style="background:var(--accent-bg)">
+        <td style="width:100px;white-space:nowrap">2026-07-16</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 76d</span></td>
+        <td><a href="stock-2330.tw.html" style="color:var(--accent);font-weight:700;text-decoration:none">2330.TW ★</a></td>
+        <td style="color:var(--text-med)">TAIWAN SEMICONDUCTOR MANUFACTU</td>
+        <td style="text-align:right;font-weight:600">$23.68</td>
+        <td style="text-align:right">$1261.2B</td>
+        <td style="text-align:right">$22.08 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +5.3%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-16</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 76d</span></td>
+        <td><a href="stock-tsm.html" style="color:var(--text);font-weight:700;text-decoration:none">TSM</a></td>
+        <td style="color:var(--text-med)">Taiwan Semiconductor Manufactu</td>
+        <td style="text-align:right;font-weight:600">$3.74</td>
+        <td style="text-align:right">$1261.2B</td>
+        <td style="text-align:right">$3.49 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +4.7%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-21</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 81d</span></td>
+        <td><a href="stock-ko.html" style="color:var(--text);font-weight:700;text-decoration:none">KO</a></td>
+        <td style="color:var(--text-med)">Coca-Cola Company (The)</td>
+        <td style="text-align:right;font-weight:600">$0.93</td>
+        <td style="text-align:right">$13.1B</td>
+        <td style="text-align:right">$0.86 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +5.9%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-23</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 83d</span></td>
+        <td><a href="stock-tsla.html" style="color:var(--text);font-weight:700;text-decoration:none">TSLA</a></td>
+        <td style="color:var(--text-med)">Tesla, Inc.</td>
+        <td style="text-align:right;font-weight:600">$0.45</td>
+        <td style="text-align:right">$24.6B</td>
+        <td style="text-align:right">$0.41 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +17.2%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-24</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 84d</span></td>
+        <td><a href="stock-googl.html" style="color:var(--text);font-weight:700;text-decoration:none">GOOGL</a></td>
+        <td style="color:var(--text-med)">Alphabet Inc.</td>
+        <td style="text-align:right;font-weight:600">$2.63</td>
+        <td style="text-align:right">$107.0B</td>
+        <td style="text-align:right">$2.82 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +7.0%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-24</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 84d</span></td>
+        <td><a href="stock-intc.html" style="color:var(--text);font-weight:700;text-decoration:none">INTC</a></td>
+        <td style="color:var(--text-med)">Intel Corporation</td>
+        <td style="text-align:right;font-weight:600">$0.21</td>
+        <td style="text-align:right">$14.4B</td>
+        <td style="text-align:right">$0.29 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +2108.7%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-28</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 88d</span></td>
+        <td><a href="stock-unh.html" style="color:var(--text);font-weight:700;text-decoration:none">UNH</a></td>
+        <td style="color:var(--text-med)">UnitedHealth Group Incorporate</td>
+        <td style="text-align:right;font-weight:600">$4.85</td>
+        <td style="text-align:right">$110.9B</td>
+        <td style="text-align:right">$7.23 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +9.5%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-29</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 89d</span></td>
+        <td><a href="stock-pg.html" style="color:var(--text);font-weight:700;text-decoration:none">PG</a></td>
+        <td style="color:var(--text-med)">Procter & Gamble Company (The)</td>
+        <td style="text-align:right;font-weight:600">$1.42</td>
+        <td style="text-align:right">$21.4B</td>
+        <td style="text-align:right">$1.59 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +2.2%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-29</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 89d</span></td>
+        <td><a href="stock-txn.html" style="color:var(--text);font-weight:700;text-decoration:none">TXN</a></td>
+        <td style="color:var(--text-med)">Texas Instruments Incorporated</td>
+        <td style="text-align:right;font-weight:600">$1.95</td>
+        <td style="text-align:right">$5.2B</td>
+        <td style="text-align:right">$1.68 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +22.8%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-29</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 89d</span></td>
+        <td><a href="stock-2454.tw.html" style="color:var(--text);font-weight:700;text-decoration:none">2454.TW</a></td>
+        <td style="color:var(--text-med)">MEDIATEK INC</td>
+        <td style="text-align:right;font-weight:600">$14.36</td>
+        <td style="text-align:right">$146.5B</td>
+        <td style="text-align:right">$14.39 <span style="background:#fceaea;color:#b84040;border:1px solid #e8aaaa;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">MISS -5.0%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-29</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 89d</span></td>
+        <td><a href="stock-v.html" style="color:var(--text);font-weight:700;text-decoration:none">V</a></td>
+        <td style="color:var(--text-med)">Visa Inc.</td>
+        <td style="text-align:right;font-weight:600">$3.21</td>
+        <td style="text-align:right">$11.3B</td>
+        <td style="text-align:right">$3.31 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +6.8%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-29</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 89d</span></td>
+        <td><a href="stock-umc.html" style="color:var(--text);font-weight:700;text-decoration:none">UMC</a></td>
+        <td style="color:var(--text-med)">United Microelectronics Corpor</td>
+        <td style="text-align:right;font-weight:600">$0.16</td>
+        <td style="text-align:right">$66.1B</td>
+        <td style="text-align:right">— </td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-29</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 89d</span></td>
+        <td><a href="stock-2303.tw.html" style="color:var(--text);font-weight:700;text-decoration:none">2303.TW</a></td>
+        <td style="color:var(--text-med)">UNITED MICRO ELECTRONICS</td>
+        <td style="text-align:right;font-weight:600">$0.99</td>
+        <td style="text-align:right">$66.1B</td>
+        <td style="text-align:right">$1.29 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +50.3%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-30</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 90d</span></td>
+        <td><a href="stock-meta.html" style="color:var(--text);font-weight:700;text-decoration:none">META</a></td>
+        <td style="color:var(--text-med)">Meta Platforms, Inc.</td>
+        <td style="text-align:right;font-weight:600">$6.82</td>
+        <td style="text-align:right">$55.5B</td>
+        <td style="text-align:right">$8.88 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +8.0%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-30</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 90d</span></td>
+        <td><a href="stock-abbv.html" style="color:var(--text);font-weight:700;text-decoration:none">ABBV</a></td>
+        <td style="color:var(--text-med)">AbbVie Inc.</td>
+        <td style="text-align:right;font-weight:600">$3.76</td>
+        <td style="text-align:right">$16.8B</td>
+        <td style="text-align:right">$2.65 <span style="background:#fceaea;color:#b84040;border:1px solid #e8aaaa;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">MISS -0.8%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-30</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 90d</span></td>
+        <td><a href="stock-msft.html" style="color:var(--text);font-weight:700;text-decoration:none">MSFT</a></td>
+        <td style="color:var(--text-med)">Microsoft Corporation</td>
+        <td style="text-align:right;font-weight:600">$4.06</td>
+        <td style="text-align:right">$81.4B</td>
+        <td style="text-align:right">$4.14 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +5.7%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-30</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 90d</span></td>
+        <td><a href="stock-lrcx.html" style="color:var(--text);font-weight:700;text-decoration:none">LRCX</a></td>
+        <td style="color:var(--text-med)">Lam Research Corporation</td>
+        <td style="text-align:right;font-weight:600">$1.68</td>
+        <td style="text-align:right">$6.7B</td>
+        <td style="text-align:right">$1.47 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +7.9%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-30</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 90d</span></td>
+        <td><a href="stock-ma.html" style="color:var(--text);font-weight:700;text-decoration:none">MA</a></td>
+        <td style="color:var(--text-med)">Mastercard Incorporated</td>
+        <td style="text-align:right;font-weight:600">$4.41</td>
+        <td style="text-align:right">$8.3B</td>
+        <td style="text-align:right">$4.76 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +12.3%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-30</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 90d</span></td>
+        <td><a href="stock-asx.html" style="color:var(--text);font-weight:700;text-decoration:none">ASX</a></td>
+        <td style="color:var(--text-med)">ASE Technology Holding Co., Lt</td>
+        <td style="text-align:right;font-weight:600">$0.27</td>
+        <td style="text-align:right">$186.4B</td>
+        <td style="text-align:right">$0.20 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +16.3%</span></td>
+      </tr>
+      <tr >
+        <td style="width:100px;white-space:nowrap">2026-07-30</td>
+        <td><span style="color:var(--text-muted);font-size:11px">in 90d</span></td>
+        <td><a href="stock-qcom.html" style="color:var(--text);font-weight:700;text-decoration:none">QCOM</a></td>
+        <td style="color:var(--text-med)">QUALCOMM Incorporated</td>
+        <td style="text-align:right;font-weight:600">$2.43</td>
+        <td style="text-align:right">$10.2B</td>
+        <td style="text-align:right">$2.65 <span style="background:#e8f5ee;color:#2a7a50;border:1px solid #a8d8bc;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700">BEAT +3.6%</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Earnings Calendar &nbsp;·&nbsp; Auto-fetched from yfinance &nbsp;·&nbsp; 2026-05-01
+</footer>
+</body>
+</html>

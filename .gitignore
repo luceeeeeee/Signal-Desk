@@ -27,6 +27,9 @@ logs/
 # Runtime data
 signal_log.json
 
+# Narrative cache (AI-generated, not versioned)
+cache/
+
 # IDE
 .vscode/
 .idea/
