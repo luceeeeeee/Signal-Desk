@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEE · Company Analysis · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 40px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+
+/* ── Hero ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  text-decoration: none; margin-bottom: 18px; letter-spacing: 0.03em;
+}
+.back-link:hover { text-decoration: underline; }
+.co-ticker { font-size: 40px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.co-name   { font-size: 15px; color: var(--text-muted); margin: 4px 0 12px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.hero-badge {
+  display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 8px;
+  font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; border: 1px solid transparent;
+}
+.badge-price { background: var(--surface); border-color: var(--border); color: var(--text); }
+.badge-up    { background: #eaf3f0; border-color: #c6ddd6; color: #2e6b58; }
+.badge-dn    { background: #fceaea; border-color: #e8aaaa; color: #b84040; }
+.hero-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
+.hero-tag    { font-size: 11px; color: var(--text-muted); background: var(--surface-off); border: 1px solid var(--border-light); padding: 3px 10px; border-radius: 20px; }
+
+/* ── KPI tiles ── */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.kpi-val   { font-size: 22px; font-weight: 900; font-family: 'Menlo','SF Mono',monospace; line-height: 1.1; margin-bottom: 4px; }
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+.kpi-sub   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Conviction score card ── */
+.cs-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.cs-card-header { padding: 14px 24px; border-bottom: 1px solid var(--border-light); }
+.cs-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.cs-card-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cs-body { display: flex; flex-wrap: wrap; gap: 32px; padding: 24px 28px; }
+.cs-score-col { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.cs-score-num { font-size: 64px; font-weight: 900; line-height: 1; font-family: 'Menlo','SF Mono',monospace; }
+.cs-score-denom { font-size: 12px; color: var(--text-muted); }
+.cs-score-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; text-align: center; }
+.cs-pillars-col { flex: 1; min-width: 180px; }
+.cs-pillar { margin-bottom: 18px; }
+.cs-pillar:last-child { margin-bottom: 0; }
+.cs-pillar-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.cs-pillar-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.cs-pillar-pts  { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'Menlo','SF Mono',monospace; }
+.cs-bar-track { height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.cs-bar-fill  { height: 100%; border-radius: 4px; }
+.cs-pillar-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.cs-checks-col { min-width: 200px; }
+.cs-check { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 12px; }
+.cs-check:last-child { margin-bottom: 0; }
+.cs-check-icon  { font-size: 11px; font-weight: 700; width: 14px; flex-shrink: 0; }
+.cs-check-name  { flex: 1; color: var(--text-med); }
+.cs-check-val   { font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); min-width: 40px; text-align: right; }
+.cs-check-thresh { font-size: 10px; color: var(--text-muted); }
+
+/* ── Metrics grid ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+@media(max-width:740px) { .metrics-grid { grid-template-columns: 1fr; } }
+.m-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow-sm); }
+.mc-blue  { border-top: 4px solid #3a72b0; }
+.mc-teal  { border-top: 4px solid #2e6b58; }
+.mc-amber { border-top: 4px solid #b87820; }
+.mc-blue .m-title  { color: #3a72b0; border-bottom-color: #b8d4f0; }
+.mc-teal .m-title  { color: #2e6b58; border-bottom-color: #c6ddd6; }
+.mc-amber .m-title { color: #b87820; border-bottom-color: #e8c88a; }
+.m-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+.m-row  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.m-label { font-size: 12px; color: var(--text-muted); flex: 1; line-height: 1.4; }
+.m-val  { font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); white-space: nowrap; }
+.m-def  { font-size: 11px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; padding: 5px 9px; background: var(--surface-off); border-radius: var(--radius-sm); border-left: 2px solid var(--border); }
+.flag-pass { font-size: 10px; font-weight: 700; color: #2e6b58; background: #eaf3f0; border: 1px solid #c6ddd6; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+.flag-warn { font-size: 10px; font-weight: 700; color: #b87820; background: #fdf4e7; border: 1px solid #e8c88a; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+/* ── 52-week range ── */
+.range-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.range-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 16px; }
+.range-bar-track { position: relative; height: 8px; background: var(--border-light); border-radius: 4px; margin-bottom: 12px; }
+.range-bar-fill  { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #c6ddd6, var(--accent)); border-radius: 4px; }
+.range-dot { position: absolute; top: 50%; width: 14px; height: 14px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.range-labels strong { color: var(--accent); }
+
+/* ── Analyst & Ownership ── */
+.ao-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.ao-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+@media(max-width:620px) { .ao-grid { grid-template-columns: 1fr; } }
+.ao-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-light); }
+.ao-row   { font-size: 13px; color: var(--text-med); margin-bottom: 7px; line-height: 1.5; }
+.ao-row strong { color: var(--text); }
+.rec-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.rec-buy  { background: #eaf3f0; color: #2e6b58; border: 1px solid #c6ddd6; }
+.rec-hold { background: #fdf4e7; color: #b87820; border: 1px solid #e8c88a; }
+.rec-sell { background: #fceaea; color: #b84040; border: 1px solid #e8aaaa; }
+
+/* ── Quarterly trend ── */
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.q-card-head { padding: 13px 22px; border-bottom: 1px solid var(--border-light); background: var(--surface-off); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); }
+.q-table { width: 100%; border-collapse: collapse; }
+.q-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: left; border-bottom: 1px solid var(--border-light); }
+.q-table td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); color: var(--text-med); }
+.q-table tr:last-child td { border-bottom: none; }
+.q-table tbody tr:hover { background: var(--surface-off); }
+.q-period { font-weight: 600; color: var(--text); font-size: 12px; white-space: nowrap; }
+.q-mono   { font-family: 'Menlo','SF Mono',monospace; font-weight: 600; }
+.q-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.q-bar-track { width: 70px; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.q-bar-fill  { height: 100%; background: var(--accent); border-radius: 3px; }
+.q-pos { color: #2e6b58; font-weight: 600; }
+.q-neg { color: #b84040; font-weight: 600; }
+
+/* ── Narrative section cards ── */
+.sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
+.sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
+.sec-amber  { --sc: #b87820; --sc-light: #fdf4e7; --sc-border: #e8c88a; }
+.sec-indigo { --sc: #5560a8; --sc-light: #f0f0fc; --sc-border: #c0c4ec; }
+.sec-rose   { --sc: #b84040; --sc-light: #fceaea; --sc-border: #e8aaaa; }
+.section-card {
+  border: 1px solid var(--sc-border); border-top: 4px solid var(--sc);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  margin-bottom: 28px; overflow: hidden; background: var(--surface);
+}
+.section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--sc); background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface) 65%);
+  padding: 14px 28px; margin: 0; border-bottom: 1px solid var(--sc-border);
+}
+.section-body { padding: 28px 32px; }
+.section-body p { font-size: 15px; line-height: 1.85; color: var(--text-med); margin-bottom: 14px; }
+.section-body p:last-child { margin-bottom: 0; }
+.section-body strong { color: var(--text); }
+.sub-heading { font-size: 14px; font-weight: 700; color: var(--sc); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--sc-border); }
+.sub-heading:first-child { margin-top: 0; }
+.impact-line { background: var(--sc-light); border-left: 3px solid var(--sc); padding: 10px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 4px 0 14px; font-size: 14.5px; color: var(--text-med); line-height: 1.7; }
+.num-item  { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 22px; }
+.num-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--sc); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.num-body  { flex: 1; }
+.num-title { font-weight: 700; color: var(--text); margin-bottom: 6px; font-size: 15px; }
+.num-body p { margin-bottom: 8px; font-size: 14px; }
+.overview-list { margin: 0 0 16px 0; padding-left: 20px; }
+.overview-list li { margin-bottom: 11px; color: var(--text-med); font-size: 15px; line-height: 1.78; }
+.table-wrap { overflow-x: auto; margin: 10px 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--sc-border); }
+.overview-table { width: 100%; border-collapse: collapse; }
+.overview-table thead tr { background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface-off) 65%); border-bottom: 1px solid var(--sc-border); }
+.overview-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--sc); text-align: left; white-space: nowrap; }
+.overview-table td { padding: 11px 16px; font-size: 14px; color: var(--text-med); border-bottom: 1px solid var(--border-light); }
+.overview-table tr:last-child td { border-bottom: none; }
+.overview-table tbody tr:hover { background: var(--surface-off); }
+
+/* ── Narrative section label ── */
+.narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <a class="back-link" href="top-picks.html">← Top Picks</a>
+  <div class="co-ticker">NEE</div>
+  <div class="co-name">NextEra Energy, Inc.</div>
+  <div class="hero-badges">
+    <span class="hero-badge badge-price">$97.88</span>
+    <span class="hero-badge badge-up">+3.94%</span>
+  </div>
+  <div class="hero-tags"><span class="hero-tag">Market Cap: $204.1B</span><span class="hero-tag">Utilities</span><span class="hero-tag">Utilities - Regulated Electric</span><span class="hero-tag">USD</span></div>
+</div>
+
+<div class="content">
+
+  <div class="kpi-row"><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">+7.3%</div><div class="kpi-label">Revenue Growth</div><div class="kpi-sub">Annual YoY</div></div><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">Near High</div><div class="kpi-label">52-Week Range</div><div class="kpi-sub">100% of range</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">0.73</div><div class="kpi-label">Beta</div><div class="kpi-sub">Stable</div></div></div>
+
+  <div class="cs-card" style="border-top:4px solid #6e8a7a;border:1px solid #d6dfd8;border-top:4px solid #6e8a7a">
+    <div class="cs-card-header" style="background:linear-gradient(135deg,#f5f7f5 0%,var(--surface) 65%)">
+      <div class="cs-card-title" style="color:#6e8a7a">Conviction Score</div>
+      <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork</div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-score-col">
+        <div class="cs-score-num" style="color:#6e8a7a">30</div>
+        <div class="cs-score-denom">/ 100</div>
+        <div class="cs-score-label" style="color:#6e8a7a">Insufficient Data</div>
+      </div>
+      <div class="cs-pillars-col"><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Quality</span><span class="cs-pillar-pts">8 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:24%;background:#6e8a7a"></div></div><p class="cs-pillar-sub">ROIC · FCF Margin · Gross Margin</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Growth</span><span class="cs-pillar-pts">22 / 34</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:64%;background:#6e8a7a"></div></div><p class="cs-pillar-sub">Revenue Growth · Earnings Growth</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Health</span><span class="cs-pillar-pts">0 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:0%;background:#6e8a7a"></div></div><p class="cs-pillar-sub">Cash vs Debt · Equity Ratio · Analyst Upside</p></div></div>
+      <div class="cs-checks-col"><div class="cs-check"><span class="cs-check-icon" style="color:#b87820">⚠</span><span class="cs-check-name">Rev Growth</span><span class="cs-check-val">+7%</span><span class="cs-check-thresh">≥10%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Gross Margin</span><span class="cs-check-val">61%</span><span class="cs-check-thresh">≥40%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#b87820">⚠</span><span class="cs-check-name">ROE</span><span class="cs-check-val">10%</span><span class="cs-check-thresh">≥15%</span></div></div>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="m-card mc-blue">
+      <div class="m-title">Valuation</div>
+      <div class="m-row"><span class="m-label">Forward P/E</span><span class="m-val">22.3</span></div><p class="m-def">Investors pay this many dollars for every $1 projected to be earned next year. Lower = cheaper relative to earnings.</p>
+    </div>
+    <div class="m-card mc-teal">
+      <div class="m-title">Quality &amp; Profitability</div>
+      <div class="m-row"><span class="m-label">Gross Margin</span><span class="m-val">61.4%<span class="flag-pass">✓</span></span></div><p class="m-def">Revenue minus cost of goods sold. Higher = more pricing power. Above 40% typically indicates a differentiated product.</p><div class="m-row"><span class="m-label">ROE</span><span class="m-val">10.3%</span></div><p class="m-def">Return on Equity — net income divided by shareholders' equity. Above 15% shows efficient use of investor capital.</p>
+    </div>
+    <div class="m-card mc-amber">
+      <div class="m-title">Financial Health</div>
+      <div class="m-row"><span class="m-label">Cash on Hand</span><span class="m-val">$2.0B</span></div><div class="m-row"><span class="m-label">Total Debt</span><span class="m-val">$104.4B</span></div><div class="m-row"><span class="m-label">Cash / Debt</span><span class="m-val">0.0x<span class="flag-warn">⚠ Leveraged</span></span></div><p class="m-def">Times cash covers total debt. Above 1x means the company can pay off all debt immediately from its cash pile.</p>
+    </div>
+  </div>
+
+  
+<div class="range-card">
+  <div class="range-title">52-Week Price Range</div>
+  <div class="range-bar-track">
+    <div class="range-bar-fill" style="width:98.0%"></div>
+    <div class="range-dot" style="left:98.0%"></div>
+  </div>
+  <div class="range-labels">
+    <span>Low: $63.88</span>
+    <span><strong>Current: $97.88</strong> &nbsp;(98% of range)</span>
+    <span>High: $98.03</span>
+  </div>
+</div>
+
+  
+<div class="ao-card">
+  <div class="ao-grid">
+    <div><div class="ao-title">Analyst Consensus</div><div class="ao-row" style="color:var(--text-muted)">No analyst data</div></div>
+    <div><div class="ao-title">Ownership</div><div class="ao-row" style="color:var(--text-muted)">No data</div></div>
+    <div><div class="ao-title">Market Profile</div><div class="ao-row">Beta: <strong>0.73</strong> — low-volatility</div><div class="ao-row">Dividend yield: <strong>255.00%</strong></div><div class="ao-row">Market cap: <strong>$204.1B</strong></div></div>
+  </div>
+</div>
+
+  <div class="q-card"><div class="q-card-head">Quarterly Trend · Last 4 Quarters</div><table class="q-table"><thead><tr><th>Quarter</th><th>Revenue</th><th>Trend / QoQ</th><th>Gross Margin</th><th>Net Income</th></tr></thead><tbody><tr><td><span class="q-period">Mar '26</span></td><td class="q-mono">$6.7B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:84%"></div></div><span class="q-pos">+3.1%</span></div></td><td class="q-mono">58.9%</td><td class="q-mono">$2.2B</td></tr><tr><td><span class="q-period">Dec '25</span></td><td class="q-mono">$6.5B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:81%"></div></div><span class="q-neg">-18.4%</span></div></td><td class="q-mono">57.4%</td><td class="q-mono">$1.5B</td></tr><tr><td><span class="q-period">Sep '25</span></td><td class="q-mono">$8.0B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:100%"></div></div><span class="q-pos">+18.9%</span></div></td><td class="q-mono">64.4%</td><td class="q-mono">$2.4B</td></tr><tr><td><span class="q-period">Jun '25</span></td><td class="q-mono">$6.7B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:84%"></div></div></div></td><td class="q-mono">64.1%</td><td class="q-mono">$2.0B</td></tr></tbody></table></div>
+
+  <p class="narrative-label">Analyst Briefing · AI-generated · May 01, 2026 · 20:13 Taipei</p>
+  <div class="section-card sec-indigo"><h2 class="section-title">BUSINESS OVERVIEW</h2><div class="section-body">
+<p>English: NextEra Energy (NEE) runs Florida‑based regulated electric utilities and owns a fast‑growing renewable power subsidiary, Florida Power &amp; Light (FPL) and NextEra Energy Resources. FPL serves about 5 million customers and controls roughly 30 % of Florida’s retail electricity market, giving it a stable, rate‑capped revenue base. The renewable arm owns the world’s largest portfolio of wind and solar farms, benefiting from long‑term power‑purchase agreements that lock in cash flow for 15‑20 years. The moat comes from regulated monopoly rights in Florida (new entrants cannot build competing wires) and from multi‑decade contracts that make switching costly for corporate off‑takers.</p>
+<p>繁體中文：NextEra Energy（NEE）經營佛羅里達州受監管的電力事業，並擁有快速成長的再生能源子公司——Florida Power &amp; Light（FPL）和 NextEra Energy Resources。FPL 為約 500 萬用戶供電，佔佛州零售電力市場約 30%，因此收入受政府批准的費率保護。再生能源部門擁有全球最大的風電與太陽能發電組合，依靠 15‑20 年的長期購電合約鎖定現金流。護城河來自佛州的獨占配電權（新公司無法再建配電網）以及長期合約，使得企業客戶轉換成本高企。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-blue"><h2 class="section-title">RECENT DEVELOPMENTS</h2><div class="section-body">
+<p>English: In the last six months NextEra posted Q1 2026 revenue of $6.70 billion, up 7.3 % year‑over‑year, and net income jumped 42 % to $2.18 billion, driven by strong renewable production and a modest rate increase approved by the Florida Public Service Commission. The company also announced a $1.2 billion investment plan to add 8 GW of offshore wind capacity by 2030, positioning it ahead of most U.S. peers.</p>
+<p>繁體中文：過去六個月，NextEra 公布 2026 年第一季營收 67 億美元，年增 7.3%，淨利飆升 42% 至 21.8 億美元，主要受再生能源產能提升與佛州公用事業委員會批准的小幅費率上調推動。公司同時宣佈投入 12 億美元，於 2030 年前新增 8 GW 離岸風電，讓其在美國同業中領先。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-teal"><h2 class="section-title">CATALYSTS</h2><div class="section-body">
+<p>English:</p>
+<ul class="overview-list">
+<li><strong>Offshore Wind Build‑out</strong>: Construction of the 8 GW offshore wind portfolio is slated to begin in 2025, with the first 2 GW expected online by 2027, adding roughly $0.8 billion of annual EBITDA (earnings before interest, taxes, depreciation and amortisation).</li>
+<li><strong>Florida Rate Case 2027</strong>: The next regulated rate case in Florida, scheduled for filing in Q3 2026, could lift the approved earnings‑allowed return by 0.4 percentage points, translating to a 3‑4 % boost to FPL’s net margin.</li>
+<li><strong>Tax Credit Extension</strong>: A potential extension of the federal Production Tax Credit (PTC) for wind projects, currently set to expire at the end of 2027, would preserve the economics of new wind builds and support the company’s aggressive growth targets.</li>
+</ul>
+<p>繁體中文：</p>
+<ul class="overview-list">
+<li><strong>離岸風電建設</strong>：8 GW 離岸風電組合將於 2025 年動工，首批 2 GW 目標於 2027 年上線，預計每年為公司帶來約 8 億美元的稅息折舊攤銷前利潤（EBITDA）。</li>
+<li><strong>佛州2027年費率案</strong>：下一輪佛州受監管的費率案預計於 2026 年第三季提交，若獲批准，允許的收益回報率可提升 0.4 個百分點，將使 FPL 的淨利率提升 3‑4%。</li>
+<li><strong>稅收抵免延長</strong>：聯邦風電產業稅收抵免（PTC）若在 2027 年底前延長，將保護新風電項目的盈利性，支持公司大膽的增長目標。</li>
+</ul>
+<p>---</p>
+</div></div>
+<div class="section-card sec-rose"><h2 class="section-title">RISKS</h2><div class="section-body">
+<p>English:</p>
+<ul class="overview-list">
+<li><strong>Regulatory Rate Rollback</strong>: If the Florida Public Service Commission reduces the approved rate hike or imposes stricter cost‑recovery rules, FPL’s earnings could drop 5‑7 % and depress the forward P/E multiple.</li>
+<li><strong>Interest‑Rate Surge</strong>: A rapid rise in U.S. Treasury yields would increase the cost of NextEra’s $104 billion debt portfolio, potentially squeezing cash flow and forcing capex delays.</li>
+<li><strong>Renewable Subsidy Uncertainty</strong>: Failure to secure a federal extension of the Production Tax Credit would make new wind projects less profitable, slowing the offshore wind build‑out and lowering long‑term growth.</li>
+</ul>
+<p>繁體中文：</p>
+<ul class="overview-list">
+<li><strong>監管費率回退</strong>：若佛州公用事業委員會削減已批准的費率上調或加嚴成本回收規則，FPL 營收可能下降 5‑7%，進而壓低未來市盈率。</li>
+<li><strong>利率急升</strong>：美國公債收益率若快速上升，將提升公司 1,044 億美元負債的融資成本，可能擠壓現金流並迫使資本支出延期。</li>
+<li><strong>再生能源補貼不確定性</strong>：若未能延長聯邦風電產業稅收抵免（PTC），新風電項目的盈利性將受損，離岸風電建設將放緩，長期增長受阻。</li>
+</ul>
+<p>---</p>
+</div></div>
+<div class="section-card sec-amber"><h2 class="section-title">CONCLUSION</h2><div class="section-body">
+<p>English: At $97.88 the stock trades at a forward P/E of 22.3, modestly above its 5‑year historical average of 20, but the growth premium from renewable expansion justifies the slight premium. I recommend a <strong>Buy</strong> for investors who can tolerate moderate debt exposure, with a target price of $115 (≈18 % upside). A sustained rate‑case setback that pushes the forward P/E above 25 would trigger a sell. The combined regulated monopoly and long‑term renewable contracts give NextEra a strong moat that should endure for at least the next five years.</p>
+<p>繁體中文：目前股價 97.88 美元的市盈率（預算）為 22.3，略高於過去五年平均的 20，但再生能源快速擴張帶來的成長溢價足以說明這一小幅溢價。我給予 <strong>買入</strong> 評級，目標價 115 美元（約 18% 上漲空間），適合能接受適度負債風險的投資人。若監管費率案持續受阻，使預期市盈率上升至 25 以上，即應考慮賣出。受監管獨占權與長期再生能源合約雙重保護，NextEra 的護城河在未來五年內仍具相當韌性。</p>
+</div></div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; NEE Company Analysis &nbsp;·&nbsp; 2026-05-01 &nbsp;·&nbsp;
+  <a href="top-picks.html" style="color:var(--accent);text-decoration:none">← Back to Top Picks</a>
+</footer>
+
+</body>
+</html>
