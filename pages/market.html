@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 48px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+
+.mk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.mk-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 28px;
+}
+.mk-full { grid-column: 1 / -1; }
+.mk-half { grid-column: span 1; }
+.mk-fear { border-top: 4px solid #b84040; }
+.mk-yields { border-top: 4px solid #3a72b0; }
+.mk-card-title {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
+}
+.mk-big { font-size: 52px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+.mk-label { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.mk-note { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-top: 12px; }
+.mk-yield-row { display: flex; gap: 24px; margin-bottom: 8px; }
+.mk-yield-item { display: flex; flex-direction: column; gap: 3px; }
+.mk-yield-val { font-size: 26px; font-weight: 800; }
+.mk-yield-label { font-size: 11px; color: var(--text-muted); }
+.mk-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mk-table th {
+  font-size: 10px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 6px 0 10px; border-bottom: 2px solid var(--border); text-align: left;
+}
+.mk-table td {
+  padding: 10px 0; border-bottom: 1px solid var(--border-light); vertical-align: top;
+}
+.mk-table tr:last-child td { border-bottom: none; }
+.sec-list { display: flex; flex-direction: column; gap: 8px; }
+.sec-row { display: grid; grid-template-columns: 140px 1fr 52px; gap: 8px; align-items: center; }
+.sec-name { font-size: 12px; font-weight: 600; }
+.sec-bar-wrap { height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; }
+.sec-bar { height: 6px; border-radius: 3px; min-width: 2px; }
+.sec-val { font-size: 12px; font-weight: 700; text-align: right; }
+.last-updated { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
+@media (max-width: 680px) {
+  .mk-grid { grid-template-columns: 1fr; }
+  .mk-full, .mk-half { grid-column: span 1; }
+}
+.news-list { display: flex; flex-direction: column; gap: 0; }
+.news-item {
+  padding: 16px 0; border-bottom: 1px solid var(--border-light);
+  display: flex; flex-direction: column; gap: 5px;
+}
+.news-item:last-child { border-bottom: none; }
+.news-source {
+  font-size: 10px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.news-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.news-impact { font-size: 12px; color: var(--text-med); line-height: 1.6; margin-top: 2px; }
+.news-time { font-size: 11px; color: var(--text-muted); }
+.week-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;
+}
+.week-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 28px;
+}
+.week-card.review { border-top: 4px solid #3a72b0; }
+.week-card.preview { border-top: 4px solid #2e6b58; }
+.week-title {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;
+}
+.week-item { padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+.week-item:last-child { border-bottom: none; }
+.week-date { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+@media (max-width: 680px) {
+  .week-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="market.html" class="active">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="watchlist.html">My Watchlist</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Live Data · Auto-updated</div>
+  <h1>Market Overview</h1>
+  <p class="hero-sub">Real-time pulse on global markets — fear gauge, yields, major indices, sector rotation, key assets, and latest headlines. Refreshed with every briefing cycle.</p>
+</div>
+
+<div class="content">
+  <p class="last-updated">Last updated: May 01, 2026 · 16:03 Taipei</p>
+
+  <div class="mk-grid">
+    
+  <div class="mk-card mk-fear">
+    <div class="mk-card-title">Fear Gauge · 恐慌指數</div>
+    <div class="mk-big" style="color:#b87820">17.1</div>
+    <div class="mk-label" style="color:#b87820">VIX — Neutral / 中性</div>
+    <p class="mk-note">VIX measures expected market volatility over the next 30 days. Above 20 = fear; below 15 = complacency.<br>VIX衡量未來30天的預期市場波動性。高於20代表恐慌；低於15代表自滿。</p>
+  </div>
+    
+  <div class="mk-card mk-yields">
+    <div class="mk-card-title">Treasury Yields · 美國公債殖利率</div>
+    <div class="mk-yield-row">
+      <div class="mk-yield-item">
+        <span class="mk-yield-val">4.39%</span>
+        <span class="mk-yield-label">10-Year / 10年期</span>
+      </div>
+      <div class="mk-yield-item">
+        <span class="mk-yield-val">3.58%</span>
+        <span class="mk-yield-label">2-Year / 2年期</span>
+      </div>
+      <div class="mk-yield-item">
+        <span class="mk-yield-val" style="color:#2e6b58">+0.81%</span>
+        <span class="mk-yield-label">Spread / 利差</span>
+      </div>
+    </div>
+    <p class="mk-note">Normal yield curve / 正常殖利率曲線<br>Higher 10Y yields raise borrowing costs and pressure growth stocks. / 10年期殖利率上升會提高借貸成本並壓縮成長股估值。</p>
+  </div>
+    
+  <div class="mk-card mk-full">
+    <div class="mk-card-title">Global Indices · 全球指數</div>
+    <table class="mk-table">
+      <thead><tr><th>Index / 指數</th><th style="text-align:right">Price / 價格</th><th style="text-align:right">Change / 漲跌</th></tr></thead>
+      <tbody>
+    <tr>
+      <td><strong>S&P 500</strong><br><span style="font-size:11px;color:var(--text-muted)">標普500 · US</span></td>
+      <td style="text-align:right;font-weight:600">7,209.01</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+1.02%</td>
+    </tr>
+    <tr>
+      <td><strong>Nasdaq 100</strong><br><span style="font-size:11px;color:var(--text-muted)">納斯達克 · US</span></td>
+      <td style="text-align:right;font-weight:600">24,892</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+0.89%</td>
+    </tr>
+    <tr>
+      <td><strong>Dow Jones</strong><br><span style="font-size:11px;color:var(--text-muted)">道瓊工業 · US</span></td>
+      <td style="text-align:right;font-weight:600">49,652</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+1.62%</td>
+    </tr>
+    <tr>
+      <td><strong>Russell 2000</strong><br><span style="font-size:11px;color:var(--text-muted)">羅素2000 · US</span></td>
+      <td style="text-align:right;font-weight:600">2,799.91</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+2.21%</td>
+    </tr>
+    <tr>
+      <td><strong>TAIEX</strong><br><span style="font-size:11px;color:var(--text-muted)">台灣加權指數 · TW</span></td>
+      <td style="text-align:right;font-weight:600">38,927</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-0.96%</td>
+    </tr>
+    <tr>
+      <td><strong>Hang Seng</strong><br><span style="font-size:11px;color:var(--text-muted)">恆生指數 · HK</span></td>
+      <td style="text-align:right;font-weight:600">25,777</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-1.28%</td>
+    </tr>
+    <tr>
+      <td><strong>Nikkei 225</strong><br><span style="font-size:11px;color:var(--text-muted)">日經225 · JP</span></td>
+      <td style="text-align:right;font-weight:600">59,513</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+0.38%</td>
+    </tr>
+    <tr>
+      <td><strong>FTSE 100</strong><br><span style="font-size:11px;color:var(--text-muted)">富時100 · UK</span></td>
+      <td style="text-align:right;font-weight:600">10,324</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-0.53%</td>
+    </tr></tbody>
+    </table>
+  </div>
+    
+  <div class="mk-card mk-half">
+    <div class="mk-card-title">Commodities & Crypto · 大宗商品與加密貨幣</div>
+    <table class="mk-table">
+      <thead><tr><th>Asset / 資產</th><th style="text-align:right">Price</th><th style="text-align:right">Change</th></tr></thead>
+      <tbody>
+    <tr>
+      <td><strong>Gold</strong><br><span style="font-size:11px;color:var(--text-muted)">黃金 · $/oz</span></td>
+      <td style="text-align:right;font-weight:600">4,595.10</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-0.75%</td>
+    </tr>
+    <tr>
+      <td><strong>Crude Oil</strong><br><span style="font-size:11px;color:var(--text-muted)">原油 · $/bbl</span></td>
+      <td style="text-align:right;font-weight:600">104.93</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-0.13%</td>
+    </tr>
+    <tr>
+      <td><strong>Bitcoin</strong><br><span style="font-size:11px;color:var(--text-muted)">比特幣 · USD</span></td>
+      <td style="text-align:right;font-weight:600">77,054</td>
+      <td style="text-align:right;font-weight:600;color:#2e6b58">+0.98%</td>
+    </tr>
+    <tr>
+      <td><strong>USD Index</strong><br><span style="font-size:11px;color:var(--text-muted)">美元指數 · pts</span></td>
+      <td style="text-align:right;font-weight:600">98.01</td>
+      <td style="text-align:right;font-weight:600;color:#b84040">-0.04%</td>
+    </tr></tbody>
+    </table>
+  </div>
+    
+  <div class="mk-card mk-half">
+    <div class="mk-card-title">Sector Rotation · 板塊輪動</div>
+    <div class="sec-list">
+    <div class="sec-row">
+      <span class="sec-name">Industrials <span style="color:var(--text-muted);font-size:11px">工業</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:21.92%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+2.7%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Healthcare <span style="color:var(--text-muted);font-size:11px">醫療</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:17.68%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+2.2%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Real Estate <span style="color:var(--text-muted);font-size:11px">房地產</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:13.92%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+1.7%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Cons. Staples <span style="color:var(--text-muted);font-size:11px">必需消費</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:13.44%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+1.7%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Cons. Disc. <span style="color:var(--text-muted);font-size:11px">非必需消費</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:10.32%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+1.3%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Comm. Services <span style="color:var(--text-muted);font-size:11px">通訊服務</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:8.48%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+1.1%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Energy <span style="color:var(--text-muted);font-size:11px">能源</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:8.4%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+1.1%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Materials <span style="color:var(--text-muted);font-size:11px">原材料</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:8.0%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+1.0%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Financials <span style="color:var(--text-muted);font-size:11px">金融</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:3.2%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+0.4%</span>
+    </div>
+    <div class="sec-row">
+      <span class="sec-name">Technology <span style="color:var(--text-muted);font-size:11px">科技</span></span>
+      <div class="sec-bar-wrap">
+        <div class="sec-bar" style="width:2.0%;background:#2e6b58;"></div>
+      </div>
+      <span class="sec-val" style="color:#2e6b58">+0.2%</span>
+    </div></div>
+  </div>
+  </div>
+
+  
+  <div class="mk-card mk-full" style="margin-top:0;border-top:4px solid #5560a8;">
+    <div class="mk-card-title">Latest Headlines · 最新頭條 (24h)</div>
+    <div class="news-list">
+      <div class="news-item">
+        <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 16:00</span>
+        <span class="news-title">How Taiwan Became the World's Most Perilous Geopolitical Chokepoint</span>
+        
+      </div>
+      <div class="news-item">
+        <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 16:00</span>
+        <span class="news-title">Odd Lots: How Taiwan Could Become a Global Chokepoint (Podcast)</span>
+        <span class="news-impact">The closure of the Strait of Hormuz has highlighted the potential for long-running theoretical chokepoints to turn into reality, with dramatic results for both geopolitics and the global economy. But the hypothetical sce</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">Seeking Alpha · US · 2026-05-01 15:53</span>
+        <span class="news-title">Twilio signals higher 2026 outlook, raising organic growth to 9.5%-10.5% and non-GAAP operating income to $1.08B-$1.1B</span>
+        
+      </div>
+      <div class="news-item">
+        <span class="news-source">Seeking Alpha · US · 2026-05-01 15:52</span>
+        <span class="news-title">Reddit outlines $715M-$725M Q2 2026 revenue while targeting 100M daily U.S. users</span>
+        
+      </div>
+      <div class="news-item">
+        <span class="news-source">BBC Business · UK · 2026-05-01 15:52</span>
+        <span class="news-title">Trump to remove whisky tariffs after King's visit</span>
+        <span class="news-impact">The US president said he would lift restrictions on Scotland's ability to work with the state of Kentucky on whisky and bourbon.</span>
+      </div>
+      <div class="news-item">
+        <span class="news-source">Bloomberg Markets · GLOBAL · 2026-05-01 15:43</span>
+        <span class="news-title">Nagel Favors ECB June Hike Unless Outlook Improves Markedly</span>
+        <span class="news-impact">The European Central Bank will need to increase interest rates in June if there isn’t a significant change in the outlook, according to Bundesbank President Joachim Nagel.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="week-grid">
+    
+    <div class="week-card review">
+      <div class="week-title">📊 This Week's Moves · 本週行情 (Week 18)</div>
+      
+      <div class="week-item">
+        <div class="week-date">US</div>
+        <strong>S&P 500</strong> &nbsp;
+        <span style="color:#2e6b58;font-weight:700">+1.0%</span>
+        <span style="color:var(--text-muted);font-size:11px"> today</span>
+      </div>
+      <div class="week-item">
+        <div class="week-date">US</div>
+        <strong>Nasdaq 100</strong> &nbsp;
+        <span style="color:#2e6b58;font-weight:700">+0.9%</span>
+        <span style="color:var(--text-muted);font-size:11px"> today</span>
+      </div>
+      <div class="week-item">
+        <div class="week-date">US</div>
+        <strong>Dow Jones</strong> &nbsp;
+        <span style="color:#2e6b58;font-weight:700">+1.6%</span>
+        <span style="color:var(--text-muted);font-size:11px"> today</span>
+      </div>
+      <div class="week-item">
+        <div class="week-date">US</div>
+        <strong>Russell 2000</strong> &nbsp;
+        <span style="color:#2e6b58;font-weight:700">+2.2%</span>
+        <span style="color:var(--text-muted);font-size:11px"> today</span>
+      </div>
+      <div class="week-item">
+        <div class="week-date">TW</div>
+        <strong>TAIEX</strong> &nbsp;
+        <span style="color:#b84040;font-weight:700">-1.0%</span>
+        <span style="color:var(--text-muted);font-size:11px"> today</span>
+      </div>
+    </div>
+    
+    <div class="week-card preview">
+      <div class="week-title">📅 Upcoming This Week · 本週重要事件</div>
+      
+      <div class="week-item">
+        <div class="week-date"> </div>
+        <strong>CVX</strong> — Chevron Corporation
+      </div>
+      <div class="week-item">
+        <div class="week-date"> </div>
+        <strong>XOM</strong> — Exxon Mobil Corporation
+      </div>
+      <div class="week-item">
+        <div class="week-date"> </div>
+        <strong>AAPL</strong> — Apple Inc.
+      </div>
+      <div class="week-item">
+        <div class="week-date"> </div>
+        <strong>AMD</strong> — Advanced Micro Devices, Inc.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Market Overview &nbsp;·&nbsp; 2026-05-01
+</footer>
+</body>
+</html>
