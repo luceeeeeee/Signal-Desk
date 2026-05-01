@@ -1202,9 +1202,9 @@ TOP_PICKS_UNIVERSE = [
     # Defense & Aerospace
     "LMT","RTX","NOC","BA","GD","HII",
     # Retail & Consumer
-    "WMT","COST","TGT","NKE","SBUX","MCD","AMZN",
+    "WMT","COST","TGT","HD","NKE","SBUX","MCD","AMZN","NFLX",
     # Energy & Commodities
-    "XOM","CVX","COP","NEE","ENPH",
+    "XOM","CVX","COP","SLB","NEE","ENPH",
     # Real Estate & Infrastructure
     "AMT","EQIX","PLD","CCI",
 ]
@@ -1670,14 +1670,27 @@ def fetch_sector_leaders_data() -> list:
             total_cash = info.get("totalCash")
             total_debt = info.get("totalDebt")
             equity_ratio = None
+            roic = None
             try:
                 bs = t.balance_sheet
                 if bs is not None and not bs.empty:
                     col = bs.columns[0]
-                    ta = next((float(bs.at[k, col]) for k in ("Total Assets",) if k in bs.index), None)
-                    se = next((float(bs.at[k, col]) for k in ("Stockholders Equity","Total Stockholders Equity","Common Stock Equity") if k in bs.index), None)
+                    def _g(*keys):
+                        for k in keys:
+                            if k in bs.index:
+                                try: return float(bs.at[k, col])
+                                except: pass
+                        return None
+                    ta = _g("Total Assets")
+                    se = _g("Stockholders Equity", "Total Stockholders Equity", "Common Stock Equity")
                     if ta and se and ta > 0:
                         equity_ratio = se / ta
+                    op_margin = info.get("operatingMargins") or 0
+                    op_income = op_margin * (rev or 0)
+                    curr_liab = _g("Current Liabilities", "Total Current Liabilities")
+                    inv_cap = (ta or 0) - (curr_liab or 0)
+                    if inv_cap > 0 and op_income:
+                        roic = op_income * 0.79 / inv_cap
             except Exception:
                 pass
             d = {
@@ -1693,7 +1706,7 @@ def fetch_sector_leaders_data() -> list:
                 "revenue_growth": info.get("revenueGrowth"),
                 "earnings_growth": info.get("earningsGrowth"),
                 "fcf_margin": fcf_margin,
-                "roic": None,
+                "roic": roic,
                 "return_on_equity": info.get("returnOnEquity"),
                 "total_cash": total_cash,
                 "total_debt": total_debt,

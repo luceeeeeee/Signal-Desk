@@ -158,6 +158,35 @@ def run_universe_company_pages():
                 continue
             prev = info.get("previousClose") or price
             change_pct = ((price - prev) / prev * 100) if prev else 0.0
+            analyst_target = info.get("targetMeanPrice")
+            upside = ((analyst_target - price) / price * 100) if analyst_target and price else None
+            fcf = info.get("freeCashflow")
+            rev = info.get("totalRevenue")
+            fcf_margin = (fcf / rev) if fcf and rev and rev > 0 else None
+            equity_ratio = None
+            roic = None
+            try:
+                bs = t.balance_sheet
+                if bs is not None and not bs.empty:
+                    col = bs.columns[0]
+                    def _g(*keys):
+                        for k in keys:
+                            if k in bs.index:
+                                try: return float(bs.at[k, col])
+                                except: pass
+                        return None
+                    ta = _g("Total Assets")
+                    se = _g("Stockholders Equity", "Total Stockholders Equity", "Common Stock Equity")
+                    if ta and se and ta > 0:
+                        equity_ratio = se / ta
+                    op_margin = info.get("operatingMargins") or 0
+                    op_income = op_margin * (rev or 0)
+                    curr_liab = _g("Current Liabilities", "Total Current Liabilities")
+                    inv_cap = (ta or 0) - (curr_liab or 0)
+                    if inv_cap > 0 and op_income:
+                        roic = op_income * 0.79 / inv_cap
+            except Exception:
+                pass
             d = {
                 "ticker": ticker,
                 "name": info.get("shortName") or info.get("longName") or ticker,
@@ -175,12 +204,16 @@ def run_universe_company_pages():
                 "revenue_growth": info.get("revenueGrowth"),
                 "earnings_growth": info.get("earningsGrowth"),
                 "return_on_equity": info.get("returnOnEquity"),
-                "analyst_target": info.get("targetMeanPrice"),
+                "analyst_target": analyst_target,
+                "analyst_upside_pct": round(upside, 1) if upside is not None else None,
                 "recommendation": info.get("recommendationKey", ""),
                 "week_52_high": info.get("fiftyTwoWeekHigh"),
                 "week_52_low": info.get("fiftyTwoWeekLow"),
                 "total_cash": info.get("totalCash"),
                 "total_debt": info.get("totalDebt"),
+                "fcf_margin": fcf_margin,
+                "equity_ratio": equity_ratio,
+                "roic": roic,
             }
             _generate_one_company_page(d, recent.get(ticker))
         except Exception as e:

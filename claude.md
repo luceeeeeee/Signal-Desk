@@ -64,7 +64,7 @@ Earnings Calendar → Market → Top Picks → Sector Leaders → Statement Guid
 
 ## Bilingual Rules
 
-**All content must be bilingual: English first, Chinese second.**
+**All content must be bilingual: English first, Traditional Chinese (繁體中文) second. Never Simplified Chinese.**
 
 ### Pages (hero sections)
 ```html
