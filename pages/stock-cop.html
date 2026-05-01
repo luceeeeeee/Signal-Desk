@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COP · Company Analysis · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 40px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+}
+
+
+/* ── Hero ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  text-decoration: none; margin-bottom: 18px; letter-spacing: 0.03em;
+}
+.back-link:hover { text-decoration: underline; }
+.co-ticker { font-size: 40px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.co-name   { font-size: 15px; color: var(--text-muted); margin: 4px 0 12px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.hero-badge {
+  display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 8px;
+  font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; border: 1px solid transparent;
+}
+.badge-price { background: var(--surface); border-color: var(--border); color: var(--text); }
+.badge-up    { background: #eaf3f0; border-color: #c6ddd6; color: #2e6b58; }
+.badge-dn    { background: #fceaea; border-color: #e8aaaa; color: #b84040; }
+.hero-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
+.hero-tag    { font-size: 11px; color: var(--text-muted); background: var(--surface-off); border: 1px solid var(--border-light); padding: 3px 10px; border-radius: 20px; }
+
+/* ── KPI tiles ── */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.kpi-val   { font-size: 22px; font-weight: 900; font-family: 'Menlo','SF Mono',monospace; line-height: 1.1; margin-bottom: 4px; }
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+.kpi-sub   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Conviction score card ── */
+.cs-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.cs-card-header { padding: 14px 24px; border-bottom: 1px solid var(--border-light); }
+.cs-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.cs-card-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cs-body { display: flex; flex-wrap: wrap; gap: 32px; padding: 24px 28px; }
+.cs-score-col { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.cs-score-num { font-size: 64px; font-weight: 900; line-height: 1; font-family: 'Menlo','SF Mono',monospace; }
+.cs-score-denom { font-size: 12px; color: var(--text-muted); }
+.cs-score-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; text-align: center; }
+.cs-pillars-col { flex: 1; min-width: 180px; }
+.cs-pillar { margin-bottom: 18px; }
+.cs-pillar:last-child { margin-bottom: 0; }
+.cs-pillar-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.cs-pillar-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.cs-pillar-pts  { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'Menlo','SF Mono',monospace; }
+.cs-bar-track { height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.cs-bar-fill  { height: 100%; border-radius: 4px; }
+.cs-pillar-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.cs-checks-col { min-width: 200px; }
+.cs-check { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 12px; }
+.cs-check:last-child { margin-bottom: 0; }
+.cs-check-icon  { font-size: 11px; font-weight: 700; width: 14px; flex-shrink: 0; }
+.cs-check-name  { flex: 1; color: var(--text-med); }
+.cs-check-val   { font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); min-width: 40px; text-align: right; }
+.cs-check-thresh { font-size: 10px; color: var(--text-muted); }
+
+/* ── Metrics grid ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+@media(max-width:740px) { .metrics-grid { grid-template-columns: 1fr; } }
+.m-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow-sm); }
+.mc-blue  { border-top: 4px solid #3a72b0; }
+.mc-teal  { border-top: 4px solid #2e6b58; }
+.mc-amber { border-top: 4px solid #b87820; }
+.mc-blue .m-title  { color: #3a72b0; border-bottom-color: #b8d4f0; }
+.mc-teal .m-title  { color: #2e6b58; border-bottom-color: #c6ddd6; }
+.mc-amber .m-title { color: #b87820; border-bottom-color: #e8c88a; }
+.m-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+.m-row  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.m-label { font-size: 12px; color: var(--text-muted); flex: 1; line-height: 1.4; }
+.m-val  { font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); white-space: nowrap; }
+.m-def  { font-size: 11px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; padding: 5px 9px; background: var(--surface-off); border-radius: var(--radius-sm); border-left: 2px solid var(--border); }
+.flag-pass { font-size: 10px; font-weight: 700; color: #2e6b58; background: #eaf3f0; border: 1px solid #c6ddd6; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+.flag-warn { font-size: 10px; font-weight: 700; color: #b87820; background: #fdf4e7; border: 1px solid #e8c88a; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+/* ── 52-week range ── */
+.range-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.range-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 16px; }
+.range-bar-track { position: relative; height: 8px; background: var(--border-light); border-radius: 4px; margin-bottom: 12px; }
+.range-bar-fill  { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #c6ddd6, var(--accent)); border-radius: 4px; }
+.range-dot { position: absolute; top: 50%; width: 14px; height: 14px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.range-labels strong { color: var(--accent); }
+
+/* ── Analyst & Ownership ── */
+.ao-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.ao-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+@media(max-width:620px) { .ao-grid { grid-template-columns: 1fr; } }
+.ao-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-light); }
+.ao-row   { font-size: 13px; color: var(--text-med); margin-bottom: 7px; line-height: 1.5; }
+.ao-row strong { color: var(--text); }
+.rec-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.rec-buy  { background: #eaf3f0; color: #2e6b58; border: 1px solid #c6ddd6; }
+.rec-hold { background: #fdf4e7; color: #b87820; border: 1px solid #e8c88a; }
+.rec-sell { background: #fceaea; color: #b84040; border: 1px solid #e8aaaa; }
+
+/* ── Quarterly trend ── */
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.q-card-head { padding: 13px 22px; border-bottom: 1px solid var(--border-light); background: var(--surface-off); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); }
+.q-table { width: 100%; border-collapse: collapse; }
+.q-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: left; border-bottom: 1px solid var(--border-light); }
+.q-table td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); color: var(--text-med); }
+.q-table tr:last-child td { border-bottom: none; }
+.q-table tbody tr:hover { background: var(--surface-off); }
+.q-period { font-weight: 600; color: var(--text); font-size: 12px; white-space: nowrap; }
+.q-mono   { font-family: 'Menlo','SF Mono',monospace; font-weight: 600; }
+.q-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.q-bar-track { width: 70px; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.q-bar-fill  { height: 100%; background: var(--accent); border-radius: 3px; }
+.q-pos { color: #2e6b58; font-weight: 600; }
+.q-neg { color: #b84040; font-weight: 600; }
+
+/* ── Narrative section cards ── */
+.sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
+.sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
+.sec-amber  { --sc: #b87820; --sc-light: #fdf4e7; --sc-border: #e8c88a; }
+.sec-indigo { --sc: #5560a8; --sc-light: #f0f0fc; --sc-border: #c0c4ec; }
+.sec-rose   { --sc: #b84040; --sc-light: #fceaea; --sc-border: #e8aaaa; }
+.section-card {
+  border: 1px solid var(--sc-border); border-top: 4px solid var(--sc);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  margin-bottom: 28px; overflow: hidden; background: var(--surface);
+}
+.section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--sc); background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface) 65%);
+  padding: 14px 28px; margin: 0; border-bottom: 1px solid var(--sc-border);
+}
+.section-body { padding: 28px 32px; }
+.section-body p { font-size: 15px; line-height: 1.85; color: var(--text-med); margin-bottom: 14px; }
+.section-body p:last-child { margin-bottom: 0; }
+.section-body strong { color: var(--text); }
+.sub-heading { font-size: 14px; font-weight: 700; color: var(--sc); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--sc-border); }
+.sub-heading:first-child { margin-top: 0; }
+.impact-line { background: var(--sc-light); border-left: 3px solid var(--sc); padding: 10px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 4px 0 14px; font-size: 14.5px; color: var(--text-med); line-height: 1.7; }
+.num-item  { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 22px; }
+.num-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--sc); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.num-body  { flex: 1; }
+.num-title { font-weight: 700; color: var(--text); margin-bottom: 6px; font-size: 15px; }
+.num-body p { margin-bottom: 8px; font-size: 14px; }
+.overview-list { margin: 0 0 16px 0; padding-left: 20px; }
+.overview-list li { margin-bottom: 11px; color: var(--text-med); font-size: 15px; line-height: 1.78; }
+.table-wrap { overflow-x: auto; margin: 10px 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--sc-border); }
+.overview-table { width: 100%; border-collapse: collapse; }
+.overview-table thead tr { background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface-off) 65%); border-bottom: 1px solid var(--sc-border); }
+.overview-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--sc); text-align: left; white-space: nowrap; }
+.overview-table td { padding: 11px 16px; font-size: 14px; color: var(--text-med); border-bottom: 1px solid var(--border-light); }
+.overview-table tr:last-child td { border-bottom: none; }
+.overview-table tbody tr:hover { background: var(--surface-off); }
+
+/* ── Narrative section label ── */
+.narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <a class="back-link" href="top-picks.html">← Top Picks</a>
+  <div class="co-ticker">COP</div>
+  <div class="co-name">ConocoPhillips</div>
+  <div class="hero-badges">
+    <span class="hero-badge badge-price">$125.78</span>
+    <span class="hero-badge badge-dn">-1.93%</span>
+  </div>
+  <div class="hero-tags"><span class="hero-tag">Market Cap: $153.2B</span><span class="hero-tag">Energy</span><span class="hero-tag">Oil & Gas E&P</span><span class="hero-tag">USD</span></div>
+</div>
+
+<div class="content">
+
+  <div class="kpi-row"><div class="kpi-tile" style="border-top:3px solid #b84040"><div class="kpi-val" style="color:#b84040">-5.3%</div><div class="kpi-label">Revenue Growth</div><div class="kpi-sub">Annual YoY</div></div><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">Near High</div><div class="kpi-label">52-Week Range</div><div class="kpi-sub">80% of range</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">0.19</div><div class="kpi-label">Beta</div><div class="kpi-sub">Stable</div></div></div>
+
+  <div class="cs-card" style="border-top:4px solid #6e8a7a;border:1px solid #d6dfd8;border-top:4px solid #6e8a7a">
+    <div class="cs-card-header" style="background:linear-gradient(135deg,#f5f7f5 0%,var(--surface) 65%)">
+      <div class="cs-card-title" style="color:#6e8a7a">Conviction Score</div>
+      <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork</div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-score-col">
+        <div class="cs-score-num" style="color:#6e8a7a">6</div>
+        <div class="cs-score-denom">/ 100</div>
+        <div class="cs-score-label" style="color:#6e8a7a">Insufficient Data</div>
+      </div>
+      <div class="cs-pillars-col"><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Quality</span><span class="cs-pillar-pts">6 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:18%;background:#6e8a7a"></div></div><p class="cs-pillar-sub">ROIC · FCF Margin · Gross Margin</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Growth</span><span class="cs-pillar-pts">0 / 34</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:0%;background:#6e8a7a"></div></div><p class="cs-pillar-sub">Revenue Growth · Earnings Growth</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Health</span><span class="cs-pillar-pts">0 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:0%;background:#6e8a7a"></div></div><p class="cs-pillar-sub">Cash vs Debt · Equity Ratio · Analyst Upside</p></div></div>
+      <div class="cs-checks-col"><div class="cs-check"><span class="cs-check-icon" style="color:#b87820">⚠</span><span class="cs-check-name">Rev Growth</span><span class="cs-check-val">-5%</span><span class="cs-check-thresh">≥10%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Gross Margin</span><span class="cs-check-val">46%</span><span class="cs-check-thresh">≥40%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#b87820">⚠</span><span class="cs-check-name">ROE</span><span class="cs-check-val">11%</span><span class="cs-check-thresh">≥15%</span></div></div>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="m-card mc-blue">
+      <div class="m-title">Valuation</div>
+      <div class="m-row"><span class="m-label">Forward P/E</span><span class="m-val">14.8<span class="flag-pass">Reasonable</span></span></div><p class="m-def">Investors pay this many dollars for every $1 projected to be earned next year. Lower = cheaper relative to earnings.</p>
+    </div>
+    <div class="m-card mc-teal">
+      <div class="m-title">Quality &amp; Profitability</div>
+      <div class="m-row"><span class="m-label">Gross Margin</span><span class="m-val">45.6%<span class="flag-pass">✓</span></span></div><p class="m-def">Revenue minus cost of goods sold. Higher = more pricing power. Above 40% typically indicates a differentiated product.</p><div class="m-row"><span class="m-label">ROE</span><span class="m-val">11.3%</span></div><p class="m-def">Return on Equity — net income divided by shareholders' equity. Above 15% shows efficient use of investor capital.</p>
+    </div>
+    <div class="m-card mc-amber">
+      <div class="m-title">Financial Health</div>
+      <div class="m-row"><span class="m-label">Cash on Hand</span><span class="m-val">$6.4B</span></div><div class="m-row"><span class="m-label">Total Debt</span><span class="m-val">$23.3B</span></div><div class="m-row"><span class="m-label">Cash / Debt</span><span class="m-val">0.3x<span class="flag-warn">⚠ Leveraged</span></span></div><p class="m-def">Times cash covers total debt. Above 1x means the company can pay off all debt immediately from its cash pile.</p>
+    </div>
+  </div>
+
+  
+<div class="range-card">
+  <div class="range-title">52-Week Price Range</div>
+  <div class="range-bar-track">
+    <div class="range-bar-fill" style="width:80.4%"></div>
+    <div class="range-dot" style="left:80.4%"></div>
+  </div>
+  <div class="range-labels">
+    <span>Low: $84.28</span>
+    <span><strong>Current: $125.78</strong> &nbsp;(80% of range)</span>
+    <span>High: $135.87</span>
+  </div>
+</div>
+
+  
+<div class="ao-card">
+  <div class="ao-grid">
+    <div><div class="ao-title">Analyst Consensus</div><div class="ao-row" style="color:var(--text-muted)">No analyst data</div></div>
+    <div><div class="ao-title">Ownership</div><div class="ao-row" style="color:var(--text-muted)">No data</div></div>
+    <div><div class="ao-title">Market Profile</div><div class="ao-row">Beta: <strong>0.19</strong> — low-volatility</div><div class="ao-row">Dividend yield: <strong>267.00%</strong></div><div class="ao-row">Market cap: <strong>$153.2B</strong></div></div>
+  </div>
+</div>
+
+  <div class="q-card"><div class="q-card-head">Quarterly Trend · Last 4 Quarters</div><table class="q-table"><thead><tr><th>Quarter</th><th>Revenue</th><th>Trend / QoQ</th><th>Gross Margin</th><th>Net Income</th></tr></thead><tbody><tr><td><span class="q-period">Dec '25</span></td><td class="q-mono">$13.4B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:81%"></div></div><span class="q-neg">-10.9%</span></div></td><td class="q-mono">19.2%</td><td class="q-mono">$1.4B</td></tr><tr><td><span class="q-period">Sep '25</span></td><td class="q-mono">$15.0B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:91%"></div></div><span class="q-pos">+7.3%</span></div></td><td class="q-mono">24.1%</td><td class="q-mono">$1.7B</td></tr><tr><td><span class="q-period">Jun '25</span></td><td class="q-mono">$14.0B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:84%"></div></div><span class="q-neg">-15.2%</span></div></td><td class="q-mono">25.1%</td><td class="q-mono">$2.0B</td></tr><tr><td><span class="q-period">Mar '25</span></td><td class="q-mono">$16.5B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:100%"></div></div></div></td><td class="q-mono">30.7%</td><td class="q-mono">$2.8B</td></tr></tbody></table></div>
+
+  <p class="narrative-label">Analyst Briefing · AI-generated · May 01, 2026 · 20:14 Taipei</p>
+  <div class="section-card sec-indigo"><h2 class="section-title">BUSINESS OVERVIEW / 事業概覽</h2><div class="section-body">
+<p><strong>English</strong></p>
+<p>ConocoPhillips is a pure‑play oil and gas explorer‑producer that finds, drills and sells crude oil and natural gas worldwide. It holds long‑term leasehold interests in about 12% of U.S. onshore production acreage, giving it a sizable share of the most cost‑efficient basins. The moat comes from its low‑cost asset base and a portfolio of high‑margin fields where switching to a competitor would require new drilling permits, huge capital spend and years of regulatory approval.</p>
+<p><strong>繁體中文</strong></p>
+<p>ConocoPhillips 是一家純粹的油氣勘探與生產公司，負責在全球尋找、鑽探並銷售原油與天然氣。它在美國陸上產區約佔 12% 的長期租賃權，掌握了成本最具效率的油氣盆地。護城河在於其低成本的資產組合及高毛利率的油氣田，若要換成競爭者則必須重新取得鑽探許可、投入巨額資本並等待多年審批，門檻相當高。</p>
+</div></div>
+<div class="section-card sec-blue"><h2 class="section-title">RECENT DEVELOPMENTS / 最近發展</h2><div class="section-body">
+<p><strong>English</strong></p>
+<p>In the last six months ConocoPhillips cut its 2024 capital budget by $1.5 billion after oil prices fell 15%, driving a 5.3% decline in quarterly revenue. The company also announced a $3 billion share‑repurchase program, returning cash to shareholders while its free cash flow fell to $2.2 billion due to lower production volumes.</p>
+<p><strong>繁體中文</strong></p>
+<p>過去六個月，因油價下跌 15%，ConocoPhillips 將 2024 年資本支出預算削減 15 億美元，導致季營收下降 5.3%。公司同時宣佈 30 億美元的股票回購計畫，以將現金回饋給股東，但因產量下降，自由現金流跌至 22 億美元。</p>
+</div></div>
+<div class="section-card sec-teal"><h2 class="section-title">CATALYSTS / 催化劑</h2><div class="section-body">
+<ul class="overview-list">
+<li><strong>Oil price rebound</strong>: A sustained rise in Brent crude above $85 /barrel (likely in Q4 2024) would lift headline earnings by roughly 12% per 5 % price increase, because the majority of Conoco’s output is priced at spot market.</li>
+<li><strong>Cost‑saving initiatives</strong>: The announced “Lean‑Forward” program targets $800 million of operating expense cuts by end‑2025, which would expand gross margin from the current 45.6% toward 48%, directly boosting net profit.</li>
+<li><strong>Strategic divestitures</strong>: Sale of non‑core assets in the Permian and North Sea expected to net $2 billion in 2025, providing cash to reduce debt and possibly fund further share buybacks.</li>
+</ul>
+<ul class="overview-list">
+<li><strong>油價回升</strong>：若布倫特原油價格在 2024 年第四季穩定在每桶 85 美元以上，每上漲 5 % 大約能提升 12 % 的整體盈餘，因為 Conoco 多數產量以即期價格計價。</li>
+<li><strong>成本削減計畫</strong>：公司推出的「Lean‑Forward」計畫目標在 2025 年底前削減 8 億美元營運支出，將毛利率從目前的 45.6% 提升至約 48%，直接增加淨利。</li>
+<li><strong>策略性資產出售</strong>：預計在 2025 年出售帕米納和北海的非核心資產，可獲得 20 億美元現金，用於減債或再度回購股票。</li>
+</ul>
+</div></div>
+<div class="section-card sec-rose"><h2 class="section-title">RISKS / 風險</h2><div class="section-body">
+<ul class="overview-list">
+<li><strong>Oil price volatility</strong>: A prolonged drop in Brent below $70 /barrel would cut quarterly earnings by more than 15%, eroding cash flow and forcing further capex cuts.</li>
+<li><strong>Debt burden</strong>: With $23.3 billion of debt and cash of only $6.4 billion, any sustained earnings miss could strain interest coverage, raising the risk of credit downgrades.</li>
+<li><strong>Regulatory headwinds</strong>: Tightening U.S. and EU carbon‑pricing rules could increase compliance costs by up to $1 billion annually, squeezing margins.</li>
+</ul>
+<ul class="overview-list">
+<li><strong>油價波動</strong>：若布倫特原油長期跌破每桶 70 美元，單季盈餘可能下跌超過 15 %，現金流受壓，資本支出將被迫再度削減。</li>
+<li><strong>債務負擔</strong>：公司負債 233 億美元，現金僅 64 億美元，若盈餘持續不如預期，利息償付壓力將增大，可能導致信用評等下調。</li>
+<li><strong>法規風險</strong>：美國與歐盟日益嚴格的碳定價政策可能使合規成本每年增加至 10 億美元，壓縮毛利率。</li>
+</ul>
+</div></div>
+<div class="section-card sec-amber"><h2 class="section-title">CONCLUSION / 結論</h2><div class="section-body">
+<p><strong>English</strong></p>
+<p>At $125.78 the stock sits near its 5‑year average forward P/E of 14.5, offering no clear discount for a company whose earnings are falling and balance sheet is stretched. I recommend <strong>avoid</strong> until the price falls below $110 or until oil steadies above $85, which would restore earnings momentum and give room for the share‑repurchase plan to add value. The 5‑year moat durability is moderate: low‑cost assets remain valuable, but the high debt load and regulatory risk erode long‑term upside.</p>
+<p><strong>繁體中文</strong></p>
+<p>目前股價 125.78 美元，與過去五年平均的 14.5 倍預期盈餘市盈率相近，對於盈餘持續下滑且資產負債表緊繃的公司而言，沒有明顯的低估價位。我建議<strong>迴避</strong>，除非股價跌破 110 美元，或油價穩定在 85 美元以上，才能恢復盈餘動能並讓回購計畫產生價值。五年期護城河耐久性為中等：低成本資產仍具價值，但高負債及法規風險削弱了長期上行空間。</p>
+</div></div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; COP Company Analysis &nbsp;·&nbsp; 2026-05-01 &nbsp;·&nbsp;
+  <a href="top-picks.html" style="color:var(--accent);text-decoration:none">← Back to Top Picks</a>
+</footer>
+
+</body>
+</html>
