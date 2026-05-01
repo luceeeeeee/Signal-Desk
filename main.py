@@ -7,6 +7,7 @@ import sys
 import time
 import threading
 from datetime import datetime, timedelta
+from typing import Optional
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -41,7 +42,7 @@ def _narrative_cache_path(ticker: str) -> str:
     return os.path.join(_NARRATIVE_CACHE_DIR, f"{ticker.lower()}.txt")
 
 
-def _get_cached_narrative(ticker: str, recent_earnings_date: str = None) -> str | None:
+def _get_cached_narrative(ticker: str, recent_earnings_date: str = None) -> Optional[str]:
     """Return cached narrative if < 7 days old AND no recent earnings. Else None."""
     path = _narrative_cache_path(ticker)
     if not os.path.exists(path):
