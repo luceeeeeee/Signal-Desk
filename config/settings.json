@@ -25,6 +25,6 @@
     "alert_max_tokens": 1200
   },
   "site": {
-    "base_url": "FILL_IN_NETLIFY_URL"
+    "base_url": "https://thesignaldesk.netlify.app"
   }
 }
