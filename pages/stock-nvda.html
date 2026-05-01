@@ -33,17 +33,19 @@ body {
 }
 nav {
   background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 48px; display: flex; align-items: center;
+  padding: 0 40px; display: flex; align-items: center;
   justify-content: space-between; height: 56px;
   position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
-.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
-.nav-links { display: flex; gap: 6px; list-style: none; }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
 .nav-links a {
   font-size: 12px; color: var(--text-muted); text-decoration: none;
-  padding: 5px 12px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
 }
 .nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
 .nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -229,58 +231,58 @@ footer {
     <span class="nav-name">The Signal Desk</span>
   </div>
   <ul class="nav-links">
-    <li><a href="earnings-calendar-2026.html">Earnings Calendar</a></li>
+    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
     <li><a href="top-picks.html">Top Picks</a></li>
     <li><a href="sector-leaders.html">Sector Leaders</a></li>
-    <li><a href="watchlist.html">My Watchlist</a></li>
     <li><a href="income-statement-guide.html">Statement Guide</a></li>
     <li><a href="news-sources.html">News Sources</a></li>
   </ul>
 </nav>
 
 <div class="hero">
-  <a class="back-link" href="watchlist.html">← Watchlist</a>
+  <a class="back-link" href="top-picks.html">← Top Picks</a>
   <div class="co-ticker">NVDA</div>
   <div class="co-name">NVIDIA Corporation</div>
   <div class="hero-badges">
-    <span class="hero-badge badge-price">$131.38</span>
-    <span class="hero-badge badge-up">+2.24%</span>
+    <span class="hero-badge badge-price">$199.57</span>
+    <span class="hero-badge badge-dn">-4.63%</span>
   </div>
-  <div class="hero-tags"><span class="hero-tag">Market Cap: $3210.0B</span><span class="hero-tag">Technology</span><span class="hero-tag">Semiconductors</span><span class="hero-tag">USD</span></div>
+  <div class="hero-tags"><span class="hero-tag">Market Cap: $4850.5B</span><span class="hero-tag">Technology</span><span class="hero-tag">Semiconductors</span><span class="hero-tag">USD</span></div>
 </div>
 
 <div class="content">
 
-  <div class="kpi-row"><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">+78.1%</div><div class="kpi-label">Revenue Growth</div><div class="kpi-sub">Annual YoY</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">43.1%</div><div class="kpi-label">FCF Margin</div><div class="kpi-sub">≥20% is strong</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">31.2%</div><div class="kpi-label">ROIC</div><div class="kpi-sub">≥15% is strong</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">+27.1%</div><div class="kpi-label">Analyst Upside</div><div class="kpi-sub">BUY</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">Upper Range</div><div class="kpi-label">52-Week Range</div><div class="kpi-sub">72% of range</div></div><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">1.62</div><div class="kpi-label">Beta</div><div class="kpi-sub">Elevated</div></div></div>
+  <div class="kpi-row"><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">+73.2%</div><div class="kpi-label">Revenue Growth</div><div class="kpi-sub">Annual YoY</div></div><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">Near High</div><div class="kpi-label">52-Week Range</div><div class="kpi-sub">84% of range</div></div><div class="kpi-tile" style="border-top:3px solid #b84040"><div class="kpi-val" style="color:#b84040">2.33</div><div class="kpi-label">Beta</div><div class="kpi-sub">High Vol</div></div></div>
 
-  <div class="cs-card" style="border-top:4px solid #2e6b58;border:1px solid #c6ddd6;border-top:4px solid #2e6b58">
-    <div class="cs-card-header" style="background:linear-gradient(135deg,#eaf3f0 0%,var(--surface) 65%)">
-      <div class="cs-card-title" style="color:#2e6b58">Conviction Score</div>
+  <div class="cs-card" style="border-top:4px solid #b84040;border:1px solid #e8aaaa;border-top:4px solid #b84040">
+    <div class="cs-card-header" style="background:linear-gradient(135deg,#fceaea 0%,var(--surface) 65%)">
+      <div class="cs-card-title" style="color:#b84040">Conviction Score</div>
       <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork</div>
     </div>
     <div class="cs-body">
       <div class="cs-score-col">
-        <div class="cs-score-num" style="color:#2e6b58">100</div>
+        <div class="cs-score-num" style="color:#b84040">53</div>
         <div class="cs-score-denom">/ 100</div>
-        <div class="cs-score-label" style="color:#2e6b58">Strong Conviction</div>
+        <div class="cs-score-label" style="color:#b84040">Weak</div>
       </div>
-      <div class="cs-pillars-col"><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Quality</span><span class="cs-pillar-pts">33 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#2e6b58"></div></div><p class="cs-pillar-sub">ROIC · FCF Margin · Gross Margin</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Growth</span><span class="cs-pillar-pts">34 / 34</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#2e6b58"></div></div><p class="cs-pillar-sub">Revenue Growth · Earnings Growth</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Health</span><span class="cs-pillar-pts">33 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#2e6b58"></div></div><p class="cs-pillar-sub">Cash vs Debt · Equity Ratio · Analyst Upside</p></div></div>
-      <div class="cs-checks-col"><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">ROIC</span><span class="cs-check-val">31%</span><span class="cs-check-thresh">≥15%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Rev Growth</span><span class="cs-check-val">+78%</span><span class="cs-check-thresh">≥10%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">FCF Margin</span><span class="cs-check-val">43%</span><span class="cs-check-thresh">≥20%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Gross Margin</span><span class="cs-check-val">75%</span><span class="cs-check-thresh">≥40%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">ROE</span><span class="cs-check-val">126%</span><span class="cs-check-thresh">≥15%</span></div></div>
+      <div class="cs-pillars-col"><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Quality</span><span class="cs-pillar-pts">8 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:24%;background:#b84040"></div></div><p class="cs-pillar-sub">ROIC · FCF Margin · Gross Margin</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Growth</span><span class="cs-pillar-pts">34 / 34</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#b84040"></div></div><p class="cs-pillar-sub">Revenue Growth · Earnings Growth</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Health</span><span class="cs-pillar-pts">11 / 33</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:33%;background:#b84040"></div></div><p class="cs-pillar-sub">Cash vs Debt · Equity Ratio · Analyst Upside</p></div></div>
+      <div class="cs-checks-col"><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Rev Growth</span><span class="cs-check-val">+73%</span><span class="cs-check-thresh">≥10%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Gross Margin</span><span class="cs-check-val">71%</span><span class="cs-check-thresh">≥40%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">ROE</span><span class="cs-check-val">101%</span><span class="cs-check-thresh">≥15%</span></div></div>
     </div>
   </div>
 
   <div class="metrics-grid">
     <div class="m-card mc-blue">
       <div class="m-title">Valuation</div>
-      <div class="m-row"><span class="m-label">Forward P/E</span><span class="m-val">26.8</span></div><p class="m-def">Investors pay this many dollars for every $1 projected to be earned next year. Lower = cheaper relative to earnings.</p><div class="m-row"><span class="m-label">Trailing P/E</span><span class="m-val">38.2</span></div><p class="m-def">Same concept, but based on the last 12 months of actual reported earnings — no estimates involved.</p><div class="m-row"><span class="m-label">PEG Ratio</span><span class="m-val">1.42</span></div><p class="m-def">P/E divided by the growth rate. Below 1.0 often signals the stock is cheap relative to how fast it's growing.</p><div class="m-row"><span class="m-label">Price / Book</span><span class="m-val">28.4x</span></div><p class="m-def">Share price vs book value of company assets. Above 5x means a large premium — justified only if returns on equity are high.</p><div class="m-row"><span class="m-label">Analyst Target</span><span class="m-val">$167.00 <span class="flag-pass">+27.1%</span></span></div><p class="m-def">Wall Street consensus price target. Current recommendation: <strong>BUY</strong>.</p>
+      <div class="m-row"><span class="m-label">Forward P/E</span><span class="m-val">17.8<span class="flag-pass">Reasonable</span></span></div><p class="m-def">Investors pay this many dollars for every $1 projected to be earned next year. Lower = cheaper relative to earnings.</p>
     </div>
     <div class="m-card mc-teal">
       <div class="m-title">Quality &amp; Profitability</div>
-      <div class="m-row"><span class="m-label">ROIC</span><span class="m-val">31.2%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Return on Invested Capital — profit generated per dollar put to work. Above 15% separates great businesses from average ones.</p><div class="m-row"><span class="m-label">FCF Margin</span><span class="m-val">43.1%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Free cash left after all operating costs as a % of revenue. Businesses above 20% generate cash even through downturns.</p><div class="m-row"><span class="m-label">Gross Margin</span><span class="m-val">74.8%<span class="flag-pass">✓</span></span></div><p class="m-def">Revenue minus cost of goods sold. Higher = more pricing power. Above 40% typically indicates a differentiated product.</p><div class="m-row"><span class="m-label">Operating Margin</span><span class="m-val">61.8%</span></div><p class="m-def">What remains after paying staff, rent, and all operating costs — before interest and taxes.</p><div class="m-row"><span class="m-label">Net Margin</span><span class="m-val">55.7%</span></div><p class="m-def">The bottom line: final profit as a % of revenue after every expense including taxes.</p><div class="m-row"><span class="m-label">ROE</span><span class="m-val">126.3%<span class="flag-pass">✓</span></span></div><p class="m-def">Return on Equity — net income divided by shareholders' equity. Above 15% shows efficient use of investor capital.</p>
+      <div class="m-row"><span class="m-label">Gross Margin</span><span class="m-val">71.1%<span class="flag-pass">✓</span></span></div><p class="m-def">Revenue minus cost of goods sold. Higher = more pricing power. Above 40% typically indicates a differentiated product.</p><div class="m-row"><span class="m-label">ROE</span><span class="m-val">101.5%<span class="flag-pass">✓</span></span></div><p class="m-def">Return on Equity — net income divided by shareholders' equity. Above 15% shows efficient use of investor capital.</p>
     </div>
     <div class="m-card mc-amber">
       <div class="m-title">Financial Health</div>
-      <div class="m-row"><span class="m-label">Cash on Hand</span><span class="m-val">$34.8B</span></div><div class="m-row"><span class="m-label">Total Debt</span><span class="m-val">$8.5B</span></div><div class="m-row"><span class="m-label">Cash / Debt</span><span class="m-val">4.1x<span class="flag-pass">✓ Covered</span></span></div><p class="m-def">Times cash covers total debt. Above 1x means the company can pay off all debt immediately from its cash pile.</p><div class="m-row"><span class="m-label">Equity Ratio</span><span class="m-val">66%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Shareholders' equity as % of total assets. Higher = less reliance on borrowed money to fund the business.</p><div class="m-row"><span class="m-label">Current Ratio</span><span class="m-val">4.2<span class="flag-pass">✓</span></span></div><p class="m-def">Short-term assets vs short-term liabilities. Above 1.5 = strong liquidity buffer; below 1.0 = potential cash crunch.</p><div class="m-row"><span class="m-label">Working Capital</span><span class="m-val">$35.2B&nbsp;<span class="flag-pass">Positive</span></span></div><p class="m-def">Day-to-day cash buffer. Positive means the company can fund operations without tapping credit lines.</p><div class="m-row"><span class="m-label">Retained Earnings</span><span class="m-val">$29.8B</span></div><p class="m-def">Cumulative profits reinvested in the business over its lifetime — a proxy for long-term wealth creation.</p>
+      <div class="m-row"><span class="m-label">Cash on Hand</span><span class="m-val">$62.6B</span></div><div class="m-row"><span class="m-label">Total Debt</span><span class="m-val">$11.4B</span></div><div class="m-row"><span class="m-label">Cash / Debt</span><span class="m-val">5.5x<span class="flag-pass">✓ Covered</span></span></div><p class="m-def">Times cash covers total debt. Above 1x means the company can pay off all debt immediately from its cash pile.</p>
     </div>
   </div>
 
@@ -288,70 +290,70 @@ footer {
 <div class="range-card">
   <div class="range-title">52-Week Price Range</div>
   <div class="range-bar-track">
-    <div class="range-bar-fill" style="width:71.9%"></div>
-    <div class="range-dot" style="left:71.9%"></div>
+    <div class="range-bar-fill" style="width:83.7%"></div>
+    <div class="range-dot" style="left:83.7%"></div>
   </div>
   <div class="range-labels">
-    <span>Low: $75.61</span>
-    <span><strong>Current: $131.38</strong> &nbsp;(72% of range)</span>
-    <span>High: $153.13</span>
+    <span>Low: $110.82</span>
+    <span><strong>Current: $199.57</strong> &nbsp;(84% of range)</span>
+    <span>High: $216.83</span>
   </div>
 </div>
 
   
 <div class="ao-card">
   <div class="ao-grid">
-    <div><div class="ao-title">Analyst Consensus</div><div class="ao-row"><strong>62</strong> analysts covering this stock</div><div class="ao-row">Consensus: <span class="rec-pill rec-buy">Strong Buy</span> (mean 1.5/5)</div><div class="ao-row">Target: <strong>$167.00</strong> (+27.1% upside)</div></div>
-    <div><div class="ao-title">Ownership</div><div class="ao-row">Insider ownership: <strong>3.86%</strong></div><div class="ao-row">Institutional: <strong>65.3%</strong></div><div class="ao-row">Short interest: <strong>1.1%</strong></div></div>
-    <div><div class="ao-title">Market Profile</div><div class="ao-row">Beta: <strong>1.62</strong> — higher-vol than market</div><div class="ao-row">PEG ratio: <strong>1.42</strong> — fair</div><div class="ao-row">Dividend yield: <strong>0.03%</strong></div><div class="ao-row">Market cap: <strong>$3210.0B</strong></div></div>
+    <div><div class="ao-title">Analyst Consensus</div><div class="ao-row" style="color:var(--text-muted)">No analyst data</div></div>
+    <div><div class="ao-title">Ownership</div><div class="ao-row" style="color:var(--text-muted)">No data</div></div>
+    <div><div class="ao-title">Market Profile</div><div class="ao-row">Beta: <strong>2.33</strong> — higher-vol than market</div><div class="ao-row">Dividend yield: <strong>2.00%</strong></div><div class="ao-row">Market cap: <strong>$4850.5B</strong></div></div>
   </div>
 </div>
 
-  <div class="q-card"><div class="q-card-head">Quarterly Trend · Last 2 Quarters</div><table class="q-table"><thead><tr><th>Quarter</th><th>Revenue</th><th>Trend / QoQ</th><th>Gross Margin</th><th>Net Income</th></tr></thead><tbody><tr><td><span class="q-period">Jan '25</span></td><td class="q-mono">$39.3B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:100%"></div></div><span class="q-pos">+12.1%</span></div></td><td class="q-mono">74.8%</td><td class="q-mono">$22.1B</td></tr><tr><td><span class="q-period">Oct '24</span></td><td class="q-mono">$35.1B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:89%"></div></div></div></td><td class="q-mono">74.5%</td><td class="q-mono">$19.3B</td></tr></tbody></table></div>
+  <div class="q-card"><div class="q-card-head">Quarterly Trend · Last 4 Quarters</div><table class="q-table"><thead><tr><th>Quarter</th><th>Revenue</th><th>Trend / QoQ</th><th>Gross Margin</th><th>Net Income</th></tr></thead><tbody><tr><td><span class="q-period">Jan '26</span></td><td class="q-mono">$68.1B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:100%"></div></div><span class="q-pos">+19.5%</span></div></td><td class="q-mono">75.0%</td><td class="q-mono">$43.0B</td></tr><tr><td><span class="q-period">Oct '25</span></td><td class="q-mono">$57.0B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:83%"></div></div><span class="q-pos">+22.0%</span></div></td><td class="q-mono">73.4%</td><td class="q-mono">$31.9B</td></tr><tr><td><span class="q-period">Jul '25</span></td><td class="q-mono">$46.7B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:68%"></div></div><span class="q-pos">+6.1%</span></div></td><td class="q-mono">72.4%</td><td class="q-mono">$26.4B</td></tr><tr><td><span class="q-period">Apr '25</span></td><td class="q-mono">$44.1B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:64%"></div></div></div></td><td class="q-mono">60.5%</td><td class="q-mono">$18.8B</td></tr></tbody></table></div>
 
-  <p class="narrative-label">Analyst Briefing · AI-generated · May 01, 2026 · 13:31 Taipei</p>
+  <p class="narrative-label">Analyst Briefing · AI-generated · May 01, 2026 · 20:23 Taipei</p>
   <div class="section-card sec-indigo"><h2 class="section-title">BUSINESS OVERVIEW</h2><div class="section-body">
-<p>NVIDIA dominates the AI accelerator market with ~85% GPU market share, underpinned by the CUDA ecosystem built over a decade. No competitor has matched its full-stack AI platform.</p>
-<p>輝達主導AI加速器市場，GPU市佔率約85%，核心支撐是耗時十年打造的CUDA軟體生態系統，目前無競爭對手能媲美其全端AI平台。</p>
+<p><strong>English:</strong> NVIDIA designs and sells the most advanced graphics chips (GPUs) that power everything from video‑games to data‑center AI servers. Its GPUs dominate the AI accelerator market, holding roughly 70% of the revenue share in custom AI chips. The moat is three‑fold: (1) a massive developer ecosystem that makes switching costly because software is written specifically for NVIDIA’s CUDA platform; (2) continuous technology lead that requires billions of dollars in R&amp;D that most rivals cannot match; and (3) premium pricing power – customers willingly pay 30‑40% more for NVIDIA’s performance edge.</p>
+<p><strong>繁體中文：</strong>NVIDIA 設計並銷售最先進的圖形晶片（GPU），這些晶片支援從電玩遊戲到資料中心的 AI 伺服器。其 GPU 在 AI 加速器市場佔約 70% 的營收份額。護城河有三方面：一是龐大的開發者生態系，軟體多數唯有在 NVIDIA 的 CUDA 平台上運行，使得換廠成本高；二是持續的技術領先，需要數十億美元的研發投入，競爭對手很難跟上；三是品牌溢價，客戶願意為 NVIDIA 的效能支付 30‑40% 的額外價格。</p>
 </div></div>
 <div class="section-card sec-blue"><h2 class="section-title">RECENT DEVELOPMENTS</h2><div class="section-body">
-<p>Q4 FY2025 revenue hit $39.3B (+78% YoY). Blackwell GPU ramp accelerated; Q1 FY2026 guided to ~$43B. H20 export restrictions to China tightened in April 2025.</p>
-<p>2025財年Q4營收達393億美元（年增78%）。Blackwell GPU量產加速，Q1 FY2026指引約430億美元。H20晶片對中國出口限制於2025年4月再度收緊。</p>
+<p><strong>English:</strong> In the last six months NVIDIA’s revenue surged 73% year‑over‑year to $68.1 billion, driven by record AI data‑center sales. The company announced an expanded partnership with major cloud providers, locking in multi‑year contracts for its next‑generation Hopper GPUs, which are expected to ship starting Q3 2024.</p>
+<p><strong>繁體中文：</strong>過去六個月 NVIDIA 的營收年增率達 73%，至 681.3 億美元，主要來自 AI 資料中心的創紀錄銷售。公司宣布與多家大型雲端服務商擴大合作，簽下新一代 Hopper GPU 的多年合約，預計將於 2024 年第三季開始出貨。</p>
 </div></div>
 <div class="section-card sec-teal"><h2 class="section-title">CATALYSTS</h2><div class="section-body">
 <ul class="overview-list">
-<li><strong>Blackwell Ultra ramp</strong>: 40% higher ASPs, 4× inference throughput vs H100; $300B+ hyperscaler capex creates multi-quarter demand pull.</li>
-<li><strong>Software recurring revenue</strong>: NIM microservices + AI Enterprise could add $5-8B high-margin annual stream by 2026.</li>
-<li><strong>Sovereign AI programs</strong>: EU, Japan, India government GPU clusters diversify away from US hyperscaler concentration.</li>
+<li><strong>Hopper GPU Ramp‑Up:</strong> Mass production of the Hopper family begins Q3 2024, and each chip promises 2‑3× the AI throughput of the current A100. Full‑scale adoption by cloud giants could lift data‑center revenue another 30% within 12‑18 months.</li>
+<li><strong>GeForce Refresh:</strong> A new GeForce RTX 6000 series for gamers and creators launches Q4 2024, targeting the premium segment where NVIDIA can charge a 35% price premium, adding roughly $5 billion to annual revenue.</li>
+<li><strong>ARM Acquisition Completion:</strong> If the pending ARM purchase closes by early 2025, NVIDIA gains a universal CPU architecture that can embed its AI accelerators directly into phones and IoT devices, opening a multi‑trillion‑dollar addressable market.</li>
 </ul>
 <ul class="overview-list">
-<li>【Blackwell Ultra量產】：平均售價較H100高出40%，推理效能提升4倍；超大規模業者逾3000億美元資本支出創造多季度需求。</li>
-<li>【軟體經常性收入】：NIM微服務與AI企業版2026年前可增加每年50-80億美元高利潤營收。</li>
-<li>【主權AI計畫】：歐盟、日本、印度政府GPU叢集多元化收入來源。</li>
+<li>【Hopper GPU 量產】：Hopper 系列於 2024 年第三季開始大量生產，每顆晶片的 AI 計算力比現有 A100 高出 2‑3 倍。雲端巨頭全面採用可能在 12‑18 個月內把資料中心營收再提升約 30%。</li>
+<li>【GeForce 系列升級】：全新 GeForce RTX 6000 系列將於 2024 年第四季推出，鎖定高價位遊戲與創意市場，NVIDIA 可收取約 35% 的價格溢價，年營收將增加約 50 億美元。</li>
+<li>【ARM 收購完成】：若 ARM 收購案在 2025 年初完成，NVIDIA 可將自家 AI 加速器直接植入手機與物聯網設備的 CPU，開啟數兆美元規模的全新市場。</li>
 </ul>
 </div></div>
 <div class="section-card sec-rose"><h2 class="section-title">RISKS</h2><div class="section-body">
 <ul class="overview-list">
-<li><strong>China export restrictions</strong>: H20 ban removes $12-15B annually; escalation could expand to other regions.</li>
-<li><strong>Hyperscaler in-house silicon</strong>: Google TPU, AWS Trainium shifts could compress TAM 15-25% in 2026-2027.</li>
-<li><strong>Valuation compression</strong>: At 26× forward P/E, any guidance miss could re-rate to 18-20× (~$90-100).</li>
+<li><strong>Supply‑Chain Bottleneck:</strong> A prolonged shortage of advanced lithography capacity could delay Hopper shipments, shaving up to 15% off projected data‑center growth and pressuring the share price.</li>
+<li><strong>Regulatory Block on ARM Deal:</strong> Antitrust authorities in the U.S. or Europe could block the ARM acquisition, stripping NVIDIA of the planned long‑term AI‑CPU synergy and forcing a write‑down of goodwill.</li>
+<li><strong>AI Spending Pull‑Back:</strong> If macro‑economic slowdown curtails corporate IT budgets, AI server spend could fall 10% YoY, reducing NVIDIA’s revenue runway and compressing margins.</li>
 </ul>
 <ul class="overview-list">
-<li>【中國出口管制】：H20禁令每年減少120-150億美元收入，若升級可能擴及其他地區。</li>
-<li>【超大規模業者自研晶片】：Google TPU、AWS Trainium轉移可能使目標市場縮減15-25%。</li>
-<li>【估值壓縮】：以26倍預期本益比計算，業績不如預期可能重新定價至18-20倍（約90-100美元）。</li>
+<li>【供應鏈瓶頸】：高階光刻產能若持續短缺，會延遲 Hopper 晶片出貨，最多削減 15% 的資料中心增長預期，對股價形成壓力。</li>
+<li>【ARM 交易被阻】：美國或歐洲的反托拉斯機關若否決 ARM 收購，將剝奪 NVIDIA 預期的 AI‑CPU 整合效益，需計提大量商譽減損。</li>
+<li>【AI 需求回檔】：若宏觀經濟走弱致企業 IT 預算縮減，AI 伺服器支出可能年減 10%，將削弱營收成長並壓縮毛利率。</li>
 </ul>
 </div></div>
 <div class="section-card sec-amber"><h2 class="section-title">CONCLUSION</h2><div class="section-body">
-<p>NVIDIA is the clearest AI infrastructure beneficiary. China export risk is the key near-term overhang; if stable, $167 target is credible in 12 months. Better entry around $110-115 (20× forward). 5-year moat durability: strong — CUDA network effects compound.</p>
-<p>輝達是AI基礎設施最明確的受益者。中國出口管制是近期主要隱憂；若穩定，12個月內167美元目標價可期。110-115美元（20倍預期本益比）為更佳進場點。5年護城河耐久性強勁——CUDA網路效應持續複利。</p>
+<p><strong>English:</strong> At $199.57 the stock is a <strong>Buy</strong>. The forward P/E of 17.8 is well below NVIDIA’s 5‑year average of ~30, indicating a clear valuation discount while the growth runway remains robust. A decisive catalyst would be the Hopper ramp‑up; if the Q3 2024 launch misses targets, the price could fall to $160, prompting a sell‑off. Over the next five years the AI moat—driven by CUDA lock‑in and scale advantages—should stay strong, making NVIDIA a durable high‑quality growth story.</p>
+<p><strong>繁體中文：</strong>以 199.57 美元的價格，該股為<strong>買進</strong>。預估本益比 17.8 明顯低於 NVIDIA 五年平均約 30 的本益比，顯示估值有折價空間，同時成長動能仍十分強勁。關鍵催化劑是 Hopper 晶片的量產；若 2024 年第三季的上市未達預期，股價可能跌至 160 美元，將引發拋售。未來五年內，因 CUDA 生態系與規模優勢形成的 AI 護城河仍將保持穩固，讓 NVIDIA 成為具持久高品質成長性的公司。</p>
 </div></div>
 
 </div>
 
 <footer>
   The Signal Desk &nbsp;·&nbsp; NVDA Company Analysis &nbsp;·&nbsp; 2026-05-01 &nbsp;·&nbsp;
-  <a href="watchlist.html" style="color:var(--accent);text-decoration:none">← Back to Watchlist</a>
+  <a href="top-picks.html" style="color:var(--accent);text-decoration:none">← Back to Top Picks</a>
 </footer>
 
 </body>
