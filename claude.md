@@ -1,7 +1,7 @@
 # The Signal Desk — Project Guidelines for Claude
 
 ## Project Overview
-A personal daily stock alert system that generates bilingual (English + Traditional Chinese) market briefings, serves a static website via Netlify, and runs an interactive LINE bot. The site lives at https://thesignaldesk.netlify.app. GitHub repo: luceeeeeee/Signal-Desk.
+A personal daily stock alert system that generates bilingual (English + Traditional Chinese) market briefings, serves a static website via GitHub Pages, and runs an interactive LINE bot. The site lives at https://luceeeeeee.github.io/Signal-Desk. GitHub repo: luceeeeeee/Signal-Desk.
 
 ---
 
@@ -21,7 +21,7 @@ A personal daily stock alert system that generates bilingual (English + Traditio
 
 ## Auto-Deploy Pipeline
 
-Every page regeneration must call `_git_push_pages(label)` after writing HTML. This commits `pages/` and pushes to GitHub → Netlify auto-deploys in ~30 seconds. Never deploy manually.
+Every page regeneration must call `_git_push_pages(label)` after writing HTML. This commits `pages/` and pushes to GitHub → GitHub Actions deploys to GitHub Pages automatically (~60 seconds). Never deploy manually.
 
 ---
 
@@ -176,5 +176,5 @@ Score ≥ 75 = Strong Conviction | 55–74 = Moderate | 35–54 = Weak | <35 = A
 
 - `pages/earnings-calendar-2026.html` — static, manually curated, patch nav with regex
 - `pages/income-statement-guide.html` — static, manually curated, patch nav with regex
-- `config/settings.json` — base_url must be `https://thesignaldesk.netlify.app`
+- `config/settings.json` — base_url must be `https://luceeeeeee.github.io/Signal-Desk`
 - `.gitignore` — `.env`, `signal_log.json`, logs excluded from git

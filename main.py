@@ -70,7 +70,7 @@ def _save_narrative_cache(ticker: str, narrative: str):
 
 
 def _git_push_pages(label: str = ""):
-    """Commit regenerated pages and push to GitHub → triggers Netlify auto-deploy."""
+    """Commit regenerated pages and push to GitHub → triggers GitHub Pages auto-deploy."""
     import subprocess
     repo = os.path.dirname(__file__)
     try:
