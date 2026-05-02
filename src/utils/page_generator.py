@@ -2499,6 +2499,43 @@ _COMPANY_PAGE_CSS = """
 .q-pos { color: #2e6b58; font-weight: 600; }
 .q-neg { color: #b84040; font-weight: 600; }
 
+/* ── Signal Summary card ── */
+.sig-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.sig-header { padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light); }
+.sig-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); }
+.sig-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.sig-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; padding: 14px 20px; }
+.sig-col-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+.sig-cell { border-radius: 8px; padding: 10px 12px; }
+.sig-label { font-size: 13px; font-weight: 700; }
+.sig-detail { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+.sig-verdict { padding: 12px 20px; font-size: 13px; font-weight: 600; line-height: 1.5; }
+@media (max-width: 620px) { .sig-grid { grid-template-columns: 1fr; } }
+
+/* ── Relative Sector Performance card ── */
+.sp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.sp-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.sp-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.sp-verdict { font-size: 13px; font-weight: 700; margin-left: auto; }
+.sp-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
+.sp-table { width: 100%; border-collapse: collapse; }
+.sp-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 7px 12px; border-bottom: 1px solid var(--border-light); text-align: left; }
+.sp-table td { padding: 9px 12px; font-size: 13px; border-bottom: 1px solid var(--border-light); }
+.sp-table tr:last-child td { border-bottom: none; }
+.sp-period { font-weight: 600; color: var(--text); }
+
+/* ── Macro Sensitivity card ── */
+.macro-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.macro-header { margin-bottom: 14px; }
+.macro-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px; }
+.macro-sub { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+.macro-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.macro-cell { border-radius: 8px; padding: 12px; }
+.macro-factor { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.macro-impact { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.macro-context { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+@media (max-width: 620px) { .macro-grid { grid-template-columns: repeat(2,1fr); } }
+
 /* ── Historical P/E Context card ── */
 .pe-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
 .pe-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
@@ -2592,6 +2629,39 @@ _SCORE_PALETTE = {
     "s-amber": {"color": "#b87820", "light": "#fdf4e7", "border": "#e8c88a"},
     "s-red":   {"color": "#b84040", "light": "#fceaea", "border": "#e8aaaa"},
     "s-muted": {"color": "#6e8a7a", "light": "#f5f7f5", "border": "#d6dfd8"},
+}
+
+# ── Sector → ETF mapping (for relative performance) ───────────────────────────
+_SECTOR_TO_ETF = {
+    "Technology": "XLK", "Financial Services": "XLF", "Financials": "XLF",
+    "Energy": "XLE", "Healthcare": "XLV", "Health Care": "XLV",
+    "Industrials": "XLI", "Consumer Staples": "XLP", "Consumer Defensive": "XLP",
+    "Consumer Discretionary": "XLY", "Consumer Cyclical": "XLY",
+    "Communication Services": "XLC", "Communication": "XLC",
+    "Basic Materials": "XLB", "Materials": "XLB",
+    "Real Estate": "XLRE", "Utilities": "XLU",
+}
+
+# ── Macro sensitivity by sector (-2 strong headwind … +2 strong tailwind) ─────
+# Factors: rates (Fed hike), usd (dollar strengthens), china (US-China tensions), oil (oil +20%)
+_MACRO_SENSITIVITY = {
+    "Technology":             {"rates": -1, "usd": -1, "china": -2, "oil":  0},
+    "Financial Services":     {"rates":  2, "usd":  0, "china": -1, "oil":  0},
+    "Financials":             {"rates":  2, "usd":  0, "china": -1, "oil":  0},
+    "Energy":                 {"rates": -1, "usd": -1, "china": -1, "oil":  2},
+    "Healthcare":             {"rates":  0, "usd": -1, "china": -1, "oil":  0},
+    "Health Care":            {"rates":  0, "usd": -1, "china": -1, "oil":  0},
+    "Industrials":            {"rates": -1, "usd": -1, "china": -2, "oil": -1},
+    "Consumer Staples":       {"rates": -1, "usd": -1, "china": -1, "oil": -1},
+    "Consumer Defensive":     {"rates": -1, "usd": -1, "china": -1, "oil": -1},
+    "Consumer Discretionary": {"rates": -2, "usd":  0, "china": -1, "oil": -1},
+    "Consumer Cyclical":      {"rates": -2, "usd":  0, "china": -1, "oil": -1},
+    "Communication Services": {"rates": -1, "usd": -1, "china": -2, "oil":  0},
+    "Communication":          {"rates": -1, "usd": -1, "china": -2, "oil":  0},
+    "Basic Materials":        {"rates": -1, "usd": -1, "china": -1, "oil":  1},
+    "Materials":              {"rates": -1, "usd": -1, "china": -1, "oil":  1},
+    "Real Estate":            {"rates": -2, "usd":  0, "china":  0, "oil":  0},
+    "Utilities":              {"rates": -2, "usd":  0, "china": -1, "oil": -1},
 }
 
 
@@ -3105,6 +3175,250 @@ def _fetch_historical_pe_html(ticker: str, current_pe: float) -> str:
         return ""
 
 
+def _compute_signal_summary(d: dict, cs: dict) -> dict:
+    """Deterministic 3-signal read: Fundamentals, Entry Timing, Momentum."""
+    score = cs["score"]
+
+    # Fundamentals signal
+    if score >= 75:   fund = {"label": "Strong Conviction", "cls": "green"}
+    elif score >= 55: fund = {"label": "Moderate",          "cls": "amber"}
+    elif score >= 35: fund = {"label": "Weak Fundamentals", "cls": "red"}
+    else:             fund = {"label": "Insufficient Data", "cls": "muted"}
+
+    # Entry Timing signal — valuation pillar + analyst upside
+    val_pts = cs.get("pillar_valuation", 0)
+    upside  = d.get("analyst_upside_pct")
+    if upside is not None and upside < -5:
+        val = {"label": "Analysts See Downside", "cls": "red",
+               "detail": f"Consensus target implies {upside:.0f}% downside from here"}
+    elif val_pts >= 18:
+        val = {"label": "Attractive Entry",  "cls": "green",
+               "detail": "Strong FCF yield and reasonable P/E — good margin of safety"}
+    elif val_pts >= 12:
+        val = {"label": "Fair Value",        "cls": "amber",
+               "detail": "Priced around fair value — no significant discount or premium"}
+    elif val_pts >= 6:
+        val = {"label": "Moderate Premium",  "cls": "amber",
+               "detail": "Trading at a premium — requires continued strong execution"}
+    else:
+        val = {"label": "Expensive",         "cls": "red",
+               "detail": "High valuation leaves little margin of safety"}
+
+    # Momentum signal — EPS revisions + earnings/revenue growth + 52-week position
+    eps_dir = d.get("eps_revision_dir")
+    eg      = d.get("earnings_growth") or 0
+    rg      = d.get("revenue_growth")  or 0
+    price   = d.get("price")
+    hi52    = d.get("week_52_high")
+    lo52    = d.get("week_52_low")
+    pos52   = None
+    if price and hi52 and lo52 and hi52 > lo52:
+        pos52 = (price - lo52) / (hi52 - lo52) * 100
+
+    mom_score = 0
+    mom_parts = []
+    if eps_dir == "rising":
+        mom_score += 2; mom_parts.append("estimates rising ↑")
+    elif eps_dir == "falling":
+        mom_score -= 2; mom_parts.append("estimates falling ↓")
+    if eg >= 0.15:   mom_score += 2
+    elif eg >= 0:    mom_score += 1
+    elif eg < 0:     mom_score -= 1
+    if rg >= 0.10:   mom_score += 1
+    elif rg < 0:     mom_score -= 1
+    if pos52 is not None:
+        if pos52 <= 30:    mom_score += 1; mom_parts.append("near 52-wk low")
+        elif pos52 >= 85:  mom_score -= 1; mom_parts.append("near 52-wk high")
+
+    mom_detail = " · ".join(mom_parts) if mom_parts else ""
+    if mom_score >= 3:   mom = {"label": "Bullish",       "cls": "green",  "detail": mom_detail or "Strong and accelerating growth"}
+    elif mom_score >= 1: mom = {"label": "Mildly Bullish","cls": "green",  "detail": mom_detail or "Positive but mixed signals"}
+    elif mom_score == 0: mom = {"label": "Neutral",       "cls": "amber",  "detail": mom_detail or "No clear directional bias"}
+    elif mom_score >= -2:mom = {"label": "Caution",       "cls": "amber",  "detail": mom_detail or "Weakening growth signals"}
+    else:                mom = {"label": "Bearish",        "cls": "red",    "detail": mom_detail or "Deteriorating fundamentals"}
+
+    # Combined plain-language verdict
+    if score >= 75 and val_pts >= 12 and mom_score >= 1:
+        verdict, vc = "Strong fundamentals at a reasonable price with positive momentum — a compelling long-term case.", "green"
+    elif score >= 75 and val_pts < 8:
+        verdict, vc = "Excellent business, but current price appears expensive. Consider waiting for a pullback before adding.", "amber"
+    elif score >= 55 and val_pts >= 18 and mom_score >= 0:
+        verdict, vc = "Good fundamentals at an attractive price — worth building a position for patient investors.", "green"
+    elif score >= 55 and val_pts >= 12:
+        verdict, vc = "Solid fundamentals at a fair price — reasonable for patient long-term investors.", "amber"
+    elif score >= 55 and val_pts < 8:
+        verdict, vc = "Decent fundamentals but trading at a premium. Risk/reward less favorable at current levels.", "amber"
+    elif score < 35:
+        verdict, vc = "Weak or insufficient data. Exercise caution — the investment case is not clearly supported.", "red"
+    elif score >= 35 and val_pts < 8:
+        verdict, vc = "Weak fundamentals at a premium valuation — high risk with little margin of safety.", "red"
+    else:
+        verdict, vc = "Mixed signals across fundamentals, valuation, and momentum. Monitor before committing capital.", "amber"
+
+    return {
+        "fundamentals": fund,
+        "valuation":    val,
+        "momentum":     mom,
+        "verdict":      verdict,
+        "verdict_cls":  vc,
+    }
+
+
+def _render_signal_summary_html(sig: dict) -> str:
+    """Render the Signal Summary card from _compute_signal_summary output."""
+    _c = {
+        "green": {"bg": "#eaf3f0", "color": "#2e6b58", "border": "#c6ddd6"},
+        "amber": {"bg": "#fdf4e7", "color": "#b87820", "border": "#e8c88a"},
+        "red":   {"bg": "#fceaea", "color": "#b84040", "border": "#e8aaaa"},
+        "muted": {"bg": "#f5f5f5", "color": "#888",    "border": "#ddd"},
+    }
+
+    def _pill(s):
+        c = _c.get(s["cls"], _c["muted"])
+        return (
+            f'<div class="sig-cell" style="background:{c["bg"]};border:1px solid {c["border"]}">'
+            f'<div class="sig-label" style="color:{c["color"]}">{s["label"]}</div>'
+            f'<div class="sig-detail">{s.get("detail","")}</div>'
+            f'</div>'
+        )
+
+    vc = _c.get(sig["verdict_cls"], _c["amber"])
+    return f"""
+<div class="sig-card" style="border-left:4px solid {vc['color']};border:1px solid {vc['border']};border-left:4px solid {vc['color']}">
+  <div class="sig-header">
+    <div class="sig-title">Signal Summary</div>
+    <div class="sig-sub">Deterministic read across three dimensions — not AI · updated daily</div>
+  </div>
+  <div class="sig-grid">
+    <div class="sig-col"><div class="sig-col-lbl">Fundamentals</div>{_pill(sig["fundamentals"])}</div>
+    <div class="sig-col"><div class="sig-col-lbl">Entry Timing</div>{_pill(sig["valuation"])}</div>
+    <div class="sig-col"><div class="sig-col-lbl">Momentum</div>{_pill(sig["momentum"])}</div>
+  </div>
+  <div class="sig-verdict" style="color:{vc['color']};border-top:1px solid {vc['border']}">{sig["verdict"]}</div>
+</div>"""
+
+
+def _fetch_sector_performance_html(ticker: str, sector: str, price: float = None) -> str:
+    """Return a Relative Performance card: stock vs its sector ETF over 1M/3M/6M/12M.
+    Returns '' on any failure."""
+    try:
+        etf = _SECTOR_TO_ETF.get(sector)
+        if not etf:
+            return ""
+        import yfinance as yf
+        hist_s = yf.Ticker(ticker).history(period="1y")
+        hist_e = yf.Ticker(etf).history(period="1y")
+        if hist_s is None or hist_s.empty or hist_e is None or hist_e.empty:
+            return ""
+
+        def _ret(hist, days):
+            close = hist["Close"]
+            if len(close) < days:
+                return None
+            cur  = float(close.iloc[-1])
+            past = float(close.iloc[-days])
+            return (cur - past) / past * 100 if past > 0 else None
+
+        periods = [("1M", 21), ("3M", 63), ("6M", 126), ("12M", 252)]
+        rows = ""
+        outperform_count = 0
+        total_count = 0
+        for label, days in periods:
+            sr = _ret(hist_s, days)
+            er = _ret(hist_e, days)
+            if sr is None or er is None:
+                continue
+            diff = sr - er
+            total_count += 1
+            if diff > 0:
+                outperform_count += 1
+            s_c  = "#2e6b58" if sr >= 0 else "#b84040"
+            e_c  = "#2e6b58" if er >= 0 else "#b84040"
+            d_c  = "#2e6b58" if diff > 1 else "#b84040" if diff < -1 else "#888"
+            d_lbl = f'{"+" if diff > 0 else ""}{diff:.1f}%'
+            rows += (
+                f'<tr>'
+                f'<td class="sp-period">{label}</td>'
+                f'<td style="color:{s_c};font-weight:600">{"+" if sr>=0 else ""}{sr:.1f}%</td>'
+                f'<td style="color:{e_c};font-weight:600">{"+" if er>=0 else ""}{er:.1f}%</td>'
+                f'<td style="color:{d_c};font-weight:700">{d_lbl}</td>'
+                f'</tr>'
+            )
+        if not rows:
+            return ""
+
+        if total_count == 0:
+            return ""
+        if outperform_count >= 3:
+            verdict, vc = f"Outperforming {etf} across {outperform_count}/{total_count} periods ↑", "#2e6b58"
+        elif outperform_count == 0:
+            verdict, vc = f"Underperforming {etf} across all tracked periods ↓", "#b84040"
+        elif outperform_count > total_count / 2:
+            verdict, vc = f"Mostly outperforming {etf} — {outperform_count}/{total_count} periods ↑", "#2e6b58"
+        else:
+            verdict, vc = f"Mostly underperforming {etf} — lagging in {total_count-outperform_count}/{total_count} periods", "#b87820"
+
+        return f"""
+<div class="sp-card">
+  <div class="sp-header">
+    <div class="sp-title">Performance vs Sector ({etf})</div>
+    <div class="sp-verdict" style="color:{vc}">{verdict}</div>
+  </div>
+  <div class="sp-sub">Compares this stock's returns to its sector ETF ({etf}) — the benchmark for its peer group.
+    Persistent outperformance signals a durable competitive edge; persistent underperformance is a red flag
+    even when fundamentals look fine on paper.</div>
+  <table class="sp-table">
+    <thead><tr><th>Period</th><th>{ticker}</th><th>{etf} (Sector)</th><th>Difference</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+</div>"""
+    except Exception:
+        return ""
+
+
+def _render_macro_sensitivity_html(sector: str) -> str:
+    """Render a Macro Sensitivity card for the given sector. Returns '' if sector unknown."""
+    sens = _MACRO_SENSITIVITY.get(sector)
+    if not sens:
+        return ""
+
+    _score_cfg = {
+        -2: {"label": "Strong headwind", "color": "#b84040", "bg": "#fceaea", "icon": "▼▼"},
+        -1: {"label": "Headwind",        "color": "#b87820", "bg": "#fef9ec", "icon": "▼"},
+         0: {"label": "Neutral",         "color": "#888",    "bg": "#f5f5f5", "icon": "—"},
+         1: {"label": "Tailwind",        "color": "#2e6b58", "bg": "#eaf3f0", "icon": "▲"},
+         2: {"label": "Strong tailwind", "color": "#2e6b58", "bg": "#d4ede6", "icon": "▲▲"},
+    }
+    _factors = [
+        ("rates", "Rate Hike",      "If the Fed raises interest rates"),
+        ("usd",   "Strong USD",     "If the US dollar rises vs major currencies"),
+        ("china", "China Risk",     "If US–China trade tensions escalate"),
+        ("oil",   "Oil Spike",      "If crude oil rises ~20%"),
+    ]
+
+    cells = ""
+    for key, name, context in _factors:
+        score = sens.get(key, 0)
+        cfg   = _score_cfg.get(score, _score_cfg[0])
+        cells += (
+            f'<div class="macro-cell" style="background:{cfg["bg"]};border:1px solid {cfg["color"]}33">'
+            f'<div class="macro-factor">{name}</div>'
+            f'<div class="macro-impact" style="color:{cfg["color"]}">{cfg["icon"]} {cfg["label"]}</div>'
+            f'<div class="macro-context">{context}</div>'
+            f'</div>'
+        )
+
+    return f"""
+<div class="macro-card">
+  <div class="macro-header">
+    <div class="macro-title">Macro Sensitivity — {sector}</div>
+    <div class="macro-sub">How four key macro forces affect this sector's earnings and valuation.
+      Use this to stress-test your thesis against the current macro environment.</div>
+  </div>
+  <div class="macro-grid">{cells}</div>
+</div>"""
+
+
 def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: dict = None) -> str:
     """Write pages/stock-{ticker}.html. Returns filename."""
     from src.analysis.conviction_score import compute_conviction_score
@@ -3235,6 +3549,16 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     roic_trend_html = _fetch_roic_trend_html(ticker)
     fpe = d.get("forward_pe") or d.get("trailing_pe")
     historical_pe_html = _fetch_historical_pe_html(ticker, fpe) if fpe and fpe > 0 else ""
+
+    # ── Signal summary (item 1) ────────────────────────────────────────────────
+    sig_summary  = _compute_signal_summary(d, cs)
+    sig_html     = _render_signal_summary_html(sig_summary)
+
+    # ── Sector performance vs ETF (item 3) ────────────────────────────────────
+    sector_perf_html = _fetch_sector_performance_html(ticker, d.get("sector", ""))
+
+    # ── Macro sensitivity matrix (item 4) ─────────────────────────────────────
+    macro_html = _render_macro_sensitivity_html(d.get("sector", ""))
 
     # ── 52-week range bar ──────────────────────────────────────────────────────
     range_html = ""
@@ -3637,6 +3961,8 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
 
   {kpi_html}
 
+  {sig_html}
+
   <div class="cs-card" style="border-top:4px solid {sc_color};border:1px solid {sc_border};border-top:4px solid {sc_color}">
     <div class="cs-card-header" style="background:linear-gradient(135deg,{sc_light} 0%,var(--surface) 65%)">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -3678,6 +4004,10 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
   {target_range_html}
 
   {ao_html}
+
+  {sector_perf_html}
+
+  {macro_html}
 
   {quarterly_html}
 
