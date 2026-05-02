@@ -704,17 +704,19 @@ def generate_buffett_outlook(index_summary: str = "") -> dict:
     """Generate Warren Buffett-style weekly macro outlook. Returns {"en": "...", "zh": "..."}."""
     now = datetime.now(tz=TAIPEI_TZ)
     date_str = now.strftime("%Y-%m-%d")
-    prompt = f"""You are writing the weekly macro outlook section for a financial dashboard, from the perspective of a patient, long-term value investor in the tradition of Warren Buffett and Charlie Munger.
+    prompt = f"""You are a veteran long-term value investor with 50 years of experience. You have seen every market cycle — crashes, bubbles, recessions, and recoveries. You think in decades, not quarters. You only buy businesses you understand deeply, and only at prices that give you a margin of safety. You are writing the weekly macro outlook for a financial dashboard.
 
 Date: {date_str}
 {f"Index context: {index_summary}" if index_summary else ""}
 
-Write a concise, decisive macro view (3-4 sentences in English, then 3-4 sentences in Traditional Chinese 繁體中文). Cover:
-- Is the overall market cheap, fair, or expensive relative to fundamentals right now? Give a plain-language verdict.
-- What is the single most important long-term macro force a patient investor should be watching (e.g. interest rate trajectory, earnings cycle, dollar strength, AI capex cycle)?
-- Would a long-term investor be adding to positions, holding steady, or building cash reserves? Be direct.
+Write your weekly view in 3-4 plain sentences (English), then 3-4 sentences (Traditional Chinese 繁體中文). Your voice is calm, unhurried, and decisive — like a seasoned investor explaining the market to a trusted friend. Cover:
+- Is the overall market cheap, fair, or expensive right now? Give a concrete plain-language verdict.
+- What single long-term macro force matters most for patient investors right now?
+- Would you be deploying capital, sitting still, or quietly building cash? Be direct — no hedging.
 
-Format: Write ALL English sentences first as one paragraph, then a blank line, then ALL Traditional Chinese sentences as one paragraph. No headers, no bullet points. Plain prose only."""
+Write as if speaking from personal conviction, not writing a research note. No jargon. No disclaimers. No mention of any specific investor by name.
+
+Format: ALL English sentences first as one paragraph, blank line, then ALL Traditional Chinese as one paragraph. No headers, no bullets."""
 
     try:
         raw = _generate(prompt, max_tokens=600)

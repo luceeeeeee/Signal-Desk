@@ -1129,7 +1129,7 @@ def generate_market_page(data: dict = None) -> str:
         if cached.get("en"):
             buffett_html = f"""
   <div class="mk-card mk-full" style="margin-top:24px;border-top:4px solid #b87820;">
-    <div class="mk-card-title">🏛️ Warren Buffett Macro View · 巴菲特式宏觀視角 &nbsp;<span style="font-weight:400;text-transform:none">— Weekly fundamental lens for the patient investor</span></div>
+    <div class="mk-card-title">🏛️ Long-Term Investor Macro View · 長線投資人宏觀視角 &nbsp;<span style="font-weight:400;text-transform:none">— Weekly fundamental lens for the patient investor</span></div>
     <p style="font-size:14px;line-height:1.8;color:var(--text-med);margin:0 0 12px">{cached["en"]}</p>
     <p style="font-size:13px;line-height:1.8;color:var(--text-muted);margin:0">{cached.get("zh","")}</p>
     <p style="font-size:11px;color:var(--text-muted);margin-top:12px">Regenerated weekly &nbsp;·&nbsp; AI-generated fundamental view, not financial advice.</p>
@@ -1273,26 +1273,30 @@ def generate_market_page(data: dict = None) -> str:
 # ── Top Picks screener ────────────────────────────────────────────────────────
 
 TOP_PICKS_UNIVERSE = [
-    # AI & Semiconductors
-    "NVDA","AMD","INTC","AVGO","TSM","QCOM","ASML","MU","AMAT","LRCX","KLAC","ARM",
-    # Big Tech & Cloud
-    "AAPL","MSFT","GOOGL","META","AMZN","ORCL","CRM","ADBE","NOW","SNOW",
-    # EV & Mobility
+    # AI & Semiconductors (15)
+    "NVDA","AMD","INTC","AVGO","TSM","QCOM","ASML","MU","AMAT","LRCX","KLAC","ARM","MRVL","TXN","ADI",
+    # Big Tech, Cloud & AI Software (14)
+    "AAPL","MSFT","GOOGL","META","AMZN","ORCL","CRM","ADBE","NOW","SNOW","PLTR","NET","DDOG","UBER",
+    # EV & Mobility (5)
     "TSLA","BYDDY","RIVN","F","GM",
-    # Financials & Payments
-    "JPM","BAC","GS","V","MA","PYPL","AXP","BLK","MS","SCHW",
-    # Healthcare & Biotech
-    "JNJ","UNH","PFE","ABBV","MRK","LLY","TMO","ISRG","DXCM",
-    # Defense & Aerospace
-    "LMT","RTX","NOC","BA","GD","HII",
-    # Retail & Consumer
-    "WMT","COST","TGT","HD","NKE","SBUX","MCD","AMZN","NFLX",
-    # Energy & Commodities
-    "XOM","CVX","COP","SLB","NEE","ENPH",
-    # Real Estate & Infrastructure
-    "AMT","EQIX","PLD","CCI",
+    # Financials & Payments (12)
+    "JPM","BAC","GS","V","MA","PYPL","AXP","BLK","MS","SCHW","WFC","SPGI",
+    # Healthcare & Biotech (13)
+    "JNJ","UNH","PFE","ABBV","MRK","LLY","TMO","ISRG","DXCM","AMGN","GILD","CVS","BMY",
+    # Defense & Aerospace (7)
+    "LMT","RTX","NOC","BA","GD","HII","LHX",
+    # Retail & Consumer Staples (13)
+    "WMT","COST","TGT","HD","NKE","SBUX","MCD","NFLX","LULU","LOW","PG","KO","TJX",
+    # Energy & Commodities (8)
+    "XOM","CVX","COP","SLB","NEE","ENPH","OXY","PSX",
+    # Real Estate & Infrastructure (6)
+    "AMT","EQIX","PLD","CCI","O","WELL",
+    # Media & Telecom (3)
+    "DIS","VZ","ABNB",
+    # Cybersecurity & E-commerce (4)
+    "PANW","SHOP","COF","BX",
 ]
-TOP_PICKS_UNIVERSE = list(dict.fromkeys(TOP_PICKS_UNIVERSE))  # deduplicate
+TOP_PICKS_UNIVERSE = list(dict.fromkeys(TOP_PICKS_UNIVERSE))  # deduplicate — target 100
 
 
 def fetch_top_picks_data() -> list:
