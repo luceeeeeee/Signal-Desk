@@ -2499,6 +2499,22 @@ _COMPANY_PAGE_CSS = """
 .q-pos { color: #2e6b58; font-weight: 600; }
 .q-neg { color: #b84040; font-weight: 600; }
 
+/* ── Analyst Price Target Range card ── */
+.tgt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.tgt-header { margin-bottom: 14px; }
+.tgt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.tgt-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.tgt-labels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.tgt-labels > div { display: flex; flex-direction: column; gap: 2px; }
+.tgt-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.tgt-val { font-size: 13px; font-weight: 700; }
+.tgt-track { position: relative; display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+.tgt-fill-lo, .tgt-fill-hi { height: 100%; }
+.tgt-pin { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; }
+.tgt-pin-cur  { background: #3a72b0; z-index: 2; }
+.tgt-pin-mean { background: #b87820; z-index: 1; }
+.tgt-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
 /* ── Moat Trend card ── */
 .mt-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #2e6b58; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
 .mt-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; }
@@ -2977,6 +2993,25 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     sc = _SCORE_PALETTE.get(cs["color_cls"], _SCORE_PALETTE["s-muted"])
     sc_color, sc_light, sc_border = sc["color"], sc["light"], sc["border"]
 
+    # ── Score sparkline (30-day trend from history) ────────────────────────────
+    score_sparkline_html = ""
+    try:
+        _hist_path = os.path.join(PAGES_DIR, "data", "scores_history.json")
+        with open(_hist_path) as _hf:
+            _sh = _json_mod.load(_hf)
+        from datetime import date as _date, timedelta as _td
+        _cutoff = str(_date.today() - _td(days=30))
+        _pts = [e["score"] for e in _sh.get(ticker, []) if e["date"] >= _cutoff]
+        if len(_pts) >= 2:
+            score_sparkline_html = (
+                f'<div style="display:flex;align-items:center;gap:8px;margin-top:6px">'
+                f'<span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">30d trend</span>'
+                f'{_sparkline_svg(_pts, width=80, height=22)}'
+                f'</div>'
+            )
+    except Exception:
+        pass
+
     pillars_html = ""
     for pname, val, maxv, desc in [
         ("Quality",   cs["pillar_quality"],    cs["pillar_quality_max"],    "ROIC · FCF Margin · Gross Margin — how efficiently the business earns"),
@@ -3094,10 +3129,28 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         if d.get("analyst_target") and d.get("analyst_upside_pct") is not None:
             sign = "+" if d["analyst_upside_pct"] >= 0 else ""
             upside_str = f'Target: <strong>{_fmt_wl_price(d["analyst_target"], currency)}</strong> ({sign}{d["analyst_upside_pct"]:.1f}% upside)'
+        # Buy / Hold / Sell breakdown
+        bhs_html = ""
+        rb, rh, rs_cnt = d.get("rec_buy"), d.get("rec_hold"), d.get("rec_sell")
+        if rb is not None and rh is not None and rs_cnt is not None:
+            total_r = (rb + rh + rs_cnt) or 1
+            bhs_html = (
+                f'<div class="ao-row" style="margin-top:4px">'
+                f'<span style="color:#2e6b58;font-weight:700">{rb} Buy</span>'
+                f' &nbsp;·&nbsp; <span style="color:#b87820;font-weight:700">{rh} Hold</span>'
+                f' &nbsp;·&nbsp; <span style="color:#b84040;font-weight:700">{rs_cnt} Sell</span>'
+                f'</div>'
+                f'<div style="display:flex;height:6px;border-radius:3px;overflow:hidden;margin:4px 0 6px">'
+                f'<div style="width:{rb/total_r*100:.0f}%;background:#2e6b58"></div>'
+                f'<div style="width:{rh/total_r*100:.0f}%;background:#b87820"></div>'
+                f'<div style="width:{rs_cnt/total_r*100:.0f}%;background:#b84040"></div>'
+                f'</div>'
+            )
         analyst_col = (
             f'<div class="ao-title">Analyst Consensus</div>'
             f'<div class="ao-row"><strong>{n_analysts}</strong> analysts covering this stock</div>'
             f'<div class="ao-row">Consensus: <span class="rec-pill {rec_cls}">{rec_lbl}</span> (mean {rec_mean:.1f}/5)</div>'
+            f'{bhs_html}'
             f'<div class="ao-row">{upside_str}</div>'
         )
     else:
@@ -3150,6 +3203,78 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     <div>{ownership_col}</div>
     <div>{profile_col}</div>
   </div>
+</div>"""
+
+    # ── Bear / Base / Bull analyst price target range ─────────────────────────
+    target_range_html = ""
+    tgt_low  = d.get("target_low")
+    tgt_mean = d.get("analyst_target")
+    tgt_high = d.get("target_high")
+    if tgt_low and tgt_mean and tgt_high and price and price > 0:
+        def _tpct(t):
+            return (t - price) / price * 100
+        lo_pct, me_pct, hi_pct = _tpct(tgt_low), _tpct(tgt_mean), _tpct(tgt_high)
+        lo_c = "#b84040" if lo_pct < 0 else "#2e6b58"
+        me_c = "#b87820" if abs(me_pct) < 5 else "#2e6b58" if me_pct > 0 else "#b84040"
+        hi_c = "#2e6b58"
+        lo_sign, me_sign, hi_sign = ("+" if lo_pct >= 0 else ""), ("+" if me_pct >= 0 else ""), "+"
+        # Bar: position current price at 0%, range from tgt_low to tgt_high
+        span = (tgt_high - tgt_low) or 1
+        cur_pos  = max(2, min(98, (price    - tgt_low) / span * 100))
+        mean_pos = max(2, min(98, (tgt_mean - tgt_low) / span * 100))
+        target_range_html = f"""
+<div class="tgt-card">
+  <div class="tgt-header">
+    <div class="tgt-title">Analyst Price Target Range</div>
+    <div class="tgt-sub">Where Wall Street analysts think the stock is headed — low, consensus, and high targets</div>
+  </div>
+  <div class="tgt-body">
+    <div class="tgt-labels">
+      <div><span class="tgt-lbl">Bear Target</span><span class="tgt-val" style="color:{lo_c}">{_fmt_wl_price(tgt_low,currency)} ({lo_sign}{lo_pct:.0f}%)</span></div>
+      <div><span class="tgt-lbl">Consensus</span><span class="tgt-val" style="color:{me_c}">{_fmt_wl_price(tgt_mean,currency)} ({me_sign}{me_pct:.0f}%)</span></div>
+      <div><span class="tgt-lbl">Bull Target</span><span class="tgt-val" style="color:{hi_c}">{_fmt_wl_price(tgt_high,currency)} (+{hi_pct:.0f}%)</span></div>
+    </div>
+    <div class="tgt-track">
+      <div class="tgt-fill-lo"  style="width:{mean_pos:.0f}%;background:linear-gradient(90deg,#fceaea,#fef9ec)"></div>
+      <div class="tgt-fill-hi"  style="width:{100-mean_pos:.0f}%;background:linear-gradient(90deg,#fef9ec,#eaf3f0)"></div>
+      <div class="tgt-pin tgt-pin-cur"  style="left:{cur_pos:.0f}%" title="Current price"></div>
+      <div class="tgt-pin tgt-pin-mean" style="left:{mean_pos:.0f}%" title="Consensus target"></div>
+    </div>
+    <div class="tgt-axis">
+      <span>{_fmt_wl_price(tgt_low,currency)}</span>
+      <span style="font-weight:600">▲ Current: {price_str}</span>
+      <span>{_fmt_wl_price(tgt_high,currency)}</span>
+    </div>
+  </div>
+</div>"""
+
+    # ── Earnings surprise history ──────────────────────────────────────────────
+    earnings_surprise_html = ""
+    surprises = d.get("earnings_surprises", [])
+    if surprises:
+        s_rows = ""
+        for s in surprises:
+            sp = s.get("surprise_pct")
+            if sp is not None:
+                sc_s = "#2e6b58" if sp > 0 else "#b84040"
+                verdict = f'<span style="color:{sc_s};font-weight:700">{"Beat" if sp > 0 else "Miss"} {sp:+.1f}%</span>'
+            else:
+                verdict = '<span style="color:var(--text-muted)">—</span>'
+            est_str = f'${s["estimate"]:.2f}' if s.get("estimate") is not None else "—"
+            act_str = f'${s["actual"]:.2f}'   if s.get("actual")   is not None else "—"
+            s_rows += (
+                f'<tr><td class="q-period">{s["period"]}</td>'
+                f'<td class="q-mono">{est_str}</td>'
+                f'<td class="q-mono">{act_str}</td>'
+                f'<td>{verdict}</td></tr>'
+            )
+        earnings_surprise_html = f"""
+<div class="q-card">
+  <div class="q-card-head">Earnings Surprise History — Did the company beat or miss Wall Street's forecasts?</div>
+  <table class="q-table">
+    <thead><tr><th>Quarter</th><th>Est. EPS</th><th>Actual EPS</th><th>Result</th></tr></thead>
+    <tbody>{s_rows}</tbody>
+  </table>
 </div>"""
 
     # ── Valuation card (blue) ──────────────────────────────────────────────────
@@ -3277,6 +3402,17 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     if d.get("retained_earnings") is not None:
         health_rows += _mrow("Retained Earnings", _b(d["retained_earnings"]),
             "Cumulative profits reinvested in the business over its lifetime — a proxy for long-term wealth creation.")
+    if d.get("interest_coverage") is not None:
+        ic = d["interest_coverage"]
+        if ic >= 15:   ic_lbl, ic_c = f"Fortress ✓ — covers interest {ic:.0f}× over", "#2e6b58"
+        elif ic >= 5:  ic_lbl, ic_c = f"Healthy — {ic:.1f}× coverage",                 "#3a72b0"
+        elif ic >= 2:  ic_lbl, ic_c = f"Thin — {ic:.1f}× coverage ⚠",                  "#b87820"
+        else:          ic_lbl, ic_c = f"Danger zone — only {ic:.1f}× ⚠",               "#b84040"
+        health_rows += _mrow("Interest Coverage",
+            f'<span style="color:{ic_c}">{ic_lbl}</span>',
+            "Operating profit divided by annual interest payments. "
+            "A ratio of 10× means the company earns 10 times more than it needs to service its debt — very safe. "
+            "Below 2× is a warning: one bad quarter could create a liquidity crisis.")
     if not health_rows:
         health_rows = '<p class="m-def">Financial health data unavailable.</p>'
 
@@ -3364,8 +3500,13 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
 
   <div class="cs-card" style="border-top:4px solid {sc_color};border:1px solid {sc_border};border-top:4px solid {sc_color}">
     <div class="cs-card-header" style="background:linear-gradient(135deg,{sc_light} 0%,var(--surface) 65%)">
-      <div class="cs-card-title" style="color:{sc_color}">Conviction Score</div>
-      <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="cs-card-title" style="color:{sc_color}">Conviction Score</div>
+          <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork</div>
+        </div>
+        {score_sparkline_html}
+      </div>
     </div>
     <div class="cs-body">
       <div class="cs-score-col">
@@ -3395,9 +3536,13 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
 
   {range_html}
 
+  {target_range_html}
+
   {ao_html}
 
   {quarterly_html}
+
+  {earnings_surprise_html}
 
   {roic_trend_html}
 

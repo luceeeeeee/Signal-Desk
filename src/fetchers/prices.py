@@ -118,6 +118,7 @@ def fetch_ticker_data(ticker: str) -> dict:
                     buyback_yield = abs(buyback) / market_cap_val
         except Exception:
             pass
+        interest_coverage = None
         try:
             fin = t.financials
             if fin is not None and not fin.empty:
@@ -134,6 +135,60 @@ def fetch_ticker_data(ticker: str) -> dict:
                 rnd = _fget("Research And Development")
                 if rnd is not None and total_revenue and total_revenue > 0:
                     rnd_ratio = abs(rnd) / total_revenue
+                # Interest coverage = EBIT / |interest expense|
+                int_exp = _fget("Interest Expense", "Interest Expense Non Operating")
+                ebit    = _fget("EBIT", "Operating Income")
+                if ebit is None:
+                    op_margin = info.get("operatingMargins") or 0
+                    ebit = op_margin * (total_revenue or 0) or None
+                if int_exp is not None and ebit is not None and int_exp != 0:
+                    interest_coverage = abs(ebit) / abs(int_exp)
+        except Exception:
+            pass
+
+        # ── Analyst buy/hold/sell breakdown ───────────────────────────────────
+        rec_buy = rec_hold = rec_sell = None
+        try:
+            rs = t.recommendations_summary
+            if rs is not None and not rs.empty:
+                row = rs.iloc[0]
+                rec_buy  = int((row.get("strongBuy") or 0) + (row.get("buy") or 0))
+                rec_hold = int(row.get("hold") or 0)
+                rec_sell = int((row.get("sell") or 0) + (row.get("strongSell") or 0))
+        except Exception:
+            pass
+
+        # ── Earnings surprise history (last 4 quarters) ───────────────────────
+        earnings_surprises = []
+        try:
+            eh = t.earnings_history
+            if eh is not None and not eh.empty:
+                for idx in list(eh.index)[:4]:
+                    try:
+                        def _ehget(col, _eh=eh, _i=idx):
+                            if col in _eh.columns:
+                                try:
+                                    v = float(_eh.at[_i, col])
+                                    return None if v != v else v
+                                except Exception:
+                                    return None
+                            return None
+                        actual   = _ehget("epsActual")
+                        estimate = _ehget("epsEstimate")
+                        surp     = _ehget("surprisePercent")
+                        try:
+                            period = idx.strftime("%b '%y") if hasattr(idx, "strftime") else str(idx)[:7]
+                        except Exception:
+                            period = str(idx)[:7]
+                        if actual is not None or estimate is not None:
+                            earnings_surprises.append({
+                                "period":       period,
+                                "actual":       actual,
+                                "estimate":     estimate,
+                                "surprise_pct": round(surp * 100, 1) if surp is not None else None,
+                            })
+                    except Exception:
+                        pass
         except Exception:
             pass
 
@@ -155,11 +210,19 @@ def fetch_ticker_data(ticker: str) -> dict:
             "price_to_book": info.get("priceToBook"),
             "analyst_target": analyst_target,
             "analyst_upside_pct": round(upside, 1) if upside is not None else None,
+            "target_low":  info.get("targetLowPrice"),
+            "target_high": info.get("targetHighPrice"),
             "recommendation": info.get("recommendationKey", ""),
+            # Analyst buy/hold/sell breakdown
+            "rec_buy":  rec_buy,
+            "rec_hold": rec_hold,
+            "rec_sell": rec_sell,
             # EPS estimate revisions
             "eps_current": eps_current,
             "eps_60d_ago": eps_60d_ago,
             "eps_revision_dir": eps_revision_dir,
+            # Earnings surprise history
+            "earnings_surprises": earnings_surprises,
             # Margins
             "gross_margin": info.get("grossMargins"),
             "operating_margin": info.get("operatingMargins"),
@@ -175,6 +238,7 @@ def fetch_ticker_data(ticker: str) -> dict:
             "capex_ratio": capex_ratio,
             "buyback_yield": buyback_yield,
             "rnd_ratio": rnd_ratio,
+            "interest_coverage": interest_coverage,
             # Balance sheet
             "total_cash": total_cash,
             "total_debt": total_debt,
