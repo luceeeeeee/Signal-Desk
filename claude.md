@@ -122,9 +122,10 @@ Each of the 5 sections (Business Overview, Recent Developments, Catalysts, Risks
 3. Global indices table (8 indices with % change)
 4. Commodities table
 5. Sector rotation bars (ETF performance)
-6. Latest headlines — **top 15** (24h window)
-7. Weekly review card (this week's index moves)
+6. Latest headlines — **top 15** (24h window) — each followed by bilingual AI impact sentence (EN + 繁體中文)
+7. Today's Market Snapshot card (daily 1D index moves)
 8. Upcoming events preview card (next 7 days of earnings)
+9. **Warren Buffett-style macro outlook card** — AI-generated weekly, long-term fundamental view. Cached in `pages/data/buffett_cache.json`, regenerated when cache > 7 days old. Bilingual (EN paragraph then ZH paragraph).
 
 ---
 

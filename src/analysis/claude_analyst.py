@@ -700,6 +700,30 @@ def generate_company_narrative(ticker: str, price_data: dict, quarterly: list) -
     return _generate(prompt, max_tokens=2000)
 
 
+def generate_buffett_outlook(index_summary: str = "") -> dict:
+    """Generate Warren Buffett-style weekly macro outlook. Returns {"en": "...", "zh": "..."}."""
+    now = datetime.now(tz=TAIPEI_TZ)
+    date_str = now.strftime("%Y-%m-%d")
+    prompt = f"""You are writing the weekly macro outlook section for a financial dashboard, from the perspective of a patient, long-term value investor in the tradition of Warren Buffett and Charlie Munger.
+
+Date: {date_str}
+{f"Index context: {index_summary}" if index_summary else ""}
+
+Write a concise, decisive macro view (3-4 sentences in English, then 3-4 sentences in Traditional Chinese 繁體中文). Cover:
+- Is the overall market cheap, fair, or expensive relative to fundamentals right now? Give a plain-language verdict.
+- What is the single most important long-term macro force a patient investor should be watching (e.g. interest rate trajectory, earnings cycle, dollar strength, AI capex cycle)?
+- Would a long-term investor be adding to positions, holding steady, or building cash reserves? Be direct.
+
+Format: Write ALL English sentences first as one paragraph, then a blank line, then ALL Traditional Chinese sentences as one paragraph. No headers, no bullet points. Plain prose only."""
+
+    try:
+        raw = _generate(prompt, max_tokens=600)
+        parts = raw.strip().split("\n\n", 1)
+        return {"en": parts[0].strip(), "zh": parts[1].strip() if len(parts) > 1 else ""}
+    except Exception:
+        return {"en": "", "zh": ""}
+
+
 def generate_monthly_overview(month_review: str, month_preview: str, index_data: str, upcoming_earnings: str) -> str:
     settings = load_settings()
     prompt = _build_monthly_overview_prompt(month_review, month_preview, index_data, upcoming_earnings)

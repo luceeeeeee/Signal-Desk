@@ -199,7 +199,7 @@ def run_universe_company_pages():
                 "forward_pe": info.get("forwardPE"),
                 "pe_trailing": info.get("trailingPE"),
                 "beta": info.get("beta"),
-                "dividend_yield": info.get("dividendYield"),
+                "dividend_yield": dy if (dy := info.get("dividendYield")) and dy <= 0.30 else None,
                 "gross_margin": info.get("grossMargins"),
                 "revenue_growth": info.get("revenueGrowth"),
                 "earnings_growth": info.get("earningsGrowth"),

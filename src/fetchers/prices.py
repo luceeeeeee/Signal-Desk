@@ -119,7 +119,7 @@ def fetch_ticker_data(ticker: str) -> dict:
             "institutional_pct": info.get("heldPercentInstitutions"),
             "analyst_count": info.get("numberOfAnalystOpinions"),
             "recommendation_mean": info.get("recommendationMean"),
-            "dividend_yield": info.get("dividendYield"),
+            "dividend_yield": dy if (dy := info.get("dividendYield")) and dy <= 0.30 else None,
             "peg_ratio": info.get("pegRatio"),
             "short_float": info.get("shortPercentOfFloat"),
         }

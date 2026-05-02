@@ -425,8 +425,15 @@ def _render_overview(raw: str) -> str:
 
         # H2 → new section card
         if stripped.startswith('## '):
+            title_raw = stripped[3:]
+            # If >40% Chinese characters, fold into current section instead of new card
+            zh_chars = sum(1 for c in title_raw if '一' <= c <= '鿿')
+            if zh_chars > max(len(title_raw.strip()), 1) * 0.4 and in_section:
+                out.append('<div class="zh-divider" style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--border-light)">繁體中文</div>')
+                i += 1
+                continue
             close_section()
-            title = inline(stripped[3:])
+            title = inline(title_raw)
             su = stripped.upper()
             cls = 'sec-teal'
             if 'PREVIEW' in su or 'OUTLOOK' in su or 'RECENT' in su or 'DEVELOPMENT' in su or '近期' in su or '最新' in su:
@@ -1050,8 +1057,9 @@ def generate_market_page(data: dict = None) -> str:
     month_label = now.strftime("%B %Y")
     week_num    = now.isocalendar()[1]
 
-    # Review: this week's index moves
+    # Review: today's index moves (daily snapshot)
     review_rows = ""
+    today_label = now.strftime("%b %d")
     for idx in data["indices"][:5]:
         c = idx.get("change_pct")
         cc = "#2e6b58" if c and c >= 0 else "#b84040"
@@ -1061,11 +1069,11 @@ def generate_market_page(data: dict = None) -> str:
         <div class="week-date">{idx['region']}</div>
         <strong>{idx['name']}</strong> &nbsp;
         <span style="color:{cc};font-weight:700">{cs}</span>
-        <span style="color:var(--text-muted);font-size:11px"> today</span>
+        <span style="color:var(--text-muted);font-size:11px"> 1D</span>
       </div>"""
     review_html = f"""
     <div class="week-card review">
-      <div class="week-title">📊 This Week's Moves · 本週行情 (Week {week_num})</div>
+      <div class="week-title">📊 Today's Market Snapshot · 今日市場概況 ({today_label})</div>
       {review_rows}
     </div>"""
 
@@ -1078,7 +1086,7 @@ def generate_market_page(data: dict = None) -> str:
 
     preview_rows = ""
     for e in upcoming:
-        date_str = e.get("date", "")
+        date_str = e.get("earnings_date", e.get("date", ""))
         ticker   = e.get("ticker", "")
         name     = e.get("name", ticker)
         when     = e.get("time", "")
@@ -1096,6 +1104,38 @@ def generate_market_page(data: dict = None) -> str:
       <div class="week-title">📅 Upcoming This Week · 本週重要事件</div>
       {preview_rows}
     </div>"""
+
+    # ── Warren Buffett-style macro outlook (weekly, cached) ──
+    buffett_html = ""
+    try:
+        import json as _json
+        buffett_cache = os.path.join(PAGES_DIR, "data", "buffett_cache.json")
+        os.makedirs(os.path.dirname(buffett_cache), exist_ok=True)
+        cached = {}
+        if os.path.exists(buffett_cache):
+            with open(buffett_cache) as _f:
+                cached = _json.load(_f)
+        cache_age_days = (now - datetime.fromisoformat(cached.get("generated_at", "2000-01-01T00:00:00+00:00").replace("Z", "+00:00"))).days if cached.get("generated_at") else 999
+        if cache_age_days >= 7 or not cached.get("en"):
+            idx_summary = " | ".join(
+                f"{x['name']} {x.get('change_pct'):+.1f}%" if x.get('change_pct') is not None else x['name']
+                for x in data["indices"][:5]
+            )
+            from src.analysis.claude_analyst import generate_buffett_outlook
+            outlook = generate_buffett_outlook(idx_summary)
+            cached = {**outlook, "generated_at": now.isoformat()}
+            with open(buffett_cache, "w") as _f:
+                _json.dump(cached, _f)
+        if cached.get("en"):
+            buffett_html = f"""
+  <div class="mk-card mk-full" style="margin-top:24px;border-top:4px solid #b87820;">
+    <div class="mk-card-title">🏛️ Warren Buffett Macro View · 巴菲特式宏觀視角 &nbsp;<span style="font-weight:400;text-transform:none">— Weekly fundamental lens for the patient investor</span></div>
+    <p style="font-size:14px;line-height:1.8;color:var(--text-med);margin:0 0 12px">{cached["en"]}</p>
+    <p style="font-size:13px;line-height:1.8;color:var(--text-muted);margin:0">{cached.get("zh","")}</p>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:12px">Regenerated weekly &nbsp;·&nbsp; AI-generated fundamental view, not financial advice.</p>
+  </div>"""
+    except Exception:
+        pass
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1213,6 +1253,8 @@ def generate_market_page(data: dict = None) -> str:
     {review_html}
     {preview_html}
   </div>
+
+  {buffett_html}
 </div>
 
 <footer>
@@ -1236,7 +1278,7 @@ TOP_PICKS_UNIVERSE = [
     # Big Tech & Cloud
     "AAPL","MSFT","GOOGL","META","AMZN","ORCL","CRM","ADBE","NOW","SNOW",
     # EV & Mobility
-    "TSLA","BYD","RIVN","F","GM",
+    "TSLA","BYDDY","RIVN","F","GM",
     # Financials & Payments
     "JPM","BAC","GS","V","MA","PYPL","AXP","BLK","MS","SCHW",
     # Healthcare & Biotech
@@ -1638,7 +1680,7 @@ SECTOR_GROUPS = [
         "id": "ev-mobility",
         "name": "EV & Mobility",
         "name_zh": "電動車與出行",
-        "tickers": ["TSLA", "BYD", "RIVN", "GM", "F", "STLA"],
+        "tickers": ["TSLA", "BYDDY", "RIVN", "GM", "F", "STLA"],
     },
     {
         "id": "financials",
