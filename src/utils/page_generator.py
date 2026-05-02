@@ -513,6 +513,8 @@ def _render_overview(raw: str) -> str:
                 cls = 'sec-rose'
             elif 'CATALYST' in su or '催化劑' in su:
                 cls = 'sec-teal'
+            elif 'WHY OWN' in su or 'INDEX' in su or '超額' in su or '指數' in su:
+                cls = 'sec-indigo'
             out.append(
                 f'<div class="section-card {cls}">'
                 f'<h2 class="section-title">{title}</h2>'
@@ -3173,6 +3175,20 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         upside_flag = f'<span class="{upside_cls}">{sign}{d["analyst_upside_pct"]:.1f}%</span>' if upside_cls else f'{sign}{d["analyst_upside_pct"]:.1f}%'
         val_rows += _mrow("Analyst Target", f'{_fmt_wl_price(d["analyst_target"], currency)} {upside_flag}',
             f'Wall Street consensus price target. Current recommendation: <strong>{d.get("recommendation","").upper().replace("_"," ") or "N/A"}</strong>.')
+    if d.get("eps_current") is not None:
+        eps_dir = d.get("eps_revision_dir", "stable")
+        if eps_dir == "rising":
+            dir_flag = '<span class="flag-pass">↑ Rising — analysts more bullish</span>'
+        elif eps_dir == "falling":
+            dir_flag = '<span class="flag-warn">↓ Falling — analysts cutting forecasts</span>'
+        else:
+            dir_flag = "→ Stable"
+        old_str = f' (was ${d["eps_60d_ago"]:.2f} 60d ago)' if d.get("eps_60d_ago") else ""
+        val_rows += _mrow("EPS Est. Revision",
+            f'${d["eps_current"]:.2f}{old_str} {dir_flag}',
+            "Are Wall Street analysts raising or lowering their earnings forecasts over the past 60 days? "
+            "Rising estimates = analysts see better results ahead (bullish signal). "
+            "Falling estimates = forecasts being cut, increasing risk of an earnings miss.")
     if not val_rows:
         val_rows = '<p class="m-def">Valuation data unavailable.</p>'
 
@@ -3204,6 +3220,30 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         flag = '<span class="flag-pass">✓</span>' if roe >= 15 else ""
         qual_rows += _mrow("ROE", f'{roe:.1f}%{flag}',
             "Return on Equity — net income divided by shareholders' equity. Above 15% shows efficient use of investor capital.")
+    if d.get("capex_ratio") is not None:
+        cr = d["capex_ratio"] * 100
+        if cr < 5:   cx_lbl, cx_c = "Capital-light ✓", "#2e6b58"
+        elif cr < 15: cx_lbl, cx_c = "Moderate capex",  "#3a72b0"
+        else:         cx_lbl, cx_c = "Capital-intensive", "#b87820"
+        qual_rows += _mrow("Capex / Revenue", f'<span style="color:{cx_c}">{cr:.1f}% — {cx_lbl}</span>',
+            "How much of each dollar of sales is reinvested in property and equipment. "
+            "Below 5% = capital-light (software, brands) — cash flows freely. "
+            "Above 15% = capital-intensive (factories, infrastructure) — heavy ongoing investment required.")
+    if d.get("buyback_yield") is not None:
+        by = d["buyback_yield"] * 100
+        if by >= 3:   by_lbl, by_c = "Aggressive return to shareholders ✓", "#2e6b58"
+        elif by >= 1: by_lbl, by_c = "Modest buyback program",             "#3a72b0"
+        else:         by_lbl, by_c = "Minimal buybacks",                   "#888"
+        qual_rows += _mrow("Buyback Yield", f'<span style="color:{by_c}">{by:.1f}% — {by_lbl}</span>',
+            "How much of the company's market value is returned to shareholders via share repurchases each year. "
+            "Buybacks reduce share count, boosting future earnings per share. "
+            "Works like a tax-efficient dividend — a sign management believes shares are undervalued.")
+    if d.get("rnd_ratio") is not None:
+        rd = d["rnd_ratio"] * 100
+        qual_rows += _mrow("R&amp;D / Revenue", f'{rd:.1f}%',
+            "Research &amp; development spending as % of sales. "
+            "High R&amp;D = investing aggressively in future products and competitive advantages. "
+            "The trade-off: R&amp;D reduces current profit margins but may build tomorrow's moat.")
     if not qual_rows:
         qual_rows = '<p class="m-def">Quality data unavailable.</p>'
 

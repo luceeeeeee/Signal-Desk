@@ -72,6 +72,71 @@ def fetch_ticker_data(ticker: str) -> dict:
         except Exception:
             pass
 
+        # ── Analyst EPS estimate revisions ────────────────────────────────────
+        eps_current = eps_60d_ago = eps_revision_dir = None
+        try:
+            eps_trend = t.eps_trend
+            if eps_trend is not None and not eps_trend.empty:
+                col = "0y" if "0y" in eps_trend.columns else eps_trend.columns[0]
+                def _epget(row, _et=eps_trend, _c=col):
+                    if row in _et.index:
+                        try:
+                            v = float(_et.at[row, _c])
+                            return None if v != v else v
+                        except Exception:
+                            return None
+                    return None
+                eps_current  = _epget("current")
+                eps_60d_ago  = _epget("60daysAgo")
+                if eps_current is not None and eps_60d_ago and eps_60d_ago != 0:
+                    rev_pct = (eps_current - eps_60d_ago) / abs(eps_60d_ago) * 100
+                    eps_revision_dir = "rising" if rev_pct > 1 else "falling" if rev_pct < -1 else "stable"
+        except Exception:
+            pass
+
+        # ── Capital allocation (from cashflow + income statement) ──────────
+        capex_ratio = buyback_yield = rnd_ratio = None
+        try:
+            cf = t.cashflow
+            if cf is not None and not cf.empty:
+                cf_col = cf.columns[0]
+                def _cfget(*keys, _cf=cf, _cc=cf_col):
+                    for k in keys:
+                        if k in _cf.index:
+                            try:
+                                v = float(_cf.at[k, _cc])
+                                return None if v != v else v
+                            except Exception:
+                                pass
+                    return None
+                capex   = _cfget("Capital Expenditure")
+                buyback = _cfget("Repurchase Of Capital Stock")
+                market_cap_val = info.get("marketCap")
+                if capex is not None and total_revenue and total_revenue > 0:
+                    capex_ratio = abs(capex) / total_revenue
+                if buyback is not None and market_cap_val and market_cap_val > 0:
+                    buyback_yield = abs(buyback) / market_cap_val
+        except Exception:
+            pass
+        try:
+            fin = t.financials
+            if fin is not None and not fin.empty:
+                fin_col = fin.columns[0]
+                def _fget(*keys, _f=fin, _fc=fin_col):
+                    for k in keys:
+                        if k in _f.index:
+                            try:
+                                v = float(_f.at[k, _fc])
+                                return None if v != v else v
+                            except Exception:
+                                pass
+                    return None
+                rnd = _fget("Research And Development")
+                if rnd is not None and total_revenue and total_revenue > 0:
+                    rnd_ratio = abs(rnd) / total_revenue
+        except Exception:
+            pass
+
         return {
             "ticker": ticker,
             "name": info.get("shortName") or info.get("longName") or ticker,
@@ -91,6 +156,10 @@ def fetch_ticker_data(ticker: str) -> dict:
             "analyst_target": analyst_target,
             "analyst_upside_pct": round(upside, 1) if upside is not None else None,
             "recommendation": info.get("recommendationKey", ""),
+            # EPS estimate revisions
+            "eps_current": eps_current,
+            "eps_60d_ago": eps_60d_ago,
+            "eps_revision_dir": eps_revision_dir,
             # Margins
             "gross_margin": info.get("grossMargins"),
             "operating_margin": info.get("operatingMargins"),
@@ -98,10 +167,14 @@ def fetch_ticker_data(ticker: str) -> dict:
             # Growth
             "revenue_growth": info.get("revenueGrowth"),
             "earnings_growth": info.get("earningsGrowth"),
-            # Quality metrics (items 5-6)
+            # Quality metrics
             "roic": roic,
             "fcf_margin": fcf_margin,
             "return_on_equity": info.get("returnOnEquity"),
+            # Capital allocation
+            "capex_ratio": capex_ratio,
+            "buyback_yield": buyback_yield,
+            "rnd_ratio": rnd_ratio,
             # Balance sheet
             "total_cash": total_cash,
             "total_debt": total_debt,

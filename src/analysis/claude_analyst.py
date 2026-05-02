@@ -690,7 +690,13 @@ English:
 
 English: 3-4 sentences. Give a final verdict — buy, hold, or avoid at today's price and why. Name one specific price level or catalyst that would change your view. End with a 5-year moat durability assessment.
 
-繁體中文：3-4句。給出最終結論——以今日股價買入、持有或避免，並說明原因。指出一個會改變看法的具體價位或催化劑。以5年護城河耐久性評估作結。"""
+繁體中文：3-4句。給出最終結論——以今日股價買入、持有或避免，並說明原因。指出一個會改變看法的具體價位或催化劑。以5年護城河耐久性評估作結。
+
+## WHY OWN VS. INDEX?
+
+English: 2-3 sentences. A non-professional investor asks "why not just buy the S&P 500 ETF instead?" Answer honestly and directly. What specific advantage does this company offer that a broad index cannot: superior growth rate, dominant market position, unique exposure to a specific theme, or significantly higher return on capital? If the honest answer is that the index is the better choice for most people, say so. End with a clear verdict on one line: **Alpha case: Compelling / Marginal / Not clear vs. index**.
+
+繁體中文：2-3句。針對「為什麼不直接買標普500指數ETF？」這個問題給出坦誠直接的答案。這家公司具體提供了哪些廣泛指數ETF無法給予的東西：更高的成長率、主導的市場地位、特定主題的曝險，還是顯著更高的資本報酬率？若誠實的答案是指數更適合大多數人，也請如實說明。最後用一行明確結論：**超額報酬評估：有說服力／邊際優勢／相較指數無明顯優勢**。"""
 
 
 def generate_company_narrative(ticker: str, price_data: dict, quarterly: list) -> str:
