@@ -24,7 +24,7 @@ from src.analysis.claude_analyst import generate_briefing, generate_intraday_ale
 from src.notifications.email_sender import EmailChannel
 from src.notifications.line_sender import LineChannel
 from src.utils.helpers import load_settings, load_watchlist, now_taipei
-from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_watchlist_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, _fetch_monthly_index_data, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
+from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_watchlist_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, generate_signal_log_page, _fetch_monthly_index_data, _load_scores_cache, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
 from src.fetchers.news import NEWS_FEEDS
 from src.analysis.claude_analyst import generate_monthly_overview
 
@@ -95,7 +95,7 @@ def _git_push_pages(label: str = ""):
         print(f"  [Deploy] Git push skipped: {e}")
 
 
-def _generate_one_company_page(d: dict, recent_earnings_date: str = None):
+def _generate_one_company_page(d: dict, recent_earnings_date: str = None, cached_cs: dict = None):
     """Generate a single company page, using narrative cache when fresh."""
     ticker = d.get("ticker", "")
     try:
@@ -107,7 +107,7 @@ def _generate_one_company_page(d: dict, recent_earnings_date: str = None):
             _save_narrative_cache(ticker, narrative)
         else:
             print(f"  [Company Page] {ticker} — using cached narrative")
-        generate_company_page(d, quarterly, narrative)
+        generate_company_page(d, quarterly, narrative, cached_cs=cached_cs)
     except Exception as e:
         print(f"  [Company Page] {ticker} failed: {e}")
 
@@ -121,11 +121,13 @@ def run_company_pages(prices: list = None):
         recent = {e["ticker"]: e["earnings_date"] for e in fetch_earnings_calendar(days_ahead=0)}
     except Exception:
         recent = {}
+    # Load shared daily scores cache written by fetch_top_picks_data()
+    _scores_cache = _load_scores_cache()
     for d in prices:
         if not d.get("price"):
             continue
         ticker = d.get("ticker", "")
-        _generate_one_company_page(d, recent.get(ticker))
+        _generate_one_company_page(d, recent.get(ticker), cached_cs=_scores_cache.get(ticker))
     _git_push_pages("company-pages")
 
 
@@ -144,6 +146,9 @@ def run_universe_company_pages():
         recent = {e["ticker"]: e["earnings_date"] for e in fetch_earnings_calendar(days_ahead=0)}
     except Exception:
         recent = {}
+
+    # Load shared daily scores cache written by fetch_top_picks_data()
+    _scores_cache = _load_scores_cache()
 
     for ticker in all_tickers:
         page_path = os.path.join(PAGES_DIR, f"stock-{ticker.lower()}.html")
@@ -215,7 +220,7 @@ def run_universe_company_pages():
                 "equity_ratio": equity_ratio,
                 "roic": roic,
             }
-            _generate_one_company_page(d, recent.get(ticker))
+            _generate_one_company_page(d, recent.get(ticker), cached_cs=_scores_cache.get(ticker))
         except Exception as e:
             print(f"  [Universe Page] {ticker} failed: {e}")
 
@@ -399,8 +404,14 @@ if __name__ == "__main__":
         name="Intraday Price Poll",
     )
     # Daily outcome tracker: runs at 08:00 Taipei to check prices for past signals
+    def run_signal_outcome_update():
+        update_outcomes()
+        from src.utils.page_generator import generate_signal_log_page
+        generate_signal_log_page()
+        _git_push_pages("signal-log")
+
     scheduler.add_job(
-        update_outcomes,
+        run_signal_outcome_update,
         CronTrigger(hour=8, minute=0, timezone=tz),
         id="signal_outcome_update",
         name="Signal Outcome Tracker",

@@ -2,6 +2,7 @@
 import os
 import re
 import warnings
+import json as _json_mod
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -11,6 +12,27 @@ with warnings.catch_warnings():
 
 TAIPEI_TZ = ZoneInfo("Asia/Taipei")
 PAGES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "pages")
+
+
+def _save_scores_cache(scores: dict):
+    """Save ticker->conviction_score dict to pages/data/scores_cache.json."""
+    cache_dir = os.path.join(PAGES_DIR, "data")
+    os.makedirs(cache_dir, exist_ok=True)
+    payload = {"generated_at": datetime.now(tz=TAIPEI_TZ).isoformat(), "scores": scores}
+    with open(os.path.join(cache_dir, "scores_cache.json"), "w") as f:
+        _json_mod.dump(payload, f)
+
+
+def _load_scores_cache(max_age_hours: int = 12) -> dict:
+    """Load cached scores. Returns {} if missing or older than max_age_hours."""
+    path = os.path.join(PAGES_DIR, "data", "scores_cache.json")
+    try:
+        with open(path) as f:
+            data = _json_mod.load(f)
+        age = (datetime.now(tz=TAIPEI_TZ) - datetime.fromisoformat(data["generated_at"])).total_seconds() / 3600
+        return data["scores"] if age < max_age_hours else {}
+    except Exception:
+        return {}
 
 REGION_META = {
     "US":     {"label": "United States",    "label_zh": "美國",         "flag": "🇺🇸"},
@@ -93,21 +115,26 @@ footer {
   border-top: 1px solid var(--border); padding: 24px 48px;
   text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
 }
+.mk-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.mk-table tbody tr:hover { background: var(--bg); }
+.news-title { word-break: break-word; }
 @media (max-width: 620px) {
   nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero { padding: 32px 20px 24px; }
+  .content { padding: 0 16px 60px; }
   .hero h1 { font-size: 22px; }
   .nav-links { display: none; }
+  body { font-size: 14px; }
 }
 """
 
 
 _NAV_ITEMS = [
-    ("earnings-calendar.html",      "Earnings Calendar"),
-    ("market.html",                 "Market"),
-    ("top-picks.html",              "Top Picks"),
-    ("sector-leaders.html",         "Sector Leaders"),
-    ("income-statement-guide.html", "Statement Guide"),
-    ("news-sources.html",           "News Sources"),
+    ("market.html",              "Market"),
+    ("top-picks.html",           "Top Picks"),
+    ("sector-leaders.html",      "Sector Leaders"),
+    ("earnings-calendar.html",   "Earnings Calendar"),
+    ("news-sources.html",        "News Sources"),
 ]
 
 
@@ -126,6 +153,46 @@ def _nav_html(active: str = "") -> str:
     {links.strip()}
   </ul>
 </nav>"""
+
+
+def _append_score_history(scores: dict):
+    """Append today's scores to pages/data/scores_history.json. Keep last 90 days."""
+    from datetime import date as _date
+    path = os.path.join(PAGES_DIR, "data", "scores_history.json")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    today = str(_date.today())
+    try:
+        with open(path) as f:
+            history = _json_mod.load(f)
+    except Exception:
+        history = {}
+    cutoff = str(_date.today() - timedelta(days=90))
+    for ticker, score in scores.items():
+        entries = history.get(ticker, [])
+        entries = [e for e in entries if e["date"] >= cutoff]
+        if not entries or entries[-1]["date"] != today:
+            entries.append({"date": today, "score": score if isinstance(score, int) else score.get("score", 0)})
+        history[ticker] = entries
+    with open(path, "w") as f:
+        _json_mod.dump(history, f)
+
+
+def _sparkline_svg(points: list, width=60, height=20) -> str:
+    """Render a tiny SVG sparkline from a list of score values (0-100)."""
+    if len(points) < 2:
+        return '<span style="color:var(--text-muted);font-size:11px">—</span>'
+    mn, mx = min(points), max(points)
+    rng = mx - mn or 1
+    step = width / (len(points) - 1)
+    coords = " ".join(
+        f"{i*step:.1f},{height - (v-mn)/rng*(height-2)-1:.1f}"
+        for i, v in enumerate(points)
+    )
+    color = "#2e6b58" if points[-1] >= points[0] else "#b84040"
+    delta = points[-1] - points[0]
+    delta_str = f'<span style="font-size:10px;color:{color};font-weight:700">{delta:+.0f}</span>'
+    svg = f'<svg width="{width}" height="{height}" style="vertical-align:middle"><polyline points="{coords}" fill="none" stroke="{color}" stroke-width="1.5"/></svg>'
+    return svg + " " + delta_str
 
 
 def generate_news_sources_page(feeds: list) -> None:
@@ -848,6 +915,67 @@ def fetch_market_page_data() -> dict:
     return result
 
 
+def _macro_events_next30() -> list:
+    """Return hardcoded 2026 macro events falling within the next 30 days from today."""
+    MACRO_EVENTS = [
+        # FOMC Rate Decisions
+        {"date": "2026-01-29", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        {"date": "2026-03-19", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        {"date": "2026-05-07", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        {"date": "2026-06-18", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        {"date": "2026-07-30", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        {"date": "2026-09-17", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        {"date": "2026-11-05", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        {"date": "2026-12-17", "event": "FOMC Rate Decision", "event_zh": "聯準會利率決議", "importance": "high"},
+        # NFP (Non-Farm Payrolls) — first Friday of month
+        {"date": "2026-01-09", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-02-06", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-03-06", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-04-03", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-05-01", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-06-05", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-07-10", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-08-07", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-09-04", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-10-02", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-11-06", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        {"date": "2026-12-04", "event": "Non-Farm Payrolls (NFP)", "event_zh": "非農就業報告", "importance": "high"},
+        # CPI Releases — approx 2nd Wednesday of month
+        {"date": "2026-01-15", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-02-12", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-03-12", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-04-10", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-05-13", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-06-11", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-07-15", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-08-12", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-09-10", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-10-14", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-11-12", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        {"date": "2026-12-10", "event": "CPI Inflation Report", "event_zh": "消費者物價指數 (CPI)", "importance": "high"},
+        # PCE Releases — last business Friday of month
+        {"date": "2026-01-31", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-02-28", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-03-27", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-04-30", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-05-29", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-06-26", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-07-31", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-08-28", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-09-25", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-10-30", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-11-25", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+        {"date": "2026-12-23", "event": "PCE Price Index", "event_zh": "個人消費支出物價指數 (PCE)", "importance": "high"},
+    ]
+    today = datetime.now(tz=TAIPEI_TZ).date()
+    cutoff = today + timedelta(days=30)
+    filtered = [
+        e for e in MACRO_EVENTS
+        if today <= datetime.strptime(e["date"], "%Y-%m-%d").date() <= cutoff
+    ]
+    return sorted(filtered, key=lambda e: e["date"])
+
+
 def generate_market_page(data: dict = None) -> str:
     """Generate pages/market.html — live market dashboard."""
     if data is None:
@@ -934,10 +1062,12 @@ def generate_market_page(data: dict = None) -> str:
     indices_html = f"""
   <div class="mk-card mk-full">
     <div class="mk-card-title">Global Indices · 全球指數</div>
+    <div class="mk-table-wrap">
     <table class="mk-table">
       <thead><tr><th>Index / 指數</th><th style="text-align:right">Price / 價格</th><th style="text-align:right">Change / 漲跌</th></tr></thead>
       <tbody>{idx_rows}</tbody>
     </table>
+    </div>
   </div>"""
 
     # ── Commodities ──
@@ -955,10 +1085,12 @@ def generate_market_page(data: dict = None) -> str:
     commodities_html = f"""
   <div class="mk-card mk-half">
     <div class="mk-card-title">Commodities & Crypto · 大宗商品與加密貨幣</div>
+    <div class="mk-table-wrap">
     <table class="mk-table">
       <thead><tr><th>Asset / 資產</th><th style="text-align:right">Price</th><th style="text-align:right">Change</th></tr></thead>
       <tbody>{com_rows}</tbody>
     </table>
+    </div>
   </div>"""
 
     # ── Sector rotation ──
@@ -1105,6 +1237,51 @@ def generate_market_page(data: dict = None) -> str:
       {preview_rows}
     </div>"""
 
+    # ── Macro Events — next 30 days ──
+    macro_events = _macro_events_next30()
+    today_date = now.date()
+    if macro_events:
+        macro_rows = ""
+        for ev in macro_events:
+            ev_date = datetime.strptime(ev["date"], "%Y-%m-%d").date()
+            days_away = (ev_date - today_date).days
+            days_label = "Today" if days_away == 0 else f"in {days_away}d"
+            ev_name_en = ev["event"]
+            ev_name_zh = ev["event_zh"]
+            if ev.get("importance") == "high":
+                name_cell = f'<strong>{ev_name_en}</strong> <span style="color:var(--text-muted);font-weight:400">/ {ev_name_zh}</span>'
+            else:
+                name_cell = f'{ev_name_en} <span style="color:var(--text-muted)">/ {ev_name_zh}</span>'
+            macro_rows += f"""
+        <tr>
+          <td style="white-space:nowrap;padding-right:16px">{ev["date"]}</td>
+          <td>{name_cell}</td>
+          <td style="text-align:right;white-space:nowrap;color:var(--text-muted)">{days_label}</td>
+        </tr>"""
+        macro_html = f"""
+  <div class="mk-card mk-full" style="margin-top:24px;border-top:4px solid #3a72b0;">
+    <div class="mk-card-title">📅 Macro Events · 總經行事曆 (Next 30 Days)</div>
+    <div class="mk-table-wrap">
+    <table class="mk-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Event / 事件</th>
+          <th style="text-align:right">Days Away</th>
+        </tr>
+      </thead>
+      <tbody>{macro_rows}
+      </tbody>
+    </table>
+    </div>
+  </div>"""
+    else:
+        macro_html = f"""
+  <div class="mk-card mk-full" style="margin-top:24px;border-top:4px solid #3a72b0;">
+    <div class="mk-card-title">📅 Macro Events · 總經行事曆 (Next 30 Days)</div>
+    <p style="font-size:13px;color:var(--text-muted);margin:0">No major macro events in the next 30 days.</p>
+  </div>"""
+
     # ── Warren Buffett-style macro outlook (weekly, cached) ──
     buffett_html = ""
     try:
@@ -1248,6 +1425,8 @@ def generate_market_page(data: dict = None) -> str:
   </div>
 
   {news_html}
+
+  {macro_html}
 
   <div class="week-grid">
     {review_html}
@@ -1396,6 +1575,10 @@ def fetch_top_picks_data() -> list:
             continue
 
     results.sort(key=lambda x: x["_cs"]["score"], reverse=True)
+    # Save ALL scored tickers to cache (not just top 30)
+    _save_scores_cache({r["ticker"]: r["_cs"] for r in results})
+    # Append today's scores to the rolling 90-day history
+    _append_score_history({r["ticker"]: r["_cs"]["score"] for r in results})
     # Take top 30 by score; include all ≥75 (Strong Conviction) plus fill to 30 with Moderate (≥55)
     strong = [r for r in results if r["_cs"]["score"] >= 75]
     moderate = [r for r in results if 55 <= r["_cs"]["score"] < 75]
@@ -1430,6 +1613,16 @@ def generate_top_picks_page(picks: list = None) -> str:
         b = val / 1e9
         return f"${b:.0f}B" if b >= 1 else f"${val/1e6:.0f}M"
 
+    # Load 30-day score history for sparklines
+    _history_path = os.path.join(PAGES_DIR, "data", "scores_history.json")
+    try:
+        with open(_history_path) as _hf:
+            _score_history = _json_mod.load(_hf)
+    except Exception:
+        _score_history = {}
+    from datetime import date as _date, timedelta as _td
+    _cutoff_30 = str(_date.today() - _td(days=30))
+
     rows_html = ""
     for rank, d in enumerate(picks, 1):
         cs = d["_cs"]
@@ -1449,6 +1642,11 @@ def generate_top_picks_page(picks: list = None) -> str:
 
         ticker = d["ticker"]
         company_link = f'stock-{ticker.lower()}.html'
+
+        # Build sparkline for this ticker (last 30 days)
+        _entries = _score_history.get(ticker, [])
+        _points = [e["score"] for e in _entries if e["date"] >= _cutoff_30]
+        sparkline_html = _sparkline_svg(_points)
 
         rows_html += f"""
   <div class="tp-row">
@@ -1497,6 +1695,7 @@ def generate_top_picks_page(picks: list = None) -> str:
         <span class="tp-m-val" style="color:{upside_color}">{upside_str}</span>
       </div>
     </div>
+    <div class="tp-trend-col">{sparkline_html}</div>
     <div class="tp-price-col">
       <span class="tp-price">${d['price']:.2f}</span>
       <span class="tp-change" style="color:{change_color}">{change_str}</span>
@@ -1739,6 +1938,9 @@ def fetch_sector_leaders_data() -> list:
         import yfinance as yf
     from src.analysis.conviction_score import compute_conviction_score
 
+    # Load shared daily scores cache written by fetch_top_picks_data()
+    _scores_cache = _load_scores_cache()
+
     all_tickers = list({t for g in SECTOR_GROUPS for t in g["tickers"]})
     cache = {}
     for ticker in all_tickers:
@@ -1800,7 +2002,8 @@ def fetch_sector_leaders_data() -> list:
                 "total_debt": total_debt,
                 "equity_ratio": equity_ratio,
             }
-            d["_cs"] = compute_conviction_score(d)
+            # Use cached score if available, otherwise compute fresh
+            d["_cs"] = _scores_cache.get(ticker) or compute_conviction_score(d)
             cache[ticker] = d
         except Exception:
             continue
@@ -2647,7 +2850,7 @@ def _kpi_tile(label, value, sub, color):
     )
 
 
-def generate_company_page(d: dict, quarterly: list, narrative: str) -> str:
+def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: dict = None) -> str:
     """Write pages/stock-{ticker}.html. Returns filename."""
     from src.analysis.conviction_score import compute_conviction_score
 
@@ -2665,7 +2868,8 @@ def generate_company_page(d: dict, quarterly: list, narrative: str) -> str:
     change_cls = "badge-up" if change_pct >= 0 else "badge-dn"
 
     # ── Conviction score ───────────────────────────────────────────────────────
-    cs = compute_conviction_score(d)
+    # Use cached_cs (from shared daily cache) if provided, otherwise compute fresh
+    cs = cached_cs if cached_cs is not None else compute_conviction_score(d)
     score = cs["score"]
     label = cs["label"]
     sc = _SCORE_PALETTE.get(cs["color_cls"], _SCORE_PALETTE["s-muted"])
@@ -3056,3 +3260,125 @@ def generate_company_page(d: dict, quarterly: list, narrative: str) -> str:
         f.write(html)
     print(f"[Pages] {filename} written — conviction {score}/100 ({label})")
     return filename
+
+
+def generate_signal_log_page(signals: list = None) -> str:
+    """Generate pages/signal-log.html — trade signal outcome tracker."""
+    import json as _j
+    now = datetime.now(tz=TAIPEI_TZ)
+    updated = now.strftime("%B %d, %Y · %H:%M Taipei")
+
+    if signals is None:
+        log_path = os.path.join(os.path.dirname(PAGES_DIR), "signal_log.json")
+        try:
+            with open(log_path) as f:
+                signals = _j.load(f)
+        except Exception:
+            signals = []
+
+    wins   = [s for s in signals if s.get("outcome_label") == "WIN"]
+    losses = [s for s in signals if s.get("outcome_label") == "LOSS"]
+    pending = [s for s in signals if s.get("outcome_label") == "PENDING"]
+    win_rate = round(len(wins) / (len(wins) + len(losses)) * 100, 1) if (wins or losses) else 0
+    avg_win  = round(sum(s.get("outcome_pct", 0) for s in wins) / len(wins), 1) if wins else 0
+    avg_loss = round(sum(s.get("outcome_pct", 0) for s in losses) / len(losses), 1) if losses else 0
+
+    stats_html = ""
+    if signals:
+        stats_html = f"""
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:28px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 22px;min-width:110px;text-align:center;">
+      <div style="font-size:26px;font-weight:800">{len(signals)}</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Total Signals</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid #2e6b58;border-radius:var(--radius);padding:16px 22px;min-width:110px;text-align:center;">
+      <div style="font-size:26px;font-weight:800;color:#2e6b58">{win_rate}%</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Win Rate</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid #2e6b58;border-radius:var(--radius);padding:16px 22px;min-width:110px;text-align:center;">
+      <div style="font-size:26px;font-weight:800;color:#2e6b58">+{avg_win}%</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Avg Win</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid #b84040;border-radius:var(--radius);padding:16px 22px;min-width:110px;text-align:center;">
+      <div style="font-size:26px;font-weight:800;color:#b84040">{avg_loss}%</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Avg Loss</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 22px;min-width:110px;text-align:center;">
+      <div style="font-size:26px;font-weight:800;color:#b87820">{len(pending)}</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em">Pending</div>
+    </div>
+  </div>"""
+
+    rows_html = ""
+    for s in sorted(signals, key=lambda x: x.get("timestamp", ""), reverse=True):
+        ol = s.get("outcome_label", "PENDING")
+        op = s.get("outcome_pct")
+        if ol == "WIN":
+            row_color = "#2e6b58"; badge_bg = "#eaf3f0"
+        elif ol == "LOSS":
+            row_color = "#b84040"; badge_bg = "#fdecea"
+        else:
+            row_color = "#b87820"; badge_bg = "#fef9ec"
+        op_str = f'{op:+.1f}%' if op is not None else "—"
+        ts = s.get("timestamp", "")[:16].replace("T", " ")
+        rows_html += f"""
+    <tr>
+      <td style="color:var(--text-muted);font-size:12px">{ts}</td>
+      <td><strong>{s.get('ticker','')}</strong></td>
+      <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:{badge_bg};color:{row_color}">{s.get('action','')}</span></td>
+      <td>${s.get('price', 0):.2f}</td>
+      <td style="color:{row_color};font-weight:700">{op_str}</td>
+      <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:{badge_bg};color:{row_color}">{ol}</span></td>
+    </tr>"""
+
+    if not rows_html:
+        table_html = '<p style="color:var(--text-muted);padding:24px 0">No signals recorded yet. Signals will appear here once the intraday alert system generates its first trade signal.<br><br>尚無訊號記錄。盤中警示系統產生第一筆交易訊號後，記錄將顯示於此。</p>'
+    else:
+        table_html = f"""
+  <div style="overflow-x:auto">
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr style="border-bottom:2px solid var(--border)">
+      <th style="padding:6px 0 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:left">Date / Time</th>
+      <th style="padding:6px 0 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:left">Ticker</th>
+      <th style="padding:6px 0 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:left">Action</th>
+      <th style="padding:6px 0 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:left">Entry</th>
+      <th style="padding:6px 0 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:left">P&L</th>
+      <th style="padding:6px 0 10px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:left">Outcome</th>
+    </tr></thead>
+    <tbody>{rows_html}</tbody>
+  </table>
+  </div>"""
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Log · The Signal Desk</title>
+<style>
+{SHARED_CSS}
+</style>
+</head>
+<body>
+{_nav_html("signal-log.html")}
+<div class="hero">
+  <div class="pill">Track Record · 訊號追蹤</div>
+  <h1>Signal Log <span style="font-size:16px;font-weight:400;color:var(--text-muted)">訊號記錄</span></h1>
+  <p class="hero-sub">Complete track record of all intraday buy/sell signals generated by The Signal Desk.<br>
+  <span style="font-size:13px;color:var(--text-muted)">所有盤中買賣訊號的完整記錄與結果追蹤。</span></p>
+</div>
+<div class="content">
+  <p style="font-size:12px;color:var(--text-muted);margin-bottom:24px">Last updated: {updated}</p>
+  {stats_html}
+  {table_html}
+</div>
+<footer>The Signal Desk &nbsp;·&nbsp; Signal Log &nbsp;·&nbsp; {now.strftime('%Y-%m-%d')}</footer>
+</body>
+</html>"""
+
+    os.makedirs(PAGES_DIR, exist_ok=True)
+    out_path = os.path.join(PAGES_DIR, "signal-log.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"[Pages] signal-log.html written ({len(signals)} signals)")
+    return "signal-log.html"
