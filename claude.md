@@ -3,6 +3,18 @@
 ## Project Overview
 A personal daily stock alert system that generates bilingual (English + Traditional Chinese) market briefings, serves a static website via GitHub Pages, and runs an interactive LINE bot. The site lives at https://luceeeeeee.github.io/Signal-Desk. GitHub repo: luceeeeeee/Signal-Desk.
 
+## Core Product Philosophy — TWO LAYERS, BOTH REQUIRED
+
+**Layer 1 — Data (analyst-grade, never simplified):** Every metric shown must be accurate, current, and at full depth. A senior analyst can read raw ROIC, FCF margin, EV/EBITDA, conviction scores, and draw their own conclusions. Never remove or round data for the sake of simplicity.
+
+**Layer 2 — Explanation (plain language, always alongside):** Every metric must also answer: *What is this? Why does it matter? What does good vs. bad look like?* Show both the number AND the plain-language interpretation. Example: "ROIC 120% — earns $1.20 for every $1 invested · excellent (threshold: ≥15%)". A beginner and a professional should both find value on the same page.
+
+**Target user:** Non-professional, amateur, and beginner investors who want to make informed decisions without a finance background. They see "FCF margin" and don't know what it means. The site's job is to remove that confusion without dumbing down the data.
+
+**AI persona:** Patient teacher + rigorous analyst. Write like a senior analyst explaining their reasoning to a smart friend with zero investing background — precise numbers, concrete analogies, no jargon without an immediate plain-language explanation. Bilingual: English block first, then Traditional Chinese (繁體中文).
+
+---
+
 ---
 
 ## Architecture
@@ -10,7 +22,7 @@ A personal daily stock alert system that generates bilingual (English + Traditio
 - **main.py** — APScheduler orchestrator + LINE bot daemon thread
 - **src/fetchers/** — yfinance price data, RSS news feeds, earnings calendar
 - **src/analysis/claude_analyst.py** — Claude API calls for briefings, narratives, intraday alerts
-- **src/analysis/conviction_score.py** — deterministic 3-pillar scoring (Quality 33 + Growth 34 + Health 33 = 100)
+- **src/analysis/conviction_score.py** — deterministic 4-pillar scoring (Quality 25 + Growth 25 + Health 25 + Valuation 25 = 100)
 - **src/notifications/** — email_sender.py, line_sender.py, line_bot.py (Flask webhook)
 - **src/utils/page_generator.py** — all HTML page generation (single source of truth for nav and CSS)
 - **pages/** — output directory deployed to Netlify; push to GitHub triggers auto-deploy
@@ -161,13 +173,14 @@ Never change these without updating ALL pages consistently.
 
 ---
 
-## Conviction Score (3 pillars, deterministic)
+## Conviction Score (4 pillars, deterministic)
 
 | Pillar | Max | Key signals |
 |--------|-----|-------------|
-| Quality | 33 | ROIC ≥ 15%, FCF margin, gross margin |
-| Growth | 34 | Revenue growth ≥ 10%, earnings growth ≥ 10% |
-| Health | 33 | Cash/debt ratio, equity ratio, analyst upside |
+| Quality | 25 | ROIC ≥ 15%, FCF margin, gross margin |
+| Growth | 25 | Revenue growth ≥ 10%, earnings growth ≥ 10% |
+| Health | 25 | Cash/debt ratio, equity ratio, analyst upside |
+| Valuation | 25 | FCF yield vs bond rate, Forward P/E thresholds |
 
 Score ≥ 75 = Strong Conviction | 55–74 = Moderate | 35–54 = Weak | <35 = Avoid
 

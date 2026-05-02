@@ -192,6 +192,8 @@ def run_universe_company_pages():
                         roic = op_income * 0.79 / inv_cap
             except Exception:
                 pass
+            market_cap = info.get("marketCap")
+            fcf_yield = (fcf / market_cap) if fcf and market_cap and market_cap > 0 else None
             d = {
                 "ticker": ticker,
                 "name": info.get("shortName") or info.get("longName") or ticker,
@@ -200,7 +202,7 @@ def run_universe_company_pages():
                 "currency": info.get("currency", "USD"),
                 "sector": info.get("sector", ""),
                 "industry": info.get("industry", ""),
-                "market_cap": info.get("marketCap"),
+                "market_cap": market_cap,
                 "forward_pe": info.get("forwardPE"),
                 "pe_trailing": info.get("trailingPE"),
                 "beta": info.get("beta"),
@@ -217,6 +219,7 @@ def run_universe_company_pages():
                 "total_cash": info.get("totalCash"),
                 "total_debt": info.get("totalDebt"),
                 "fcf_margin": fcf_margin,
+                "fcf_yield": fcf_yield,
                 "equity_ratio": equity_ratio,
                 "roic": roic,
             }

@@ -1546,6 +1546,9 @@ def fetch_top_picks_data() -> list:
             except Exception:
                 roic = None
 
+            market_cap = info.get("marketCap")
+            fcf_yield = (free_cashflow / market_cap) if free_cashflow and market_cap and market_cap > 0 else None
+
             d = {
                 "ticker": ticker,
                 "name": info.get("shortName") or info.get("longName") or ticker,
@@ -1553,7 +1556,7 @@ def fetch_top_picks_data() -> list:
                 "change_pct": round(change_pct, 2),
                 "currency": info.get("currency", "USD"),
                 "sector": info.get("sector", ""),
-                "market_cap": info.get("marketCap"),
+                "market_cap": market_cap,
                 "forward_pe": info.get("forwardPE"),
                 "analyst_target": analyst_target,
                 "analyst_upside_pct": round(upside, 1) if upside is not None else None,
@@ -1562,6 +1565,7 @@ def fetch_top_picks_data() -> list:
                 "revenue_growth": info.get("revenueGrowth"),
                 "earnings_growth": info.get("earningsGrowth"),
                 "fcf_margin": fcf_margin,
+                "fcf_yield": fcf_yield,
                 "roic": roic,
                 "return_on_equity": info.get("returnOnEquity"),
                 "total_cash": total_cash,
@@ -2493,6 +2497,19 @@ _COMPANY_PAGE_CSS = """
 .q-pos { color: #2e6b58; font-weight: 600; }
 .q-neg { color: #b84040; font-weight: 600; }
 
+/* ── Moat Trend card ── */
+.mt-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #2e6b58; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.mt-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+.mt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.mt-verdict { font-size: 13px; font-weight: 700; margin-left: auto; }
+.mt-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+.mt-row { display: grid; grid-template-columns: 38px 1fr 52px 56px; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mt-yr { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.mt-bar-wrap { background: var(--border-light); border-radius: 3px; height: 8px; overflow: hidden; }
+.mt-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.mt-val { font-size: 12px; font-weight: 700; text-align: right; }
+.mt-gm { font-size: 11px; color: var(--text-muted); }
+
 /* ── Narrative section cards ── */
 .sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
 .sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
@@ -2850,6 +2867,89 @@ def _kpi_tile(label, value, sub, color):
     )
 
 
+def _fetch_roic_trend_html(ticker: str) -> str:
+    """Return a 'Moat Trend' card HTML showing 4-year ROIC + gross margin history.
+    Returns empty string on any failure so company page degrades gracefully."""
+    try:
+        import yfinance as yf
+        t = yf.Ticker(ticker)
+        fin = t.financials          # annual income statement (columns = fiscal years)
+        bs  = t.balance_sheet       # annual balance sheet
+
+        if fin is None or fin.empty or bs is None or bs.empty:
+            return ""
+
+        years = sorted(fin.columns, reverse=True)[:4]  # up to 4 most-recent fiscal years
+        if len(years) < 2:
+            return ""
+
+        rows = []
+        for yr in years:
+            label = str(yr)[:4]
+            try:
+                rev  = fin.loc["Total Revenue", yr]       if "Total Revenue"       in fin.index else None
+                cogs = fin.loc["Cost Of Revenue", yr]     if "Cost Of Revenue"     in fin.index else None
+                ebit = fin.loc["EBIT", yr]                if "EBIT"                in fin.index else None
+                tax_rate = 0.21
+                nopat = ebit * (1 - tax_rate) if ebit else None
+
+                # Invested capital = total equity + total debt - cash
+                eq    = bs.loc["Stockholders Equity", yr] if "Stockholders Equity" in bs.index else None
+                td    = bs.loc["Long Term Debt", yr]      if "Long Term Debt"      in bs.index else 0
+                std   = bs.loc["Current Debt", yr]        if "Current Debt"        in bs.index else 0
+                cash  = bs.loc["Cash And Cash Equivalents", yr] if "Cash And Cash Equivalents" in bs.index else 0
+                ic = (eq or 0) + (td or 0) + (std or 0) - (cash or 0)
+
+                roic_pct = round(nopat / ic * 100, 1) if (nopat and ic and ic > 0) else None
+                gm_pct   = round((rev - cogs) / rev * 100, 1) if (rev and cogs and rev > 0) else None
+                rows.append({"year": label, "roic": roic_pct, "gm": gm_pct})
+            except Exception:
+                rows.append({"year": label, "roic": None, "gm": None})
+
+        if all(r["roic"] is None for r in rows):
+            return ""
+
+        # Trend verdict based on most-recent vs oldest available ROIC
+        roic_vals = [r["roic"] for r in rows if r["roic"] is not None]
+        if len(roic_vals) >= 2:
+            delta = roic_vals[0] - roic_vals[-1]
+            if delta >= 3:    verdict, vc = "Widening moat ↑", "#2e6b58"
+            elif delta <= -3: verdict, vc = "Eroding moat ↓",  "#b84040"
+            else:             verdict, vc = "Stable moat →",   "#b87820"
+        else:
+            verdict, vc = "Insufficient data", "#888"
+
+        # Build mini bar chart for ROIC
+        max_roic = max((abs(r["roic"]) for r in rows if r["roic"] is not None), default=1)
+        bar_rows = ""
+        for r in rows:
+            if r["roic"] is not None:
+                pct = min(100, abs(r["roic"]) / max(max_roic, 1) * 100)
+                color = "#2e6b58" if r["roic"] >= 15 else "#b87820" if r["roic"] >= 8 else "#b84040"
+                gm_str = f'{r["gm"]:.0f}%' if r["gm"] is not None else "—"
+                bar_rows += (
+                    f'<div class="mt-row">'
+                    f'  <div class="mt-yr">{r["year"]}</div>'
+                    f'  <div class="mt-bar-wrap"><div class="mt-bar" style="width:{pct:.0f}%;background:{color}"></div></div>'
+                    f'  <div class="mt-val" style="color:{color}">{r["roic"]:.1f}%</div>'
+                    f'  <div class="mt-gm">GM {gm_str}</div>'
+                    f'</div>'
+                )
+
+        return f"""
+<div class="mt-card">
+  <div class="mt-header">
+    <div class="mt-title">Moat Trend — ROIC &amp; Gross Margin</div>
+    <div class="mt-verdict" style="color:{vc}">{verdict}</div>
+  </div>
+  <div class="mt-sub">Return on Invested Capital measures how efficiently the business generates profit from the capital it uses.
+    A rising ROIC over time signals a widening moat — the company is compounding its competitive advantage.</div>
+  {bar_rows}
+</div>"""
+    except Exception:
+        return ""
+
+
 def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: dict = None) -> str:
     """Write pages/stock-{ticker}.html. Returns filename."""
     from src.analysis.conviction_score import compute_conviction_score
@@ -2877,9 +2977,10 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
 
     pillars_html = ""
     for pname, val, maxv, desc in [
-        ("Quality", cs["pillar_quality"], cs["pillar_quality_max"], "ROIC · FCF Margin · Gross Margin"),
-        ("Growth",  cs["pillar_growth"],  cs["pillar_growth_max"],  "Revenue Growth · Earnings Growth"),
-        ("Health",  cs["pillar_health"],  cs["pillar_health_max"],  "Cash vs Debt · Equity Ratio · Analyst Upside"),
+        ("Quality",   cs["pillar_quality"],    cs["pillar_quality_max"],    "ROIC · FCF Margin · Gross Margin — how efficiently the business earns"),
+        ("Growth",    cs["pillar_growth"],     cs["pillar_growth_max"],     "Revenue Growth · Earnings Growth — is the business getting bigger?"),
+        ("Health",    cs["pillar_health"],     cs["pillar_health_max"],     "Cash vs Debt · Equity Ratio · Analyst Upside — balance sheet strength"),
+        ("Valuation", cs.get("pillar_valuation", 0), cs.get("pillar_valuation_max", 25), f"FCF Yield · Forward P/E — {cs.get('val_verdict','is the price reasonable?')}"),
     ]:
         pct = int(val / maxv * 100) if maxv else 0
         pillars_html += (
@@ -2910,37 +3011,54 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     if d.get("revenue_growth") is not None:
         rg = d["revenue_growth"] * 100
         c = "#2e6b58" if rg >= 10 else "#b87820" if rg >= 0 else "#b84040"
-        tiles.append(_kpi_tile("Revenue Growth", f"{rg:+.1f}%", "Annual YoY", c))
+        lbl = "Healthy growth" if rg >= 10 else "Slow growth" if rg >= 0 else "Shrinking"
+        tiles.append(_kpi_tile("Revenue Growth", f"{rg:+.1f}%", lbl + " · ≥10% is strong", c))
     if d.get("fcf_margin") is not None:
         fm = d["fcf_margin"] * 100
         c = "#2e6b58" if fm >= 20 else "#b87820" if fm >= 10 else "#b84040"
-        tiles.append(_kpi_tile("FCF Margin", f"{fm:.1f}%", "≥20% is strong", c))
+        lbl = "Strong cash converter" if fm >= 20 else "Moderate" if fm >= 10 else "Weak"
+        tiles.append(_kpi_tile("FCF Margin", f"{fm:.1f}%", lbl + " · of every $100 revenue, keeps $" + f"{fm:.0f}" + " as cash", c))
+    if d.get("fcf_yield") is not None:
+        fy = d["fcf_yield"] * 100
+        c = "#2e6b58" if fy >= 4 else "#b87820" if fy >= 2 else "#b84040"
+        lbl = "Beats bond yield" if fy >= 4.5 else "Competitive" if fy >= 3 else "Below bond yield"
+        tiles.append(_kpi_tile("FCF Yield", f"{fy:.1f}%", lbl + " · 10Y Treasury ~4.5%", c))
     if d.get("roic") is not None:
         r = d["roic"] * 100
         c = "#2e6b58" if r >= 15 else "#b87820" if r >= 10 else "#b84040"
-        tiles.append(_kpi_tile("ROIC", f"{r:.1f}%", "≥15% is strong", c))
+        lbl = f"Earns ${r/100:.2f} per $1 invested"
+        tiles.append(_kpi_tile("ROIC", f"{r:.1f}%", lbl + " · ≥15% is strong", c))
     if d.get("analyst_upside_pct") is not None:
         up = d["analyst_upside_pct"]
         c = "#2e6b58" if up >= 10 else "#b87820" if up >= 0 else "#b84040"
         rec = d.get("recommendation", "").upper().replace("_", " ") or "N/A"
-        tiles.append(_kpi_tile("Analyst Upside", f"{up:+.1f}%", rec, c))
+        tiles.append(_kpi_tile("Analyst Target", f"{up:+.1f}%", f"Wall St consensus: {rec}", c))
+    if d.get("forward_pe") is not None:
+        fpe = d["forward_pe"]
+        if fpe > 0:
+            c = "#2e6b58" if fpe < 18 else "#b87820" if fpe < 30 else "#b84040"
+            lbl = "Cheap" if fpe < 15 else "Fair value" if fpe < 22 else "Expensive"
+            tiles.append(_kpi_tile("Fwd P/E", f"{fpe:.1f}x", f"{lbl} · pay ${fpe:.0f} per $1 of profit", c))
     if price and d.get("week_52_low") and d.get("week_52_high"):
         low52, high52 = d["week_52_low"], d["week_52_high"]
         pos52 = (price - low52) / (high52 - low52) * 100 if high52 > low52 else 50
-        if pos52 >= 80:   pos_lbl, c = "Near High", "#b87820"
+        if pos52 >= 80:   pos_lbl, c = "Near 52-wk High", "#b87820"
         elif pos52 >= 60: pos_lbl, c = "Upper Range", "#2e6b58"
         elif pos52 >= 40: pos_lbl, c = "Mid Range", "#3a72b0"
         elif pos52 >= 20: pos_lbl, c = "Lower Range", "#b87820"
-        else:             pos_lbl, c = "Near Low", "#b84040"
-        tiles.append(_kpi_tile("52-Week Range", pos_lbl, f"{pos52:.0f}% of range", c))
+        else:             pos_lbl, c = "Near 52-wk Low", "#b84040"
+        tiles.append(_kpi_tile("Price Position", pos_lbl, f"{pos52:.0f}% of 52-wk range", c))
     if d.get("beta") is not None:
         beta = d["beta"]
-        if beta < 0.8:   b_lbl, c = "Stable", "#2e6b58"
-        elif beta < 1.2: b_lbl, c = "Market", "#3a72b0"
-        elif beta < 1.8: b_lbl, c = "Elevated", "#b87820"
-        else:            b_lbl, c = "High Vol", "#b84040"
+        if beta < 0.8:   b_lbl, c = "Less volatile than market", "#2e6b58"
+        elif beta < 1.2: b_lbl, c = "Moves with the market", "#3a72b0"
+        elif beta < 1.8: b_lbl, c = "More volatile than market", "#b87820"
+        else:            b_lbl, c = "Highly volatile", "#b84040"
         tiles.append(_kpi_tile("Beta", f"{beta:.2f}", b_lbl, c))
     kpi_html = f'<div class="kpi-row">{"".join(tiles)}</div>' if tiles else ""
+
+    # ── 5-year ROIC/margin trend ───────────────────────────────────────────────
+    roic_trend_html = _fetch_roic_trend_html(ticker)
 
     # ── 52-week range bar ──────────────────────────────────────────────────────
     range_html = ""
@@ -3240,6 +3358,8 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
   {ao_html}
 
   {quarterly_html}
+
+  {roic_trend_html}
 
   <p class="narrative-label">Analyst Briefing · AI-generated · {updated}</p>
   {narrative_html}
