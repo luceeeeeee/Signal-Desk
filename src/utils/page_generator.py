@@ -1581,8 +1581,25 @@ def fetch_top_picks_data() -> list:
             continue
 
     results.sort(key=lambda x: x["_cs"]["score"], reverse=True)
-    # Save ALL scored tickers to cache (not just top 30)
-    _save_scores_cache({r["ticker"]: r["_cs"] for r in results})
+    # Save ALL scored tickers to cache — include key metrics for peer table
+    _save_scores_cache({
+        r["ticker"]: {
+            **r["_cs"],
+            "_data": {
+                "name":            r.get("name", r["ticker"]),
+                "price":           r.get("price"),
+                "change_pct":      r.get("change_pct"),
+                "market_cap":      r.get("market_cap"),
+                "forward_pe":      r.get("forward_pe"),
+                "fcf_margin":      r.get("fcf_margin"),
+                "roic":            r.get("roic"),
+                "revenue_growth":  r.get("revenue_growth"),
+                "gross_margin":    r.get("gross_margin"),
+                "analyst_upside_pct": r.get("analyst_upside_pct"),
+            },
+        }
+        for r in results
+    })
     # Append today's scores to the rolling 90-day history
     _append_score_history({r["ticker"]: r["_cs"]["score"] for r in results})
     # Take top 30 by score; include all ≥75 (Strong Conviction) plus fill to 30 with Moderate (≥55)
@@ -2499,6 +2516,17 @@ _COMPANY_PAGE_CSS = """
 .q-pos { color: #2e6b58; font-weight: 600; }
 .q-neg { color: #b84040; font-weight: 600; }
 
+/* ── Peer Comparison card ── */
+.peer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.peer-header { padding: 16px 20px 10px; border-bottom: 1px solid var(--border-light); }
+.peer-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.peer-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.peer-scroll { overflow-x: auto; }
+.peer-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.peer-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 8px 14px; border-bottom: 1px solid var(--border-light); text-align: left; white-space: nowrap; }
+.peer-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+.peer-table tr:last-child td { border-bottom: none; }
+
 /* ── Signal Summary card ── */
 .sig-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
 .sig-header { padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light); }
@@ -2629,6 +2657,54 @@ _SCORE_PALETTE = {
     "s-amber": {"color": "#b87820", "light": "#fdf4e7", "border": "#e8c88a"},
     "s-red":   {"color": "#b84040", "light": "#fceaea", "border": "#e8aaaa"},
     "s-muted": {"color": "#6e8a7a", "light": "#f5f7f5", "border": "#d6dfd8"},
+}
+
+# ── Peer groups for comparison table ──────────────────────────────────────────
+PEER_GROUPS = {
+    # AI / Semis
+    "NVDA": ["AMD", "INTC", "QCOM", "AVGO", "TSM"],
+    "AMD":  ["NVDA", "INTC", "QCOM", "AVGO"],
+    "INTC": ["NVDA", "AMD", "QCOM", "TSM"],
+    "QCOM": ["NVDA", "AMD", "INTC", "AVGO"],
+    "AVGO": ["NVDA", "AMD", "QCOM", "INTC"],
+    "TSM":  ["NVDA", "AMD", "INTC", "AVGO", "ASML"],
+    "ASML": ["TSM", "AMAT", "KLAC", "LRCX"],
+    # Big Tech
+    "AAPL": ["MSFT", "GOOGL", "META", "AMZN"],
+    "MSFT": ["AAPL", "GOOGL", "AMZN", "CRM", "ORCL"],
+    "GOOGL":["META", "MSFT", "AMZN", "SNAP"],
+    "META": ["GOOGL", "SNAP", "PINS", "MSFT"],
+    "AMZN": ["MSFT", "GOOGL", "WMT", "COST"],
+    "NFLX": ["DIS", "CMCSA", "PARA", "AMZN"],
+    "CRM":  ["MSFT", "ORCL", "SAP", "NOW"],
+    "ORCL": ["MSFT", "CRM", "SAP", "IBM"],
+    # EV / Auto
+    "TSLA": ["GM", "F", "RIVN", "BYDDY", "NIO"],
+    "BYDDY":["TSLA", "NIO", "LI", "GM", "F"],
+    "NIO":  ["TSLA", "BYDDY", "LI", "XPEV"],
+    "GM":   ["F", "TSLA", "STLA", "TM"],
+    "F":    ["GM", "TSLA", "STLA", "TM"],
+    # Financials
+    "JPM":  ["BAC", "GS", "WFC", "C", "MS"],
+    "BAC":  ["JPM", "WFC", "C", "GS"],
+    "GS":   ["MS", "JPM", "BAC", "C"],
+    "V":    ["MA", "PYPL", "SQ", "AXP"],
+    "MA":   ["V", "PYPL", "AXP", "SQ"],
+    # Healthcare
+    "JNJ":  ["PFE", "ABBV", "MRK", "BMY"],
+    "PFE":  ["JNJ", "ABBV", "MRK", "LLY"],
+    "ABBV": ["JNJ", "PFE", "MRK", "LLY"],
+    "LLY":  ["NVO", "ABBV", "PFE", "MRK"],
+    # Energy
+    "XOM":  ["CVX", "COP", "BP", "SHEL"],
+    "CVX":  ["XOM", "COP", "BP", "SHEL"],
+    # Retail / Consumer
+    "AMZN": ["WMT", "COST", "TGT", "GOOGL"],
+    "WMT":  ["COST", "TGT", "AMZN", "KR"],
+    "COST": ["WMT", "TGT", "AMZN"],
+    # Defense
+    "LMT":  ["RTX", "NOC", "GD", "BA"],
+    "RTX":  ["LMT", "NOC", "GD", "HII"],
 }
 
 # ── Sector → ETF mapping (for relative performance) ───────────────────────────
@@ -3175,6 +3251,81 @@ def _fetch_historical_pe_html(ticker: str, current_pe: float) -> str:
         return ""
 
 
+def _render_peer_comparison_html(ticker: str, cache: dict) -> str:
+    """Build a peer comparison table from the enriched scores cache. Returns '' if no peers."""
+    peers = PEER_GROUPS.get(ticker)
+    if not peers:
+        return ""
+    # Include the subject ticker itself at the top for reference
+    all_tickers = [ticker] + [p for p in peers if p != ticker]
+    rows = ""
+    for t in all_tickers:
+        entry = cache.get(t)
+        if not entry:
+            continue
+        d2   = entry.get("_data", {})
+        sc   = entry.get("score", 0)
+        lbl  = entry.get("label", "—")
+        sc_c = "#2e6b58" if sc >= 75 else "#b87820" if sc >= 55 else "#b84040"
+        is_self = t == ticker
+
+        price  = d2.get("price")
+        chg    = d2.get("change_pct")
+        fpe    = d2.get("forward_pe")
+        roic   = d2.get("roic")
+        fcfm   = d2.get("fcf_margin")
+        rg     = d2.get("revenue_growth")
+        upside = d2.get("analyst_upside_pct")
+
+        p_str  = f'${price:,.2f}' if price else "—"
+        ch_str = (f'{"+" if chg >= 0 else ""}{chg:.1f}%') if chg is not None else "—"
+        ch_c   = "#2e6b58" if chg and chg >= 0 else "#b84040"
+        fpe_str = f'{fpe:.1f}x' if fpe else "—"
+        roic_str = f'{roic*100:.0f}%' if roic else "—"
+        fcfm_str = f'{fcfm*100:.0f}%' if fcfm else "—"
+        rg_str  = (f'{"+" if rg >= 0 else ""}{rg*100:.0f}%') if rg is not None else "—"
+        up_str  = (f'{"+" if upside >= 0 else ""}{upside:.0f}%') if upside is not None else "—"
+        up_c    = "#2e6b58" if upside and upside > 5 else "#b84040" if upside and upside < 0 else "#888"
+
+        link = f'stock-{t.lower()}.html'
+        row_style = 'background:var(--surface-off);' if is_self else ''
+        bold = 'font-weight:700;' if is_self else ''
+        rows += (
+            f'<tr style="{row_style}">'
+            f'<td style="{bold}"><a href="{link}" style="color:var(--accent);text-decoration:none">{t}</a>'
+            + ('&nbsp;<span style="font-size:10px;color:var(--text-muted)">(this stock)</span>' if is_self else '')
+            + '</td>'
+            f'<td style="{bold}{ch_c}color:{ch_c}">{p_str} <span style="font-size:11px">{ch_str}</span></td>'
+            f'<td><span style="color:{sc_c};font-weight:700">{sc}</span> <span style="font-size:11px;color:var(--text-muted)">{lbl}</span></td>'
+            f'<td>{fpe_str}</td>'
+            f'<td>{roic_str}</td>'
+            f'<td>{fcfm_str}</td>'
+            f'<td>{rg_str}</td>'
+            f'<td style="color:{up_c}">{up_str}</td>'
+            f'</tr>'
+        )
+    if not rows:
+        return ""
+
+    return f"""
+<div class="peer-card">
+  <div class="peer-header">
+    <div class="peer-title">Peer Comparison</div>
+    <div class="peer-sub">How {ticker} stacks up against its closest competitors on the metrics that matter most.
+      Highlighted row = this stock. All data from last daily refresh.</div>
+  </div>
+  <div class="peer-scroll">
+  <table class="peer-table">
+    <thead><tr>
+      <th>Ticker</th><th>Price / 1D</th><th>Conviction</th>
+      <th>Fwd P/E</th><th>ROIC</th><th>FCF Margin</th><th>Rev Growth</th><th>Analyst Upside</th>
+    </tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+  </div>
+</div>"""
+
+
 def _compute_signal_summary(d: dict, cs: dict) -> dict:
     """Deterministic 3-signal read: Fundamentals, Entry Timing, Momentum."""
     score = cs["score"]
@@ -3553,6 +3704,10 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     # ── Signal summary (item 1) ────────────────────────────────────────────────
     sig_summary  = _compute_signal_summary(d, cs)
     sig_html     = _render_signal_summary_html(sig_summary)
+
+    # ── Peer comparison (item 2) ───────────────────────────────────────────────
+    _peer_cache  = _load_scores_cache(max_age_hours=36)   # generous window
+    peer_html    = _render_peer_comparison_html(ticker, _peer_cache)
 
     # ── Sector performance vs ETF (item 3) ────────────────────────────────────
     sector_perf_html = _fetch_sector_performance_html(ticker, d.get("sector", ""))
@@ -3962,6 +4117,8 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
   {kpi_html}
 
   {sig_html}
+
+  {peer_html}
 
   <div class="cs-card" style="border-top:4px solid {sc_color};border:1px solid {sc_border};border-top:4px solid {sc_color}">
     <div class="cs-card-header" style="background:linear-gradient(135deg,{sc_light} 0%,var(--surface) 65%)">
