@@ -2427,6 +2427,11 @@ _COMPANY_PAGE_CSS = """
 .hero-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
 .hero-tag    { font-size: 11px; color: var(--text-muted); background: var(--surface-off); border: 1px solid var(--border-light); padding: 3px 10px; border-radius: 20px; }
 
+/* ── Bilingual label helpers ── */
+.kpi-zh { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-top: 1px; }
+.m-title-zh { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+.cs-pillar-zh { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+
 /* ── KPI tiles ── */
 .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
 .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); }
@@ -3025,11 +3030,54 @@ def _b(val):
     return f"${abs(val)/1e6:.0f}M"
 
 
+# ── Bilingual label translations ──────────────────────────────────────────────
+_ZH_LABELS = {
+    # KPI tiles
+    "Revenue Growth":    "營收成長", "FCF Margin":       "自由現金流利潤率",
+    "ROIC":              "投入資本回報率", "Gross Margin":     "毛利率",
+    "Fwd P/E":           "預期本益比", "FCF Yield":        "自由現金流殖利率",
+    "Price Position":    "股價位置", "Beta":             "波動係數",
+    # Metric card labels
+    "Forward P/E":       "預期本益比", "Trailing P/E":    "歷史本益比",
+    "PEG Ratio":         "成長調整本益比", "Price / Book":    "股價淨值比",
+    "Analyst Target":    "分析師目標價", "EPS Est. Revision":"EPS 預估修正",
+    "Operating Margin":  "營業利益率", "Net Margin":       "淨利率",
+    "ROE":               "股東權益報酬率",
+    "Return on Equity":  "股東權益報酬率",
+    "Capex / Revenue":   "資本支出/營收", "Buyback Yield":   "回購殖利率",
+    "R&D / Revenue":     "研發支出/營收",
+    "Cash on Hand":      "持有現金", "Total Debt":       "總負債",
+    "Cash / Debt":       "現金/負債比", "Equity Ratio":    "股東權益比率",
+    "Current Ratio":     "流動比率", "Working Capital":  "營運資金",
+    "Retained Earnings": "保留盈餘", "Interest Coverage":"利息覆蓋倍數",
+    # Card section titles
+    "Valuation":               "估值", "Quality & Profitability": "品質與獲利能力",
+    "Financial Health":        "財務健康", "Analyst Consensus":       "分析師共識",
+    "Ownership":               "持股結構", "Market Profile":          "市場概況",
+    "Conviction Score":        "信念評分", "Signal Summary":          "訊號摘要",
+    "Peer Comparison":         "同業比較", "Moat Trend — ROIC & Gross Margin": "護城河趨勢",
+    "Historical P/E Context":  "歷史本益比脈絡",
+    "Performance vs Sector":   "相對板塊表現",
+    "Macro Sensitivity":       "總經敏感度",
+    "Analyst Price Target Range": "分析師目標價區間",
+    "Earnings Surprise History": "財報驚喜歷史",
+    "Quarterly Trend":         "季度趨勢",
+}
+
+
+def _zh(label: str) -> str:
+    """Return bilingual label: English + small Chinese span, or just English if no translation."""
+    zh = _ZH_LABELS.get(label)
+    if not zh:
+        return label
+    return f'{label} <span style="font-size:10px;font-weight:400;color:var(--text-muted)">{zh}</span>'
+
+
 def _mrow(label, val_html, def_text=""):
     """Render one metric row + optional definition line."""
     row = (
         f'<div class="m-row">'
-        f'<span class="m-label">{label}</span>'
+        f'<span class="m-label">{_zh(label)}</span>'
         f'<span class="m-val">{val_html}</span>'
         f'</div>'
     )
@@ -3039,10 +3087,12 @@ def _mrow(label, val_html, def_text=""):
 
 
 def _kpi_tile(label, value, sub, color):
+    zh = _ZH_LABELS.get(label, "")
+    zh_span = f'<div class="kpi-zh">{zh}</div>' if zh else ""
     return (
         f'<div class="kpi-tile" style="border-top:3px solid {color}">'
         f'<div class="kpi-val" style="color:{color}">{value}</div>'
-        f'<div class="kpi-label">{label}</div>'
+        f'<div class="kpi-label">{label}{zh_span}</div>'
         f'<div class="kpi-sub">{sub}</div>'
         f'</div>'
     )
@@ -3614,6 +3664,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     except Exception:
         pass
 
+    _pillar_zh = {"Quality": "品質", "Growth": "成長", "Health": "健康", "Valuation": "估值"}
     pillars_html = ""
     for pname, val, maxv, desc in [
         ("Quality",   cs["pillar_quality"],    cs["pillar_quality_max"],    "ROIC · FCF Margin · Gross Margin — how efficiently the business earns"),
@@ -3622,10 +3673,13 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         ("Valuation", cs.get("pillar_valuation", 0), cs.get("pillar_valuation_max", 25), f"FCF Yield · Forward P/E — {cs.get('val_verdict','is the price reasonable?')}"),
     ]:
         pct = int(val / maxv * 100) if maxv else 0
+        pname_zh = _pillar_zh.get(pname, "")
         pillars_html += (
             f'<div class="cs-pillar">'
             f'<div class="cs-pillar-head">'
-            f'<span class="cs-pillar-name">{pname}</span>'
+            f'<span class="cs-pillar-name">{pname}'
+            + (f'<span class="cs-pillar-zh">{pname_zh}</span>' if pname_zh else '')
+            + '</span>'
             f'<span class="cs-pillar-pts">{val} / {maxv}</span>'
             f'</div>'
             f'<div class="cs-bar-track"><div class="cs-bar-fill" style="width:{pct}%;background:{sc_color}"></div></div>'
@@ -4124,8 +4178,8 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     <div class="cs-card-header" style="background:linear-gradient(135deg,{sc_light} 0%,var(--surface) 65%)">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div>
-          <div class="cs-card-title" style="color:{sc_color}">Conviction Score</div>
-          <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork</div>
+          <div class="cs-card-title" style="color:{sc_color}">Conviction Score <span style="font-size:12px;font-weight:400;color:var(--text-muted)">信念評分</span></div>
+          <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork · 基於基本面的確定性評分</div>
         </div>
         {score_sparkline_html}
       </div>
@@ -4143,15 +4197,15 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
 
   <div class="metrics-grid">
     <div class="m-card mc-blue">
-      <div class="m-title">Valuation</div>
+      <div class="m-title">Valuation <span class="m-title-zh">估值</span></div>
       {val_rows}
     </div>
     <div class="m-card mc-teal">
-      <div class="m-title">Quality &amp; Profitability</div>
+      <div class="m-title">Quality &amp; Profitability <span class="m-title-zh">品質與獲利能力</span></div>
       {qual_rows}
     </div>
     <div class="m-card mc-amber">
-      <div class="m-title">Financial Health</div>
+      <div class="m-title">Financial Health <span class="m-title-zh">財務健康</span></div>
       {health_rows}
     </div>
   </div>
