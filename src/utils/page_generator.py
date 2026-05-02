@@ -2499,6 +2499,23 @@ _COMPANY_PAGE_CSS = """
 .q-pos { color: #2e6b58; font-weight: 600; }
 .q-neg { color: #b84040; font-weight: 600; }
 
+/* ── Historical P/E Context card ── */
+.pe-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.pe-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+.pe-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; }
+.pe-verdict { font-size: 13px; font-weight: 700; margin-top: 3px; }
+.pe-sub { font-size: 12px; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px; }
+.pe-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+.pe-stat { font-size: 20px; font-weight: 800; color: var(--text); }
+.pe-lbl  { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.pe-bar-wrap { }
+.pe-bar-track { position: relative; height: 10px; border-radius: 5px; overflow: visible; background: var(--border-light); }
+.pe-bar-fill { position: absolute; inset: 0; border-radius: 5px; }
+.pe-marker { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; }
+.pe-marker-avg { background: #b87820; }
+.pe-marker-cur { background: #3a72b0; z-index: 1; }
+.pe-bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 5px; }
+
 /* ── Analyst Price Target Range card ── */
 .tgt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
 .tgt-header { margin-bottom: 14px; }
@@ -2968,6 +2985,126 @@ def _fetch_roic_trend_html(ticker: str) -> str:
         return ""
 
 
+def _fetch_historical_pe_html(ticker: str, current_pe: float) -> str:
+    """Return a Historical P/E Context card comparing today's P/E to its 5-year average.
+    Uses monthly price history + annual EPS (interpolated). Returns '' on failure."""
+    try:
+        import yfinance as yf
+        t = yf.Ticker(ticker)
+
+        # Monthly closing prices for 5 years
+        hist = t.history(period="5y", interval="1mo")
+        if hist is None or hist.empty or len(hist) < 12:
+            return ""
+
+        # Annual EPS from t.earnings (index = year, columns include "Earnings")
+        earnings = t.earnings
+        if earnings is None or earnings.empty:
+            return ""
+        # Build a {year: eps} dict — yfinance returns annual earnings
+        eps_by_year = {}
+        for yr in earnings.index:
+            try:
+                val = float(earnings.at[yr, "Earnings"]) if "Earnings" in earnings.columns else None
+                rev = float(earnings.at[yr, "Revenue"])  if "Revenue"  in earnings.columns else None
+                # Use EPS from info if available; fallback: divide earnings / shares
+                eps_by_year[int(yr)] = val
+            except Exception:
+                pass
+        # Also try t.income_stmt for TTM EPS
+        shares = t.info.get("sharesOutstanding") or t.info.get("impliedSharesOutstanding")
+        if not eps_by_year or not shares:
+            return ""
+
+        # Compute trailing P/E for each month-end using the most recently available annual EPS
+        import pandas as pd
+        pe_series = []
+        hist_sorted = hist.sort_index()
+        years_sorted = sorted(eps_by_year.keys())
+        for idx, row in hist_sorted.iterrows():
+            month_year = idx.year if hasattr(idx, 'year') else int(str(idx)[:4])
+            price_pt = float(row["Close"])
+            # Use the most recent annual EPS on or before this date's year
+            applicable_eps = None
+            for yr in reversed(years_sorted):
+                if yr <= month_year:
+                    raw_eps = eps_by_year[yr]
+                    if raw_eps and shares > 0:
+                        applicable_eps = raw_eps / shares
+                    break
+            if applicable_eps and applicable_eps > 0 and price_pt > 0:
+                pe = price_pt / applicable_eps
+                if 0 < pe < 500:  # sanity filter
+                    pe_series.append(pe)
+
+        if len(pe_series) < 12:
+            return ""
+
+        avg_pe  = round(sum(pe_series) / len(pe_series), 1)
+        min_pe  = round(min(pe_series), 1)
+        max_pe  = round(max(pe_series), 1)
+        cur_pe  = round(current_pe, 1)
+
+        # Verdict
+        pct_vs_avg = (cur_pe - avg_pe) / avg_pe * 100 if avg_pe else 0
+        if pct_vs_avg <= -15:
+            verdict, vc = f"{abs(pct_vs_avg):.0f}% discount to own history — historically cheap", "#2e6b58"
+        elif pct_vs_avg <= -5:
+            verdict, vc = f"{abs(pct_vs_avg):.0f}% below 5Y average — modestly cheap", "#2e6b58"
+        elif pct_vs_avg <= 5:
+            verdict, vc = "In line with 5Y average — fairly valued vs own history", "#3a72b0"
+        elif pct_vs_avg <= 15:
+            verdict, vc = f"{pct_vs_avg:.0f}% above 5Y average — modestly expensive vs history", "#b87820"
+        else:
+            verdict, vc = f"{pct_vs_avg:.0f}% premium to 5Y average — historically expensive", "#b84040"
+
+        # Mini sparkline of P/E history using last 24 months (more readable)
+        recent_pts = pe_series[-24:] if len(pe_series) >= 24 else pe_series
+        sparkline = _sparkline_svg(recent_pts, width=120, height=28)
+
+        # Bar showing current P/E position in historical range
+        pe_range = (max_pe - min_pe) or 1
+        cur_pos = max(2, min(98, (cur_pe - min_pe) / pe_range * 100))
+        avg_pos = max(2, min(98, (avg_pe - min_pe) / pe_range * 100))
+
+        return f"""
+<div class="pe-card">
+  <div class="pe-header">
+    <div>
+      <div class="pe-title">Historical P/E Context</div>
+      <div class="pe-verdict" style="color:{vc}">{verdict}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:11px;color:var(--text-muted)">2Y P/E trend</div>
+      {sparkline}
+    </div>
+  </div>
+  <div class="pe-sub">A P/E of {cur_pe:.0f}x is {'cheap' if pct_vs_avg < -5 else 'expensive' if pct_vs_avg > 5 else 'fair'} relative to
+    this company's own 5-year average of {avg_pe:.0f}x. Context matters — a growth company may always trade at a premium,
+    but a premium above its own history often signals elevated risk.</div>
+  <div class="pe-grid">
+    <div><div class="pe-stat">{cur_pe:.1f}x</div><div class="pe-lbl">Current P/E</div></div>
+    <div><div class="pe-stat">{avg_pe:.1f}x</div><div class="pe-lbl">5Y Average</div></div>
+    <div><div class="pe-stat">{min_pe:.1f}x</div><div class="pe-lbl">5Y Low</div></div>
+    <div><div class="pe-stat">{max_pe:.1f}x</div><div class="pe-lbl">5Y High</div></div>
+  </div>
+  <div class="pe-bar-wrap">
+    <div class="pe-bar-track">
+      <div class="pe-bar-fill" style="background:linear-gradient(90deg,#eaf3f0,#fdecea);width:100%"></div>
+      <div class="pe-marker pe-marker-avg" style="left:{avg_pos:.0f}%" title="5Y average"></div>
+      <div class="pe-marker pe-marker-cur" style="left:{cur_pos:.0f}%" title="Current"></div>
+    </div>
+    <div class="pe-bar-labels">
+      <span>{min_pe:.0f}x</span>
+      <span>← 5Y range →</span>
+      <span>{max_pe:.0f}x</span>
+    </div>
+  </div>
+</div>"""
+    except Exception:
+        return ""
+
+
 def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: dict = None) -> str:
     """Write pages/stock-{ticker}.html. Returns filename."""
     from src.analysis.conviction_score import compute_conviction_score
@@ -3094,8 +3231,10 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         tiles.append(_kpi_tile("Beta", f"{beta:.2f}", b_lbl, c))
     kpi_html = f'<div class="kpi-row">{"".join(tiles)}</div>' if tiles else ""
 
-    # ── 5-year ROIC/margin trend ───────────────────────────────────────────────
+    # ── 5-year ROIC/margin trend + historical P/E context ─────────────────────
     roic_trend_html = _fetch_roic_trend_html(ticker)
+    fpe = d.get("forward_pe") or d.get("trailing_pe")
+    historical_pe_html = _fetch_historical_pe_html(ticker, fpe) if fpe and fpe > 0 else ""
 
     # ── 52-week range bar ──────────────────────────────────────────────────────
     range_html = ""
@@ -3545,6 +3684,8 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
   {earnings_surprise_html}
 
   {roic_trend_html}
+
+  {historical_pe_html}
 
   <p class="narrative-label">Analyst Briefing · AI-generated · {updated}</p>
   {narrative_html}
