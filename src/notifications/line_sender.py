@@ -1,4 +1,5 @@
 import os
+from typing import Union
 from src.notifications.base import NotificationChannel
 
 try:
@@ -22,34 +23,37 @@ class LineChannel(NotificationChannel):
     def is_configured(self) -> bool:
         return LINE_SDK_AVAILABLE and bool(self.token and self.default_user_id)
 
-    def send(self, subject: str, body: str, recipient: str = "") -> bool:
-        recipient = recipient or self.default_user_id
+    def send(self, subject: str, body: str, recipient: Union[str, list] = "") -> bool:
+        """Send to one or multiple LINE user IDs. recipient can be a string or list of strings."""
+        recipients = recipient if isinstance(recipient, list) else [recipient or self.default_user_id]
+        recipients = [r for r in recipients if r]  # drop empty strings
+
         if not self.is_configured():
             print("[LINE] Not configured — check LINE_CHANNEL_ACCESS_TOKEN and LINE_USER_ID in .env")
             return False
-        if not recipient:
+        if not recipients:
             print("[LINE] No recipient (LINE User ID) configured.")
             return False
 
-        # LINE messages have a 5000-char limit; chunk if needed
         chunks = [body[i:i+4900] for i in range(0, len(body), 4900)]
-
+        success = True
         try:
             config = Configuration(access_token=self.token)
             with ApiClient(config) as api_client:
                 api = MessagingApi(api_client)
-                for chunk in chunks:
-                    api.push_message(
-                        PushMessageRequest(
-                            to=recipient,
-                            messages=[TextMessage(type="text", text=chunk)],
+                for uid in recipients:
+                    for chunk in chunks:
+                        api.push_message(
+                            PushMessageRequest(
+                                to=uid,
+                                messages=[TextMessage(type="text", text=chunk)],
+                            )
                         )
-                    )
-            print(f"[LINE] Sent {len(chunks)} message(s) to {recipient}")
-            return True
+                    print(f"[LINE] Sent {len(chunks)} message(s) to {uid}")
         except Exception as e:
             print(f"[LINE] Failed: {e}")
-            return False
+            success = False
+        return success
 
 
 def get_channel(channel_name: str) -> NotificationChannel:

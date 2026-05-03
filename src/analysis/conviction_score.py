@@ -109,7 +109,7 @@ def compute_conviction_score(price_data: dict) -> dict:
     elif total >= 35:
         label, color_cls = "Weak", "s-red"
     else:
-        label, color_cls = "Insufficient Data", "s-muted"
+        label, color_cls = "Avoid", "s-red"
 
     # Plain-language verdict for the valuation pillar
     if fpe is not None and fpe > 0:

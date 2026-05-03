@@ -2718,7 +2718,7 @@ _COMPANY_PAGE_CSS = """
 .overview-table tbody tr:hover { background: var(--surface-off); }
 
 /* ── Technical Position card ── */
-.tech-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.tech-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
 .tech-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; margin-bottom: 4px; }
 .tech-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
 .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
@@ -2729,7 +2729,7 @@ _COMPANY_PAGE_CSS = """
 .tech-verdict { margin-top: 14px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
 
 /* ── Dividend card ── */
-.div-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #5560a8; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.div-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #5560a8; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
 .div-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5560a8; margin-bottom: 4px; }
 .div-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
 .div-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border-light); font-size: 14px; }
@@ -2739,7 +2739,7 @@ _COMPANY_PAGE_CSS = """
 .div-verdict { margin-top: 12px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
 
 /* ── Downside Scenario card ── */
-.dn-card { background: var(--surface); border: 1px solid #e8aaaa; border-top: 4px solid #b84040; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.dn-card { background: var(--surface); border: 1px solid #e8aaaa; border-top: 4px solid #b84040; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
 .dn-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b84040; margin-bottom: 4px; }
 .dn-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
 .dn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }

@@ -24,9 +24,10 @@ from src.analysis.claude_analyst import generate_briefing, generate_intraday_ale
 from src.notifications.email_sender import EmailChannel
 from src.notifications.line_sender import LineChannel
 from src.utils.helpers import load_settings, load_watchlist, now_taipei
-from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, generate_signal_log_page, _fetch_monthly_index_data, _load_scores_cache, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
+from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, generate_signal_log_page, _fetch_monthly_index_data, _load_scores_cache, _save_scores_cache, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
 from src.fetchers.news import NEWS_FEEDS
 from src.analysis.claude_analyst import generate_monthly_overview
+from src.analysis.conviction_score import compute_conviction_score
 
 TAIPEI_TZ = ZoneInfo("Asia/Taipei")
 
@@ -69,6 +70,13 @@ def _save_narrative_cache(ticker: str, narrative: str):
         f.write(narrative)
 
 
+def _write_score_to_cache(ticker: str, cs: dict):
+    """Merge a single ticker's conviction score into the shared scores cache."""
+    existing = _load_scores_cache(max_age_hours=36)
+    existing[ticker] = cs
+    _save_scores_cache(existing)
+
+
 def _git_push_pages(label: str = ""):
     """Commit regenerated pages and push to GitHub → triggers GitHub Pages auto-deploy."""
     import subprocess
@@ -107,6 +115,10 @@ def _generate_one_company_page(d: dict, recent_earnings_date: str = None, cached
             _save_narrative_cache(ticker, narrative)
         else:
             print(f"  [Company Page] {ticker} — using cached narrative")
+        # Write-back: if no cached score, compute and persist so scores stay in sync across all pages
+        if cached_cs is None:
+            cached_cs = compute_conviction_score(d)
+            _write_score_to_cache(ticker, cached_cs)
         generate_company_page(d, quarterly, narrative, cached_cs=cached_cs)
     except Exception as e:
         print(f"  [Company Page] {ticker} failed: {e}")
@@ -131,16 +143,17 @@ def run_company_pages(prices: list = None):
     _git_push_pages("company-pages")
 
 
-def run_universe_company_pages():
+def run_universe_company_pages(force: bool = False):
     """Generate company pages for the full Top Picks + Sector Leaders universe.
-    Runs weekly — uses narrative cache so AI cost is ~once per week per stock."""
+    Runs weekly — uses narrative cache so AI cost is ~once per week per stock.
+    Set force=True to regenerate all pages even when HTML and narrative cache are both fresh."""
     import warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         import yfinance as yf
 
     all_tickers = list({t for g in SECTOR_GROUPS for t in g["tickers"]} | set(TOP_PICKS_UNIVERSE))
-    print(f"\n[Universe Pages] Generating pages for {len(all_tickers)} universe stocks...")
+    print(f"\n[Universe Pages] Generating pages for {len(all_tickers)} universe stocks (force={force})...")
 
     try:
         recent = {e["ticker"]: e["earnings_date"] for e in fetch_earnings_calendar(days_ahead=0)}
@@ -152,8 +165,8 @@ def run_universe_company_pages():
 
     for ticker in all_tickers:
         page_path = os.path.join(PAGES_DIR, f"stock-{ticker.lower()}.html")
-        # Only skip if page exists AND narrative cache is fresh (< 7 days)
-        if os.path.exists(page_path) and _get_cached_narrative(ticker, recent.get(ticker)) is not None:
+        # Skip only if page exists, narrative cache is fresh, AND not forced
+        if not force and os.path.exists(page_path) and _get_cached_narrative(ticker, recent.get(ticker)) is not None:
             continue
         try:
             # Use fetch_ticker_data() to get the full data dict (all fields required by cards)
@@ -227,12 +240,14 @@ def run_briefing(market: str):
 
     channel_cfg = settings["notifications"]["briefing"]
     channel_name = channel_cfg["channel"]
-    recipient = channel_cfg["recipient"]
 
     if channel_name == "email":
         ch = EmailChannel()
+        recipient = channel_cfg["recipient"]
     else:
         ch = LineChannel()
+        # Use line_recipients array if present, otherwise fall back to single recipient
+        recipient = channel_cfg.get("line_recipients", channel_cfg.get("recipient", ""))
 
     ch.send(subject=subject, body=briefing, recipient=recipient)
     print(f"  [{market}] Briefing sent via {channel_name}.")

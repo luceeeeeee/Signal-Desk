@@ -7,11 +7,16 @@
   "notifications": {
     "briefing": {
       "channel": "email",
-      "recipient": "FILL_IN_YOUR_EMAIL"
+      "recipient": "yenhsuanlee@gmail.com",
+      "line_recipients": [
+        "U4e5b06105f0a98c127d920332357c218"
+      ]
     },
     "intraday_alert": {
       "channel": "line",
-      "recipient": "FILL_IN_LINE_USER_ID"
+      "recipient": [
+        "U4e5b06105f0a98c127d920332357c218"
+      ]
     }
   },
   "intraday": {
