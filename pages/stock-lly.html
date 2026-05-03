@@ -324,7 +324,7 @@ footer {
 .overview-table tbody tr:hover { background: var(--surface-off); }
 
 /* ── Technical Position card ── */
-.tech-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.tech-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
 .tech-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; margin-bottom: 4px; }
 .tech-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
 .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
@@ -335,7 +335,7 @@ footer {
 .tech-verdict { margin-top: 14px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
 
 /* ── Dividend card ── */
-.div-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #5560a8; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.div-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #5560a8; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
 .div-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5560a8; margin-bottom: 4px; }
 .div-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
 .div-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border-light); font-size: 14px; }
@@ -345,7 +345,7 @@ footer {
 .div-verdict { margin-top: 12px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
 
 /* ── Downside Scenario card ── */
-.dn-card { background: var(--surface); border: 1px solid #e8aaaa; border-top: 4px solid #b84040; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.dn-card { background: var(--surface); border: 1px solid #e8aaaa; border-top: 4px solid #b84040; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
 .dn-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b84040; margin-bottom: 4px; }
 .dn-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
 .dn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }
@@ -445,7 +445,7 @@ details.card-details[open] > summary .summary-bar { border-radius: var(--radius)
         <div>
           <div class="cs-card-title" style="color:#b84040">Conviction Score <span style="font-size:12px;font-weight:400;color:var(--text-muted)">信念評分</span></div>
           <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork · 基於基本面的確定性評分</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Scored: May 03, 2026 · 19:19 Taipei</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Scored: May 03, 2026 · 21:15 Taipei</div>
         </div>
         
       </div>
@@ -528,7 +528,7 @@ details.card-details[open] > summary .summary-bar { border-radius: var(--radius)
 <div class="ao-card">
   <div class="ao-grid">
     <div><div class="ao-title">Analyst Consensus<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 分析師評級</span></div><div class="ao-row"><strong>29</strong> analysts covering this stock</div><div class="ao-row">Consensus: <span class="rec-pill rec-buy">Buy</span> (mean 1.7/5)</div><div class="ao-row" style="margin-top:4px"><span style="color:#2e6b58;font-weight:700">24 Buy</span> &nbsp;·&nbsp; <span style="color:#b87820;font-weight:700">6 Hold</span> &nbsp;·&nbsp; <span style="color:#b84040;font-weight:700">1 Sell</span></div><div style="display:flex;height:6px;border-radius:3px;overflow:hidden;margin:4px 0 6px"><div style="width:77%;background:#2e6b58"></div><div style="width:19%;background:#b87820"></div><div style="width:3%;background:#b84040"></div></div><div class="ao-row">Target: <strong>$1,202.17</strong> (+24.8% upside)</div></div>
-    <div><div class="ao-title">Ownership</div><div class="ao-row">Insider ownership: <strong>0.17%</strong> — Low</div><div class="ao-row">Institutional: <strong>85.0%</strong></div><div class="ao-row">Short interest: <strong style="color:inherit">1.0%</strong> — low</div></div>
+    <div><div class="ao-title">Ownership</div><div class="ao-row">Insider ownership: <strong>0.17%</strong> — Low</div><div class="ao-row">Institutional: <strong>85.0%</strong></div><div class="ao-row">Short interest: <strong style="color:inherit">0.9%</strong> — low</div></div>
     <div><div class="ao-title">Market Profile</div><div class="ao-row">Beta: <strong>0.50</strong> — low-volatility</div><div class="ao-row">PEG ratio: <strong>1.38</strong> — fair</div><div class="ao-row">Dividend: <strong>None</strong></div><div class="ao-row">Market cap: <strong>$862.0B</strong></div></div>
   </div>
 </div>
@@ -598,7 +598,7 @@ details.card-details[open] > summary .summary-bar { border-radius: var(--radius)
   <div class="dn-note">P/E compression scenarios use current forward EPS estimates — if earnings are cut, downside is worse. Bear target is the lowest analyst price target, not a worst-case. Use these as a mental stop-loss check: can you hold if the stock falls to these levels?</div>
 </div>
 
-  <p class="narrative-label">Analyst Briefing · AI-generated · May 03, 2026 · 19:19 Taipei</p>
+  <p class="narrative-label">Analyst Briefing · AI-generated · May 03, 2026 · 21:15 Taipei</p>
   <div class="section-card sec-indigo"><h2 class="section-title">BUSINESS OVERVIEW / 公司概覽</h2><div class="section-body">
 <p><strong>English:</strong> Eli Lilly is a global drug maker that discovers, develops and sells prescription medicines, especially in diabetes, oncology, immunology and neuroscience. The company enjoys a strong moat because its patented biologics—such as Mounjaro, tirzepatide and the new Alzheimer’s drug donanemab—command a 30‑40% price premium and cannot be copied for the next decade. Eli Lilly also controls about 20% of the U.S. diabetes‑injectable market, giving it high switching costs: doctors and patients stay on its weekly pens once they see clinical benefits.</p>
 <p><strong>繁體中文：</strong>Eli Lilly 是一家全球性的藥品公司，專注於研發與販售處方藥，主要領域包括糖尿病、腫瘤、免疫與神經科學。公司擁有堅固的護城河，因為其專利生物製劑（如 Mounjaro、tirzepatide 以及最新的阿茲海默症藥物 donanemab）能取得 30‑40% 的價格溢價，且在未來十年內無法被複製。Eli Lilly 亦掌握約 20% 的美國糖尿病注射劑市場份額，讓醫師與患者在看到臨床效益後很難轉換其他藥品，形成高切換成本。</p>
