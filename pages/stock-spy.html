@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPY · Company Analysis · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 40px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+.mk-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.mk-table tbody tr:hover { background: var(--bg); }
+.news-title { word-break: break-word; }
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero { padding: 32px 20px 24px; }
+  .content { padding: 0 16px 60px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+  body { font-size: 14px; }
+}
+
+
+/* ── Hero ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  text-decoration: none; margin-bottom: 18px; letter-spacing: 0.03em;
+}
+.back-link:hover { text-decoration: underline; }
+.co-ticker { font-size: 40px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.co-name   { font-size: 15px; color: var(--text-muted); margin: 4px 0 12px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.hero-badge {
+  display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 8px;
+  font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; border: 1px solid transparent;
+}
+.badge-price { background: var(--surface); border-color: var(--border); color: var(--text); }
+.badge-up    { background: #eaf3f0; border-color: #c6ddd6; color: #2e6b58; }
+.badge-dn    { background: #fceaea; border-color: #e8aaaa; color: #b84040; }
+.hero-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
+.hero-tag    { font-size: 11px; color: var(--text-muted); background: var(--surface-off); border: 1px solid var(--border-light); padding: 3px 10px; border-radius: 20px; }
+
+/* ── Bilingual label helpers ── */
+.kpi-zh { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-top: 1px; }
+.m-title-zh { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+.cs-pillar-zh { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+
+/* ── KPI tiles ── */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.kpi-val   { font-size: 22px; font-weight: 900; font-family: 'Menlo','SF Mono',monospace; line-height: 1.1; margin-bottom: 4px; }
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+.kpi-sub   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Conviction score card ── */
+.cs-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.cs-card-header { padding: 14px 24px; border-bottom: 1px solid var(--border-light); }
+.cs-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.cs-card-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cs-body { display: flex; flex-wrap: wrap; gap: 32px; padding: 24px 28px; }
+.cs-score-col { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.cs-score-num { font-size: 64px; font-weight: 900; line-height: 1; font-family: 'Menlo','SF Mono',monospace; }
+.cs-score-denom { font-size: 12px; color: var(--text-muted); }
+.cs-score-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; text-align: center; }
+.cs-pillars-col { flex: 1; min-width: 180px; }
+.cs-pillar { margin-bottom: 18px; }
+.cs-pillar:last-child { margin-bottom: 0; }
+.cs-pillar-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.cs-pillar-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.cs-pillar-pts  { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'Menlo','SF Mono',monospace; }
+.cs-bar-track { height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.cs-bar-fill  { height: 100%; border-radius: 4px; }
+.cs-pillar-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.cs-checks-col { min-width: 200px; }
+.cs-check { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 12px; }
+.cs-check:last-child { margin-bottom: 0; }
+.cs-check-icon  { font-size: 11px; font-weight: 700; width: 14px; flex-shrink: 0; }
+.cs-check-name  { flex: 1; color: var(--text-med); }
+.cs-check-val   { font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); min-width: 40px; text-align: right; }
+.cs-check-thresh { font-size: 10px; color: var(--text-muted); }
+
+/* ── Metrics grid ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+@media(max-width:740px) { .metrics-grid { grid-template-columns: 1fr; } }
+.m-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow-sm); }
+.mc-blue  { border-top: 4px solid #3a72b0; }
+.mc-teal  { border-top: 4px solid #2e6b58; }
+.mc-amber { border-top: 4px solid #b87820; }
+.mc-blue .m-title  { color: #3a72b0; border-bottom-color: #b8d4f0; }
+.mc-teal .m-title  { color: #2e6b58; border-bottom-color: #c6ddd6; }
+.mc-amber .m-title { color: #b87820; border-bottom-color: #e8c88a; }
+.m-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+.m-row  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.m-label { font-size: 12px; color: var(--text-muted); flex: 1; line-height: 1.4; }
+.m-val  { font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); white-space: nowrap; }
+.m-def  { font-size: 11px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; padding: 5px 9px; background: var(--surface-off); border-radius: var(--radius-sm); border-left: 2px solid var(--border); }
+.flag-pass { font-size: 10px; font-weight: 700; color: #2e6b58; background: #eaf3f0; border: 1px solid #c6ddd6; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+.flag-warn { font-size: 10px; font-weight: 700; color: #b87820; background: #fdf4e7; border: 1px solid #e8c88a; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+/* ── 52-week range ── */
+.range-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.range-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 16px; }
+.range-bar-track { position: relative; height: 8px; background: var(--border-light); border-radius: 4px; margin-bottom: 12px; }
+.range-bar-fill  { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #c6ddd6, var(--accent)); border-radius: 4px; }
+.range-dot { position: absolute; top: 50%; width: 14px; height: 14px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.range-labels strong { color: var(--accent); }
+
+/* ── Analyst & Ownership ── */
+.ao-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.ao-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+@media(max-width:620px) { .ao-grid { grid-template-columns: 1fr; } }
+.ao-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-light); }
+.ao-row   { font-size: 13px; color: var(--text-med); margin-bottom: 7px; line-height: 1.5; }
+.ao-row strong { color: var(--text); }
+.rec-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.rec-buy  { background: #eaf3f0; color: #2e6b58; border: 1px solid #c6ddd6; }
+.rec-hold { background: #fdf4e7; color: #b87820; border: 1px solid #e8c88a; }
+.rec-sell { background: #fceaea; color: #b84040; border: 1px solid #e8aaaa; }
+
+/* ── Quarterly trend ── */
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.q-card-head { padding: 13px 22px; border-bottom: 1px solid var(--border-light); background: var(--surface-off); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); }
+.q-table { width: 100%; border-collapse: collapse; }
+.q-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: left; border-bottom: 1px solid var(--border-light); }
+.q-table td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); color: var(--text-med); }
+.q-table tr:last-child td { border-bottom: none; }
+.q-table tbody tr:hover { background: var(--surface-off); }
+.q-period { font-weight: 600; color: var(--text); font-size: 12px; white-space: nowrap; }
+.q-mono   { font-family: 'Menlo','SF Mono',monospace; font-weight: 600; }
+.q-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.q-bar-track { width: 70px; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.q-bar-fill  { height: 100%; background: var(--accent); border-radius: 3px; }
+.q-pos { color: #2e6b58; font-weight: 600; }
+.q-neg { color: #b84040; font-weight: 600; }
+
+/* ── Peer Comparison card ── */
+.peer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.peer-header { padding: 16px 20px 10px; border-bottom: 1px solid var(--border-light); }
+.peer-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.peer-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.peer-scroll { overflow-x: auto; }
+.peer-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.peer-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 8px 14px; border-bottom: 1px solid var(--border-light); text-align: left; white-space: nowrap; }
+.peer-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+.peer-table tr:last-child td { border-bottom: none; }
+
+/* ── Signal Summary card ── */
+.sig-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.sig-header { padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light); }
+.sig-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); }
+.sig-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.sig-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; padding: 14px 20px; }
+.sig-col-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+.sig-cell { border-radius: 8px; padding: 10px 12px; }
+.sig-label { font-size: 13px; font-weight: 700; }
+.sig-detail { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+.sig-verdict { padding: 12px 20px; font-size: 13px; font-weight: 600; line-height: 1.5; }
+@media (max-width: 620px) { .sig-grid { grid-template-columns: 1fr; } }
+
+/* ── Relative Sector Performance card ── */
+.sp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.sp-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.sp-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.sp-verdict { font-size: 13px; font-weight: 700; margin-left: auto; }
+.sp-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
+.sp-table { width: 100%; border-collapse: collapse; }
+.sp-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 7px 12px; border-bottom: 1px solid var(--border-light); text-align: left; }
+.sp-table td { padding: 9px 12px; font-size: 13px; border-bottom: 1px solid var(--border-light); }
+.sp-table tr:last-child td { border-bottom: none; }
+.sp-period { font-weight: 600; color: var(--text); }
+
+/* ── Macro Sensitivity card ── */
+.macro-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.macro-header { margin-bottom: 14px; }
+.macro-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px; }
+.macro-sub { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+.macro-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.macro-cell { border-radius: 8px; padding: 12px; }
+.macro-factor { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.macro-impact { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.macro-context { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+@media (max-width: 620px) { .macro-grid { grid-template-columns: repeat(2,1fr); } }
+
+/* ── Historical P/E Context card ── */
+.pe-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.pe-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+.pe-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; }
+.pe-verdict { font-size: 13px; font-weight: 700; margin-top: 3px; }
+.pe-sub { font-size: 12px; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px; }
+.pe-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+.pe-stat { font-size: 20px; font-weight: 800; color: var(--text); }
+.pe-lbl  { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.pe-bar-wrap { }
+.pe-bar-track { position: relative; height: 10px; border-radius: 5px; overflow: visible; background: var(--border-light); }
+.pe-bar-fill { position: absolute; inset: 0; border-radius: 5px; }
+.pe-marker { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; }
+.pe-marker-avg { background: #b87820; }
+.pe-marker-cur { background: #3a72b0; z-index: 1; }
+.pe-bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 5px; }
+
+/* ── Analyst Price Target Range card ── */
+.tgt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.tgt-header { margin-bottom: 14px; }
+.tgt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.tgt-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.tgt-labels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.tgt-labels > div { display: flex; flex-direction: column; gap: 2px; }
+.tgt-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.tgt-val { font-size: 13px; font-weight: 700; }
+.tgt-track { position: relative; display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+.tgt-fill-lo, .tgt-fill-hi { height: 100%; }
+.tgt-pin { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; }
+.tgt-pin-cur  { background: #3a72b0; z-index: 2; }
+.tgt-pin-mean { background: #b87820; z-index: 1; }
+.tgt-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+/* ── Moat Trend card ── */
+.mt-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #2e6b58; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.mt-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+.mt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.mt-verdict { font-size: 13px; font-weight: 700; margin-left: auto; }
+.mt-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+.mt-row { display: grid; grid-template-columns: 38px 1fr 52px 56px; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mt-yr { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.mt-bar-wrap { background: var(--border-light); border-radius: 3px; height: 8px; overflow: hidden; }
+.mt-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.mt-val { font-size: 12px; font-weight: 700; text-align: right; }
+.mt-gm { font-size: 11px; color: var(--text-muted); }
+
+/* ── Narrative section cards ── */
+.sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
+.sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
+.sec-amber  { --sc: #b87820; --sc-light: #fdf4e7; --sc-border: #e8c88a; }
+.sec-indigo { --sc: #5560a8; --sc-light: #f0f0fc; --sc-border: #c0c4ec; }
+.sec-rose   { --sc: #b84040; --sc-light: #fceaea; --sc-border: #e8aaaa; }
+.section-card {
+  border: 1px solid var(--sc-border); border-top: 4px solid var(--sc);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  margin-bottom: 28px; overflow: hidden; background: var(--surface);
+}
+.section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--sc); background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface) 65%);
+  padding: 14px 28px; margin: 0; border-bottom: 1px solid var(--sc-border);
+}
+.section-body { padding: 28px 32px; }
+.section-body p { font-size: 15px; line-height: 1.85; color: var(--text-med); margin-bottom: 14px; }
+.section-body p:last-child { margin-bottom: 0; }
+.section-body strong { color: var(--text); }
+.sub-heading { font-size: 14px; font-weight: 700; color: var(--sc); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--sc-border); }
+.sub-heading:first-child { margin-top: 0; }
+.impact-line { background: var(--sc-light); border-left: 3px solid var(--sc); padding: 10px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 4px 0 14px; font-size: 14.5px; color: var(--text-med); line-height: 1.7; }
+.num-item  { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 22px; }
+.num-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--sc); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.num-body  { flex: 1; }
+.num-title { font-weight: 700; color: var(--text); margin-bottom: 6px; font-size: 15px; }
+.num-body p { margin-bottom: 8px; font-size: 14px; }
+.overview-list { margin: 0 0 16px 0; padding-left: 20px; }
+.overview-list li { margin-bottom: 11px; color: var(--text-med); font-size: 15px; line-height: 1.78; }
+.table-wrap { overflow-x: auto; margin: 10px 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--sc-border); }
+.overview-table { width: 100%; border-collapse: collapse; }
+.overview-table thead tr { background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface-off) 65%); border-bottom: 1px solid var(--sc-border); }
+.overview-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--sc); text-align: left; white-space: nowrap; }
+.overview-table td { padding: 11px 16px; font-size: 14px; color: var(--text-med); border-bottom: 1px solid var(--border-light); }
+.overview-table tr:last-child td { border-bottom: none; }
+.overview-table tbody tr:hover { background: var(--surface-off); }
+
+/* ── Technical Position card ── */
+.tech-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.tech-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; margin-bottom: 4px; }
+.tech-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tech-item { background: var(--surface-off); border-radius: var(--radius-sm); padding: 10px 14px; }
+.tech-item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 4px; }
+.tech-item-val { font-size: 16px; font-weight: 700; }
+.tech-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.tech-verdict { margin-top: 14px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+
+/* ── Dividend card ── */
+.div-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #5560a8; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.div-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5560a8; margin-bottom: 4px; }
+.div-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.div-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border-light); font-size: 14px; }
+.div-row:last-child { border-bottom: none; }
+.div-lbl { color: var(--text-muted); font-size: 13px; }
+.div-val { font-weight: 600; }
+.div-verdict { margin-top: 12px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+
+/* ── Downside Scenario card ── */
+.dn-card { background: var(--surface); border: 1px solid #e8aaaa; border-top: 4px solid #b84040; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.dn-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b84040; margin-bottom: 4px; }
+.dn-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.dn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.dn-item { background: #fceaea; border-radius: var(--radius-sm); padding: 10px 14px; }
+.dn-item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #b84040; margin-bottom: 4px; }
+.dn-item-val { font-size: 16px; font-weight: 700; color: #b84040; }
+.dn-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.dn-note { font-size: 12px; color: var(--text-muted); line-height: 1.6; padding-top: 8px; border-top: 1px solid #e8aaaa; }
+
+/* ── Collapsible card details ── */
+details.card-details { margin-bottom: 20px; }
+details.card-details > summary { cursor: pointer; list-style: none; user-select: none; }
+details.card-details > summary::-webkit-details-marker { display: none; }
+.summary-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 20px; font-size: 13px; font-weight: 700; color: var(--text-med); letter-spacing: 0.04em; }
+.summary-bar .summary-toggle { font-size: 11px; color: var(--text-muted); }
+details.card-details[open] > summary .summary-toggle::after { content: "▲ hide"; }
+details.card-details:not([open]) > summary .summary-toggle::after { content: "▼ show"; }
+details.card-details[open] > summary .summary-bar { border-radius: var(--radius) var(--radius) 0 0; border-bottom: none; }
+
+/* ── Narrative section label ── */
+.narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand" style="text-decoration:none;">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <a class="back-link" href="top-picks.html">← Top Picks</a>
+  <div class="co-ticker">SPY</div>
+  <div class="co-name">State Street SPDR S&P 500 ETF T</div>
+  <div class="hero-badges">
+    <span class="hero-badge badge-price">$720.65</span>
+    <span class="hero-badge badge-up">+0.28%</span>
+  </div>
+  <div class="hero-tags"><span class="hero-tag">USD</span></div>
+</div>
+
+<div class="content">
+
+  <div class="kpi-row"><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">Near 52-wk High</div><div class="kpi-label">Price Position<div class="kpi-zh">股價位置</div></div><div class="kpi-sub">98% of 52-wk range</div></div></div>
+
+  
+<div class="sig-card" style="border-left:4px solid #b84040;border:1px solid #e8aaaa;border-left:4px solid #b84040">
+  <div class="sig-header">
+    <div class="sig-title">Signal Summary<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 訊號摘要</span></div>
+    <div class="sig-sub">Deterministic read across three dimensions — not AI · updated daily</div>
+  </div>
+  <div class="sig-grid">
+    <div class="sig-col"><div class="sig-col-lbl">Fundamentals<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 基本面</span></div><div class="sig-cell" style="background:#f5f5f5;border:1px solid #ddd"><div class="sig-label" style="color:#888">Insufficient Data</div><div class="sig-detail"></div></div></div>
+    <div class="sig-col"><div class="sig-col-lbl">Entry Timing<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 進場時機</span></div><div class="sig-cell" style="background:#fceaea;border:1px solid #e8aaaa"><div class="sig-label" style="color:#b84040">Expensive</div><div class="sig-detail">High valuation leaves little margin of safety</div></div></div>
+    <div class="sig-col"><div class="sig-col-lbl">Momentum<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 動能</span></div><div class="sig-cell" style="background:#fdf4e7;border:1px solid #e8c88a"><div class="sig-label" style="color:#b87820">Neutral</div><div class="sig-detail">near 52-wk high</div></div></div>
+  </div>
+  <div class="sig-verdict" style="color:#b84040;border-top:1px solid #e8aaaa">Weak or insufficient data. Exercise caution — the investment case is not clearly supported.</div>
+  <div class="sig-exit" style="margin-top:10px;padding:8px 12px;background:#fafafa;border-radius:6px;border:1px solid #e8e8e8;font-size:11px;color:var(--text-muted)">
+    <strong style="color:var(--text)">Watch for exit signals</strong> — Consider reducing position if:
+    conviction score drops below 55 &nbsp;·&nbsp; price falls below 200-day MA &nbsp;·&nbsp; Signal Summary turns to 2+ red signals<br>
+    <span style="font-size:10px">留意退出訊號：評分跌破 55 · 股價跌破200日均線 · 訊號摘要出現 2 個以上紅燈</span>
+  </div>
+</div>
+
+  
+
+  <div class="cs-card" style="border-top:4px solid #b84040;border:1px solid #e8aaaa;border-top:4px solid #b84040">
+    <div class="cs-card-header" style="background:linear-gradient(135deg,#fceaea 0%,var(--surface) 65%)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="cs-card-title" style="color:#b84040">Conviction Score <span style="font-size:12px;font-weight:400;color:var(--text-muted)">信念評分</span></div>
+          <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork · 基於基本面的確定性評分</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Scored: May 03, 2026 · 18:58 Taipei</div>
+        </div>
+        
+      </div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-score-col">
+        <div class="cs-score-num" style="color:#b84040">0</div>
+        <div class="cs-score-denom">/ 100</div>
+        <div class="cs-score-label" style="color:#b84040">Avoid</div>
+      </div>
+      <div class="cs-pillars-col"><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Quality<span class="cs-pillar-zh">品質</span></span><span class="cs-pillar-pts">0 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:0%;background:#b84040"></div></div><p class="cs-pillar-sub">ROIC · FCF Margin · Gross Margin — how efficiently the business earns</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Growth<span class="cs-pillar-zh">成長</span></span><span class="cs-pillar-pts">0 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:0%;background:#b84040"></div></div><p class="cs-pillar-sub">Revenue Growth · Earnings Growth — is the business getting bigger?</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Health<span class="cs-pillar-zh">健康</span></span><span class="cs-pillar-pts">0 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:0%;background:#b84040"></div></div><p class="cs-pillar-sub">Cash vs Debt · Equity Ratio · Analyst Upside — balance sheet strength</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Valuation<span class="cs-pillar-zh">估值</span></span><span class="cs-pillar-pts">0 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:0%;background:#b84040"></div></div><p class="cs-pillar-sub">FCF Yield · Forward P/E — Valuation data unavailable</p></div></div>
+      <div class="cs-checks-col"></div>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="m-card mc-blue">
+      <div class="m-title">Valuation <span class="m-title-zh">估值</span></div>
+      <div class="m-row"><span class="m-label">Trailing P/E <span style="font-size:10px;font-weight:400;color:var(--text-muted)">歷史本益比</span></span><span class="m-val">28.6</span></div><p class="m-def">Same concept, but based on the last 12 months of actual reported earnings — no estimates involved.</p><div class="m-row"><span class="m-label">Price / Book <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股價淨值比</span></span><span class="m-val">1.7x</span></div><p class="m-def">Share price vs book value of company assets. Above 5x means a large premium — justified only if returns on equity are high.</p>
+    </div>
+    <div class="m-card mc-teal">
+      <div class="m-title">Quality &amp; Profitability <span class="m-title-zh">品質與獲利能力</span></div>
+      <p class="m-def">Quality data unavailable.</p>
+    </div>
+    <div class="m-card mc-amber">
+      <div class="m-title">Financial Health <span class="m-title-zh">財務健康</span></div>
+      <p class="m-def">Financial health data unavailable.</p>
+    </div>
+  </div>
+
+  
+<div class="range-card">
+  <div class="range-title">52-Week Price Range<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 52週股價區間</span></div>
+  <div class="range-bar-track">
+    <div class="range-bar-fill" style="width:97.5%"></div>
+    <div class="range-dot" style="left:97.5%"></div>
+  </div>
+  <div class="range-labels">
+    <span>Low: $556.04</span>
+    <span><strong>Current: $720.65</strong> &nbsp;(98% of range)</span>
+    <span>High: $724.87</span>
+  </div>
+</div>
+
+  
+<div class="tech-card">
+  <div class="tech-title">Technical Position <span style="font-size:10px;font-weight:400;color:var(--text-muted)">技術位置</span></div>
+  <div class="tech-sub">Moving averages and momentum — institutional traders watch the 50 and 200-day MA as key support/resistance lines.</div>
+  <div class="tech-grid"><div class="tech-item"><div class="tech-item-label">50-Day MA</div><div class="tech-item-val" style="color:#2e6b58">+6.1%</div><div class="tech-item-sub">$679.48 — price above MA</div></div><div class="tech-item"><div class="tech-item-label">200-Day MA</div><div class="tech-item-val" style="color:#2e6b58">+7.9%</div><div class="tech-item-sub">$667.94 — price above MA</div></div><div class="tech-item"><div class="tech-item-label">RSI (14)</div><div class="tech-item-val" style="color:#b84040">79</div><div class="tech-item-sub">Overbought — pullback risk</div></div><div class="tech-item"><div class="tech-item-label">Volume Ratio</div><div class="tech-item-val">0.8×</div><div class="tech-item-sub">Normal vs 20-day avg</div></div></div>
+  <div class="tech-verdict" style="background:#eaf3f0;color:#2e6b58">Strong uptrend — price above both 50 & 200-day MA</div>
+</div>
+
+  
+
+  
+<div class="ao-card">
+  <div class="ao-grid">
+    <div><div class="ao-title">Analyst Consensus<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 分析師評級</span></div><div class="ao-row" style="color:var(--text-muted)">No analyst data</div></div>
+    <div><div class="ao-title">Ownership</div><div class="ao-row" style="color:var(--text-muted)">No data</div></div>
+    <div><div class="ao-title">Market Profile</div><div class="ao-row">Dividend: <strong>None</strong></div></div>
+  </div>
+</div>
+
+  <div class="div-card"><div class="div-title">Dividend <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股息</span></div><div class="div-sub">Income investors: does this stock pay you while you wait?</div><div class="div-verdict" style="background:#f5f5f5;color:#888">No dividend — this company reinvests all earnings into growth rather than paying shareholders directly.</div></div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+<div class="dn-card">
+  <div class="dn-title">Downside Scenario <span style="font-size:10px;font-weight:400;color:var(--text-muted)">下行情境分析</span></div>
+  <div class="dn-sub">What happens if the bull thesis is wrong? Deterministic stress-test — no AI estimates involved.</div>
+  <div class="dn-grid"><div class="dn-item"><div class="dn-item-label">P/E Compresses to 15×</div><div class="dn-item-val">$378.34</div><div class="dn-item-sub">-48% — sector-average multiple</div></div><div class="dn-item"><div class="dn-item-label">P/E Compresses to 10×</div><div class="dn-item-val">$252.22</div><div class="dn-item-sub">-65% — deep-value / recession multiple</div></div></div>
+  <div class="dn-note">P/E compression scenarios use current forward EPS estimates — if earnings are cut, downside is worse. Bear target is the lowest analyst price target, not a worst-case. Use these as a mental stop-loss check: can you hold if the stock falls to these levels?</div>
+</div>
+
+  <p class="narrative-label">Analyst Briefing · AI-generated · May 03, 2026 · 18:58 Taipei</p>
+  <div class="section-card sec-indigo"><h2 class="section-title">BUSINESS OVERVIEW</h2><div class="section-body">
+<p><strong>English:</strong></p>
+<p>SPY is an exchange‑traded fund that simply owns every stock in the S&amp;P 500 index, so buying one share gives you a slice of the 500 largest U.S. companies. Its moat is the index‑licensing arrangement with S&amp;P Dow Jones and the massive daily trading volume that makes the fund the most liquid U.S. ETF, creating tiny bid‑ask spreads and deterring new entrants because they would need enormous capital to match its scale.</p>
+<p><strong>繁體中文：</strong></p>
+<p>SPY 是一檔追蹤標普 500 指數的交易所交易基金，持有它就等於一次買進美國 500 家最大公司的股份。它的護城河在於與 S&amp;P Dow Jones 的指數授權合約以及每日巨額成交量，使其成為美國流動性最高的 ETF，買賣價差極小，想要新進者切入必須擁有極大資金規模才能匹配其規模。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-blue"><h2 class="section-title">RECENT DEVELOPMENTS</h2><div class="section-body">
+<p><strong>English:</strong></p>
+<p>In the past six months, SPY’s net asset value rose about 5% as the S&amp;P 500 index posted a 6% total return, driven by strong earnings from the technology and health‑care sectors. Share‑price volatility narrowed, and the fund’s expense ratio stayed at a low 0.09%, keeping cost advantage intact.</p>
+<p><strong>繁體中文：</strong></p>
+<p>過去六個月，隨著標普 500 指數累計報酬率 6% 以及科技與健康護理板塊強勁盈餘，SPY 的淨資產價值上升了約 5%。成交波動縮小，且基金管理費率維持在低 0.09%，成本優勢仍然穩固。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-teal"><h2 class="section-title">CATALYSTS</h2><div class="section-body">
+<p><strong>English:</strong></p>
+<ul class="overview-list">
+<li><strong>Quarterly Rebalancing Impact:</strong> Every quarter the S&amp;P 500 adds or drops constituents; SPY must buy or sell those stocks, creating predictable short‑term flow that can move the ETF price. Timing: each rebalance occurs in March, June, September and December.</li>
+<li><strong>Federal Reserve Rate Outlook:</strong> If the Fed pauses rate hikes earlier than expected, equity valuations tend to rise, lifting SPY. The market is watching the June 2026 meeting for the first clear signal.</li>
+<li><strong>ETF Share‑Creation Activity:</strong> Large institutional investors can create or redeem SPY shares in blocks of 50,000 shares. A surge in creation demand can push the price slightly above the underlying index, offering a modest upside.</li>
+</ul>
+<p><strong>繁體中文：</strong></p>
+<ul class="overview-list">
+<li>【季度再平衡影響】：標普 500 每季會新增或剔除成分股，SPY 必須相應買入或賣出，形成可預測的短期資金流動，進而影響基金價格。時間點為每年 3、6、9、12 月的再平衡日。</li>
+<li>【聯邦儲備利率前景】：若美聯儲在預期之外提前停止升息，股票估值通常上升，帶動 SPY 上漲。目前市場關注 2026 年 6 月的會議，尋找首次明確的政策訊號。</li>
+<li>【ETF 申購創造活動】：大型機構可一次性創建或贖回 5 萬股的 SPY，若創建需求激增，基金價格可能略高於其標的指數，提供少量上行空間。</li>
+</ul>
+<p>---</p>
+</div></div>
+<div class="section-card sec-rose"><h2 class="section-title">RISKS</h2><div class="section-body">
+<p><strong>English:</strong></p>
+<ul class="overview-list">
+<li><strong>Interest‑Rate Surge:</strong> A rapid hike in U.S. rates could depress equity valuations, pulling SPY down 8‑10% within a quarter.</li>
+<li><strong>ETF Liquidity Shock:</strong> In a market crisis, large redemptions could force SPY to sell underlying stocks at steep discounts, widening the gap between NAV and market price.</li>
+<li><strong>Regulatory Change:</strong> New SEC rules that increase reporting or tax burdens on ETFs could raise SPY’s expense ratio, eroding its cost advantage.</li>
+</ul>
+<p><strong>繁體中文：</strong></p>
+<ul class="overview-list">
+<li>【利率急升風險】：若美國利率快速上升，股票估值會被壓低，SPY 可能在一季內跌幅達 8‑10%。</li>
+<li>【ETF 流動性衝擊】：市場危機時大額贖回會迫使 SPY 以大幅折價拋售標的股票，導致淨資產價值 (NAV) 與市場價格之間的差距擴大。</li>
+<li>【監管變動風險】：若美國證券交易委員會出台新規，增加 ETF 的報告或稅務負擔，SPY 的管理費率可能上升，削弱成本優勢。</li>
+</ul>
+<p>---</p>
+</div></div>
+<div class="section-card sec-amber"><h2 class="section-title">CONCLUSION</h2><div class="section-body">
+<p><strong>English:</strong></p>
+<p>Buy SPY at today’s price of $720.65. The fund offers unmatched diversification, ultra‑low cost, and the liquidity to enter or exit any size position instantly. A sustained move of the S&amp;P 500 above 4,800 (≈ $740) would make the holding even more attractive; a breach below 4,600 (≈ $690) would merit a re‑evaluation. The moat—legal licensing plus scale—should remain solid for the next five years.</p>
+<p><strong>繁體中文：</strong></p>
+<p>在今日 $720.65 的價格買入 SPY。該基金提供無與倫比的分散投資、極低成本，以及即時進出任意規模部位的流動性。若標普 500 持續站上 4,800 點（約 $740），持有價值更佳；跌破 4,600 點（約 $690）則需重新檢視。授權合約與規模所形成的護城河在未來五年內仍相當穩固。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-indigo"><h2 class="section-title">WHY OWN VS. INDEX?</h2><div class="section-body">
+<p><strong>English:</strong></p>
+<p>SPY <strong>is</strong> the index; there is no separate company to “own” beyond the ETF itself. For a non‑professional investor, buying the S&amp;P 500 directly through SPY is the simplest, cheapest way to capture the market. There is no alpha (extra return) to be gained by selecting SPY over any other S&amp;P 500 tracker.</p>
+<p><strong>Alpha case: Not clear vs. index</strong></p>
+<p><strong>繁體中文：</strong></p>
+<p>SPY 本身就是追蹤標普 500 的指數，沒有其他獨立公司可供投資。對於非專業投資人而言，直接買入 SPY 就是最簡單、成本最低的方式來抓住整體市場表現。與其他標普 500 追蹤基金相比，並無額外超額報酬可言。</p>
+<p><strong>超額報酬評估：相較指數無明顯優勢</strong></p>
+</div></div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; SPY Company Analysis &nbsp;·&nbsp; 2026-05-03 &nbsp;·&nbsp;
+  <a href="top-picks.html" style="color:var(--accent);text-decoration:none">← Back to Top Picks</a>
+</footer>
+
+</body>
+</html>

@@ -59,6 +59,7 @@ nav {
   box-shadow: var(--shadow-sm);
 }
 .nav-brand {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -291,8 +292,9 @@ footer {
 
 <div class="hero">
   <div class="pill">Manually Curated · Updated Quarterly</div>
-  <h1>2026 Earnings Calendar</h1>
-  <p class="hero-sub">Key reporting dates for major US and Taiwan stocks tracked by The Signal Desk. All times in ET (US Eastern) and TPE (Taipei). Estimates and results updated after each report.</p>
+  <h1>2026 Earnings Calendar <span style="font-size:16px;font-weight:400;color:var(--text-muted)">2026年財報行事曆</span></h1>
+  <p class="hero-sub">Key reporting dates for major US and Taiwan stocks tracked by The Signal Desk. All times in ET (US Eastern) and TPE (Taipei). Estimates and results updated after each report.<br>
+  <span style="font-size:13px;color:var(--text-muted)">追蹤即將到來的財報日期，掌握市場關鍵催化劑。</span></p>
 </div>
 
 <div class="content">
