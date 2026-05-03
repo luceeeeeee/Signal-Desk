@@ -158,6 +158,35 @@ def fetch_ticker_data(ticker: str) -> dict:
         except Exception:
             pass
 
+        # ── Insider activity (last 90 days, non-automatic transactions) ─────────
+        insider_buy_count = insider_sell_count = 0
+        try:
+            import pandas as _pd
+            import datetime as _dt
+            _it = t.insider_transactions
+            if _it is not None and not _it.empty:
+                _cutoff = _dt.datetime.now() - _dt.timedelta(days=90)
+                for _, _row in _it.iterrows():
+                    try:
+                        _dr = _row.get("Start Date") or _row.get("Date") or _row.get("startDate")
+                        if _dr is None:
+                            continue
+                        _td = _pd.to_datetime(_dr)
+                        if _pd.isna(_td):
+                            continue
+                        _td_naive = _td.replace(tzinfo=None) if _td.tzinfo else _td
+                        if _td_naive.to_pydatetime() < _cutoff:
+                            continue
+                        _txn = str(_row.get("Transaction") or "").lower()
+                        if "purchase" in _txn and "automatic" not in _txn:
+                            insider_buy_count += 1
+                        elif "sale" in _txn and "automatic" not in _txn:
+                            insider_sell_count += 1
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
         # ── Earnings surprise history (last 4 quarters) ───────────────────────
         earnings_surprises = []
         try:
@@ -257,8 +286,14 @@ def fetch_ticker_data(ticker: str) -> dict:
             "analyst_count": info.get("numberOfAnalystOpinions"),
             "recommendation_mean": info.get("recommendationMean"),
             "dividend_yield": dy if (dy := info.get("dividendYield")) and dy <= 0.30 else None,
+            "dividend_rate": info.get("dividendRate"),
+            "payout_ratio": info.get("payoutRatio"),
+            "five_year_avg_div_yield": info.get("fiveYearAvgDividendYield"),
             "peg_ratio": info.get("pegRatio"),
+            "ev_ebitda": info.get("enterpriseToEbitda"),
             "short_float": info.get("shortPercentOfFloat"),
+            "insider_buy_count": insider_buy_count,
+            "insider_sell_count": insider_sell_count,
         }
     except Exception as e:
         return {

@@ -24,7 +24,7 @@ from src.analysis.claude_analyst import generate_briefing, generate_intraday_ale
 from src.notifications.email_sender import EmailChannel
 from src.notifications.line_sender import LineChannel
 from src.utils.helpers import load_settings, load_watchlist, now_taipei
-from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_watchlist_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, generate_signal_log_page, _fetch_monthly_index_data, _load_scores_cache, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
+from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, generate_signal_log_page, _fetch_monthly_index_data, _load_scores_cache, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
 from src.fetchers.news import NEWS_FEEDS
 from src.analysis.claude_analyst import generate_monthly_overview
 
@@ -156,73 +156,10 @@ def run_universe_company_pages():
         if os.path.exists(page_path) and _get_cached_narrative(ticker, recent.get(ticker)) is not None:
             continue
         try:
-            t = yf.Ticker(ticker)
-            info = t.info or {}
-            price = info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose")
-            if not price:
+            # Use fetch_ticker_data() to get the full data dict (all fields required by cards)
+            d = fetch_ticker_data(ticker)
+            if not d.get("price"):
                 continue
-            prev = info.get("previousClose") or price
-            change_pct = ((price - prev) / prev * 100) if prev else 0.0
-            analyst_target = info.get("targetMeanPrice")
-            upside = ((analyst_target - price) / price * 100) if analyst_target and price else None
-            fcf = info.get("freeCashflow")
-            rev = info.get("totalRevenue")
-            fcf_margin = (fcf / rev) if fcf and rev and rev > 0 else None
-            equity_ratio = None
-            roic = None
-            try:
-                bs = t.balance_sheet
-                if bs is not None and not bs.empty:
-                    col = bs.columns[0]
-                    def _g(*keys):
-                        for k in keys:
-                            if k in bs.index:
-                                try: return float(bs.at[k, col])
-                                except: pass
-                        return None
-                    ta = _g("Total Assets")
-                    se = _g("Stockholders Equity", "Total Stockholders Equity", "Common Stock Equity")
-                    if ta and se and ta > 0:
-                        equity_ratio = se / ta
-                    op_margin = info.get("operatingMargins") or 0
-                    op_income = op_margin * (rev or 0)
-                    curr_liab = _g("Current Liabilities", "Total Current Liabilities")
-                    inv_cap = (ta or 0) - (curr_liab or 0)
-                    if inv_cap > 0 and op_income:
-                        roic = op_income * 0.79 / inv_cap
-            except Exception:
-                pass
-            market_cap = info.get("marketCap")
-            fcf_yield = (fcf / market_cap) if fcf and market_cap and market_cap > 0 else None
-            d = {
-                "ticker": ticker,
-                "name": info.get("shortName") or info.get("longName") or ticker,
-                "price": round(price, 2),
-                "change_pct": round(change_pct, 2),
-                "currency": info.get("currency", "USD"),
-                "sector": info.get("sector", ""),
-                "industry": info.get("industry", ""),
-                "market_cap": market_cap,
-                "forward_pe": info.get("forwardPE"),
-                "pe_trailing": info.get("trailingPE"),
-                "beta": info.get("beta"),
-                "dividend_yield": dy if (dy := info.get("dividendYield")) and dy <= 0.30 else None,
-                "gross_margin": info.get("grossMargins"),
-                "revenue_growth": info.get("revenueGrowth"),
-                "earnings_growth": info.get("earningsGrowth"),
-                "return_on_equity": info.get("returnOnEquity"),
-                "analyst_target": analyst_target,
-                "analyst_upside_pct": round(upside, 1) if upside is not None else None,
-                "recommendation": info.get("recommendationKey", ""),
-                "week_52_high": info.get("fiftyTwoWeekHigh"),
-                "week_52_low": info.get("fiftyTwoWeekLow"),
-                "total_cash": info.get("totalCash"),
-                "total_debt": info.get("totalDebt"),
-                "fcf_margin": fcf_margin,
-                "fcf_yield": fcf_yield,
-                "equity_ratio": equity_ratio,
-                "roic": roic,
-            }
             _generate_one_company_page(d, recent.get(ticker), cached_cs=_scores_cache.get(ticker))
         except Exception as e:
             print(f"  [Universe Page] {ticker} failed: {e}")
@@ -269,7 +206,6 @@ def run_briefing(market: str):
     if base_url == "FILL_IN_NETLIFY_URL":
         base_url = ""
     prices_text = format_prices_for_briefing(prices, base_url)
-    generate_watchlist_page(prices)
 
     print("  Fetching earnings calendar...")
     earnings = fetch_earnings_calendar(days_ahead=7)
@@ -483,9 +419,6 @@ if __name__ == "__main__":
     print("  Generating Earnings Calendar page...")
     generate_earnings_calendar_page()
 
-    print("  Fetching prices for watchlist page...")
-    _startup_prices = fetch_all_prices()
-    generate_watchlist_page(_startup_prices)
 
     # Generate missing watchlist company pages at startup
     missing = [

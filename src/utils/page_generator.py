@@ -42,6 +42,12 @@ REGION_META = {
     "HK":     {"label": "Hong Kong",        "label_zh": "香港",         "flag": "🇭🇰"},
     "ASIA":   {"label": "Asia-Pacific",     "label_zh": "亞太地區",     "flag": "🌏"},
     "TW":     {"label": "Taiwan",           "label_zh": "台灣",         "flag": "🇹🇼"},
+    "EUROPE": {"label": "Europe",            "label_zh": "歐洲",         "flag": "🇪🇺"},
+    "IN":     {"label": "India",              "label_zh": "印度",         "flag": "🇮🇳"},
+    "JP":     {"label": "Japan",              "label_zh": "日本",         "flag": "🇯🇵"},
+    "AU":     {"label": "Australia",          "label_zh": "澳洲",         "flag": "🇦🇺"},
+    "KR":     {"label": "South Korea",        "label_zh": "韓國",         "flag": "🇰🇷"},
+    "CN":     {"label": "China",              "label_zh": "中國",         "flag": "🇨🇳"},
 }
 
 REGION_COLORS = {
@@ -52,9 +58,15 @@ REGION_COLORS = {
     "HK":     {"color": "#b84040", "light": "#fceaea", "border": "#e8aaaa"},
     "ASIA":   {"color": "#2a7a7a", "light": "#e8f5f5", "border": "#a8d8d8"},
     "TW":     {"color": "#7a5030", "light": "#f8f0e8", "border": "#d8bca0"},
+    "EUROPE": {"color": "#4a6090", "light": "#eef2fa", "border": "#c0cce8"},
+    "IN":     {"color": "#8b4a10", "light": "#faf0e8", "border": "#e0c4a0"},
+    "JP":     {"color": "#a03060", "light": "#faeaf0", "border": "#e0b0c8"},
+    "AU":     {"color": "#2060a0", "light": "#e8f0fa", "border": "#a0c0e0"},
+    "KR":     {"color": "#205080", "light": "#e8f0f8", "border": "#a0c0d8"},
+    "CN":     {"color": "#903030", "light": "#fae8e8", "border": "#e0b0b0"},
 }
 
-REGION_ORDER = ["US", "GLOBAL", "UK", "ASIA", "SG", "HK", "TW"]
+REGION_ORDER = ["US", "GLOBAL", "UK", "EUROPE", "ASIA", "SG", "HK", "TW", "IN", "JP", "AU", "KR", "CN"]
 
 SHARED_CSS = """
 :root {
@@ -130,10 +142,11 @@ footer {
 
 
 _NAV_ITEMS = [
+    ("earnings-calendar.html",   "Earnings Calendar"),
     ("market.html",              "Market"),
     ("top-picks.html",           "Top Picks"),
     ("sector-leaders.html",      "Sector Leaders"),
-    ("earnings-calendar.html",   "Earnings Calendar"),
+    ("income-statement-guide.html", "Statement Guide"),
     ("news-sources.html",        "News Sources"),
 ]
 
@@ -401,6 +414,7 @@ def generate_news_sources_page(feeds: list) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"[Pages] news-sources.html updated — {total} sources across {len([r for r in REGION_ORDER if grouped.get(r)])} regions")
+    _git_push_pages("news-sources")
 
 
 # ── Monthly overview ──────────────────────────────────────────────────────────
@@ -486,6 +500,15 @@ def _render_overview(raw: str) -> str:
         if in_section:
             out.append('</div></div>')
             in_section = False
+
+    # Ensure content before first ## heading is not silently dropped
+    # by pre-scanning: if the first non-empty line is not a ##, wrap in a default section
+    first_content_idx = next((j for j, l in enumerate(lines) if l.strip() and not l.strip().startswith('##')), -1)
+    first_h2_idx = next((j for j, l in enumerate(lines) if l.strip().startswith('## ')), len(lines))
+    if first_content_idx >= 0 and first_content_idx < first_h2_idx:
+        # There is content before the first ## heading — open a default section card
+        out.append('<div class="section-card sec-indigo"><h2 class="section-title">Overview</h2><div class="section-body">')
+        in_section = True
 
     while i < len(lines):
         stripped = lines[i].strip()
@@ -802,12 +825,12 @@ def generate_monthly_overview_page(content: str, month_review: str, month_previe
 </head>
 <body>
 
-{_nav_html()}
+{_nav_html("market.html")}
 
 <div class="hero">
   <div class="pill">Monthly Overview · Auto-generated</div>
   <p class="hero-period">{month_preview} Preview &nbsp;·&nbsp; {month_review} Review</p>
-  <h1>Market Overview</h1>
+  <h1>Market Overview <span style="font-size:16px;font-weight:400;color:var(--text-muted)">市場總覽</span></h1>
   <p class="hero-sub">Monthly review of the past month and preview of what's ahead — key events, index performance, earnings, and directional views. Bilingual: English &amp; 繁體中文.</p>
 </div>
 
@@ -1115,6 +1138,7 @@ def generate_market_page(data: dict = None) -> str:
     sectors_html = f"""
   <div class="mk-card mk-half">
     <div class="mk-card-title">Sector Rotation · 板塊輪動</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">Which parts of the market are gaining or losing money today — investors rotate between sectors as economic conditions change<br><span style="font-size:10px">各板塊資金流向 — 投資者依據經濟環境在各板塊間調配資金</span></div>
     <div class="sec-list">{sector_rows}</div>
   </div>"""
 
@@ -1125,6 +1149,11 @@ def generate_market_page(data: dict = None) -> str:
         impacts = {}
         try:
             import os, json, re, requests
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+            except Exception:
+                pass
             api_key = os.environ.get("OPENROUTER_API_KEY")
             if api_key:
                 items_text = "\n".join(
@@ -1139,21 +1168,29 @@ def generate_market_page(data: dict = None) -> str:
                     f"Headlines:\n{items_text}\n\n"
                     'Respond ONLY as valid JSON: {"1": {"en": "...", "zh": "..."}, "2": {...}, ...}'
                 )
-                resp = requests.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                    json={"model": "openai/gpt-oss-120b:free",
-                          "messages": [{"role": "user", "content": prompt}],
-                          "max_tokens": 1200},
-                    timeout=60,
-                )
-                if resp.status_code == 200:
-                    raw = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "")
-                    m = re.search(r'\{.*\}', raw, re.DOTALL)
-                    if m:
-                        impacts = json.loads(m.group())
-        except Exception:
-            pass
+                _models = ["openai/gpt-oss-120b:free", "meta-llama/llama-4-scout:free"]
+                for _model in _models:
+                    resp = requests.post(
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                        json={"model": _model,
+                              "messages": [{"role": "user", "content": prompt}],
+                              "max_tokens": 1200},
+                        timeout=60,
+                    )
+                    print(f"[Market] News impact API ({_model}): status {resp.status_code}")
+                    if resp.status_code == 200:
+                        raw = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+                        m = re.search(r'\{.*\}', raw, re.DOTALL)
+                        if m:
+                            impacts = json.loads(m.group())
+                            break
+                        else:
+                            print(f"[Market] News impact JSON parse failed, raw[:200]: {repr(raw[:200])}")
+                    else:
+                        print(f"[Market] News impact API error body: {resp.text[:200]}")
+        except Exception as _e:
+            print(f"[Market] News impact exception: {_e}")
 
         news_rows = ""
         for i, item in enumerate(news_items):
@@ -1283,6 +1320,22 @@ def generate_market_page(data: dict = None) -> str:
     <div class="mk-card-title">📅 Macro Events · 總經行事曆 (Next 30 Days)</div>
     <p style="font-size:13px;color:var(--text-muted);margin:0">No major macro events in the next 30 days.</p>
   </div>"""
+
+    # ── Monthly Overview link card ──
+    monthly_link_html = ""
+    try:
+        _mo_slug = now.strftime("%Y-%m")
+        _mo_file = os.path.join(PAGES_DIR, f"monthly-{_mo_slug}.html")
+        if os.path.exists(_mo_file):
+            monthly_link_html = f"""
+  <div class="mk-card mk-full" style="margin-top:24px;border-top:4px solid #3a72b0;">
+    <div class="mk-card-title">📅 Monthly Market Overview · 月度市場總覽 &nbsp;<span style="font-weight:400;text-transform:none">— {now.strftime("%B %Y")} deep-dive</span></div>
+    <p style="font-size:14px;line-height:1.8;color:var(--text-med);margin:0 0 10px">Review of last month and outlook for {now.strftime("%B %Y")} — macro trends, sector rotation, earnings themes, and key catalysts. Regenerated on the 1st and 15th of each month.</p>
+    <p style="font-size:13px;line-height:1.8;color:var(--text-muted);margin:0 0 14px">回顧上月並展望本月宏觀走勢、板塊輪動、財報主題與關鍵催化劑。每月1日與15日更新。</p>
+    <a href="monthly-{_mo_slug}.html" style="display:inline-block;padding:8px 18px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">Read Monthly Overview →</a>
+  </div>"""
+    except Exception:
+        pass
 
     # ── Warren Buffett-style macro outlook (weekly, cached) ──
     buffett_html = ""
@@ -1435,6 +1488,7 @@ def generate_market_page(data: dict = None) -> str:
     {preview_html}
   </div>
 
+  {monthly_link_html}
   {buffett_html}
 </div>
 
@@ -1481,7 +1535,7 @@ TOP_PICKS_UNIVERSE = list(dict.fromkeys(TOP_PICKS_UNIVERSE))  # deduplicate — 
 
 
 def fetch_top_picks_data() -> list:
-    """Fetch conviction scores for the broad universe; return top 30 with score ≥ 75."""
+    """Fetch conviction scores for the broad universe; return top 30 with score ≥ 55."""
     import warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -1698,6 +1752,11 @@ def generate_top_picks_page(picks: list = None) -> str:
           {_score_bar(cs['pillar_health'], cs['pillar_health_max'])}
           <span>{cs['pillar_health']}/{cs['pillar_health_max']}</span>
         </div>
+        <div class="tp-pillar-row">
+          <span style="color:{'#2e6b58' if cs['pillar_valuation'] >= 20 else '#b87820' if cs['pillar_valuation'] >= 12 else '#b84040'}">Valuation</span>
+          {_score_bar(cs['pillar_valuation'], cs['pillar_valuation_max'])}
+          <span style="color:{'#2e6b58' if cs['pillar_valuation'] >= 20 else '#b87820' if cs['pillar_valuation'] >= 12 else '#b84040'}">{cs['pillar_valuation']}/{cs['pillar_valuation_max']}</span>
+        </div>
       </div>
     </div>
     <div class="tp-metrics">
@@ -1706,7 +1765,7 @@ def generate_top_picks_page(picks: list = None) -> str:
         <span class="tp-m-val">{_fmt_val(d.get('revenue_growth'))}</span>
       </div>
       <div class="tp-metric-item">
-        <span class="tp-m-label">FCF Margin</span>
+        <span class="tp-m-label">FCF Margin <span style="font-size:9px;font-weight:400;color:var(--text-muted)">(cash kept per $1 sales)</span></span>
         <span class="tp-m-val">{_fmt_val(d.get('fcf_margin'))}</span>
       </div>
       <div class="tp-metric-item">
@@ -1823,7 +1882,7 @@ def generate_top_picks_page(picks: list = None) -> str:
 <div class="hero">
   <div class="pill">Conviction Screener · 精選評分篩選 · Auto-updated nightly</div>
   <h1>Top Picks &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">精選標的</span></h1>
-  <p class="hero-sub">The algorithm — not the editor — surfaces these {count} stocks from a universe of {len(TOP_PICKS_UNIVERSE)} companies. Stocks must score ≥ 55 / 100 on a three-pillar conviction model (Quality, Growth, Financial Health), ranked by score. Top 30 only — no human override.<br><span style="font-size:13px;color:var(--text-muted)">由演算法從 {len(TOP_PICKS_UNIVERSE)} 支股票中篩選，評分須達 55/100（品質、成長、財務健康三大支柱），依分數排序，最多顯示前 30 名。</span></p>
+  <p class="hero-sub">The algorithm — not the editor — surfaces these {count} stocks from a universe of {len(TOP_PICKS_UNIVERSE)} companies. Stocks must score ≥ 55 / 100 on a four-pillar conviction model (Quality · Growth · Health · Valuation), ranked by score. Top 30 only — no human override.<br><span style="font-size:13px;color:var(--text-muted)">由演算法從 {len(TOP_PICKS_UNIVERSE)} 支股票中篩選，評分須達 55/100（品質、成長、財務健康、估值四大支柱），依分數排序，最多顯示前 30 名。</span></p>
 </div>
 
 <div class="content">
@@ -1831,7 +1890,37 @@ def generate_top_picks_page(picks: list = None) -> str:
   <div class="score-legend">
     <div class="legend-item"><div class="legend-dot" style="background:#2e6b58"></div>Strong Conviction (75–100)</div>
     <div class="legend-item"><div class="legend-dot" style="background:#b87820"></div>Moderate (55–74)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#b84040"></div>Weak (35–54)</div>
+  </div>
+
+  <div class="rationale-card">
+    <h2>How the Score Works / 評分邏輯說明</h2>
+    <div class="rationale-grid">
+      <div class="rationale-item">
+        <h3>🏆 Quality Pillar (25 pts)</h3>
+        <p>Measures how efficiently the business converts capital into profit. High ROIC (Return on Invested Capital ≥ 15%) means every dollar reinvested earns strong returns — a hallmark of durable businesses. High FCF margin means the company generates real cash, not just accounting profit. High gross margin reflects pricing power.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">衡量企業將資本轉化為利潤的效率。高投資資本回報率（ROIC ≥ 15%）代表每一美元再投資都能產生強勁回報——這是持久型企業的標誌。高自由現金流利潤率代表企業創造真實現金，而非僅有帳面利潤。高毛利率反映定價能力。</p>
+      </div>
+      <div class="rationale-item">
+        <h3>📈 Growth Pillar (25 pts)</h3>
+        <p>Tracks whether the business is expanding fast enough to justify investment. Revenue growth ≥ 10% signals real demand momentum, not just margin engineering. Earnings growth ≥ 10% confirms the top-line expansion is flowing through to shareholders — not being consumed by costs.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">追蹤企業是否以足夠快的速度擴張以證明投資值得。營收增長 ≥ 10% 代表真實需求動能，而非單純靠利潤率工程。盈利增長 ≥ 10% 確認頂線擴張正在流向股東，而非被成本消耗。</p>
+      </div>
+      <div class="rationale-item">
+        <h3>🏦 Health Pillar (25 pts)</h3>
+        <p>Assesses balance sheet resilience. A strong cash-to-debt ratio means the company can survive downturns and invest through cycles. A high equity ratio means the business is largely self-funded. Analyst upside reflects Wall Street's collective view on whether the stock is fairly priced.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">評估資產負債表韌性。強勁的現金對債務比率意味著公司能在低迷期存活並跨周期投資。高股東權益比率意味著企業主要依靠自有資金運營。分析師上行空間反映華爾街對股票是否合理定價的集體看法。</p>
+      </div>
+      <div class="rationale-item">
+        <h3>💰 Valuation Pillar (25 pts)</h3>
+        <p>Prevents high-quality but overpriced stocks from scoring 100/100. FCF yield (free cash flow ÷ market cap) is compared to the 10Y Treasury rate — a higher yield than bonds means you are being paid more to own the stock. Forward P/E below 25× signals reasonable pricing; above 40× means the stock is priced for perfection.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">防止高品質但高估值的股票獲得100/100。自由現金流殖利率與10年期公債利率比較——殖利率高於公債意味著持有股票更划算。預期本益比低於25倍代表定價合理；超過40倍則說明股票已為完美前景定價。</p>
+      </div>
+      <div class="rationale-item">
+        <h3>⚠️ What this screen does NOT do</h3>
+        <p>This is a fundamentals filter, not a buy signal. A high score means the business is financially sound AND reasonably valued across all four pillars: Quality (25) + Growth (25) + Health (25) + Valuation (25) = 100 pts. Always read the full company page and form your own view before acting.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">這是基本面篩選器，不是買入信號。高分意味著業務在四大支柱均表現良好：品質 (25) + 成長 (25) + 健康 (25) + 估值 (25) = 100分。請閱讀完整公司頁面並自行判斷後再行動。</p>
+      </div>
+    </div>
   </div>
 
   <div class="tp-header">
@@ -1844,32 +1933,6 @@ def generate_top_picks_page(picks: list = None) -> str:
 
   <div class="tp-list">
 {rows_html}
-  </div>
-
-  <div class="rationale-card">
-    <h2>How the Score Works / 評分邏輯說明</h2>
-    <div class="rationale-grid">
-      <div class="rationale-item">
-        <h3>🏆 Quality Pillar (33 pts)</h3>
-        <p>Measures how efficiently the business converts capital into profit. High ROIC (Return on Invested Capital ≥ 15%) means every dollar reinvested earns strong returns — a hallmark of durable businesses. High FCF margin means the company generates real cash, not just accounting profit. High gross margin reflects pricing power.</p>
-        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">衡量企業將資本轉化為利潤的效率。高投資資本回報率（ROIC ≥ 15%）代表每一美元再投資都能產生強勁回報——這是持久型企業的標誌。高自由現金流利潤率代表企業創造真實現金，而非僅有帳面利潤。高毛利率反映定價能力。</p>
-      </div>
-      <div class="rationale-item">
-        <h3>📈 Growth Pillar (34 pts)</h3>
-        <p>Tracks whether the business is expanding fast enough to justify investment. Revenue growth ≥ 10% signals real demand momentum, not just margin engineering. Earnings growth ≥ 10% confirms the top-line expansion is flowing through to shareholders — not being consumed by costs.</p>
-        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">追蹤企業是否以足夠快的速度擴張以證明投資值得。營收增長 ≥ 10% 代表真實需求動能，而非單純靠利潤率工程。盈利增長 ≥ 10% 確認頂線擴張正在流向股東，而非被成本消耗。</p>
-      </div>
-      <div class="rationale-item">
-        <h3>🏦 Health Pillar (33 pts)</h3>
-        <p>Assesses balance sheet resilience. A strong cash-to-debt ratio means the company can survive downturns and invest through cycles. A high equity ratio means the business is largely self-funded. Analyst upside reflects Wall Street's collective view on whether the stock is fairly priced.</p>
-        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">評估資產負債表韌性。強勁的現金對債務比率意味著公司能在低迷期存活並跨周期投資。高股東權益比率意味著企業主要依靠自有資金運營。分析師上行空間反映華爾街對股票是否合理定價的集體看法。</p>
-      </div>
-      <div class="rationale-item">
-        <h3>⚠️ What this screen does NOT do</h3>
-        <p>This is a fundamentals filter, not a buy signal. A high score means the business is financially sound — it does not account for valuation (a great company at a sky-high price can still be a poor investment), near-term catalysts, or macro risks. Always read the full company page and form your own view.</p>
-        <p style="margin-top:8px;font-size:12px;color:var(--text-muted)">這是基本面篩選器，不是買入信號。高分意味著業務財務健康——但不考慮估值（高價買入優質公司仍可能是糟糕投資）、近期催化劑或宏觀風險。請閱讀完整公司頁面並自行判斷。</p>
-      </div>
-    </div>
   </div>
 
 </div>
@@ -2107,9 +2170,10 @@ def generate_sector_leaders_page(groups: list = None) -> str:
                 f'<div class="sl-leader-note" style="border-left:3px solid {color}">'
                 f'<strong>Leader:</strong> {leader["ticker"]} — '
                 f'Score {lcs["score"]}/100 · '
-                f'Quality {lcs["pillar_quality"]}/{lcs["pillar_quality_max"]} · '
-                f'Growth {lcs["pillar_growth"]}/{lcs["pillar_growth_max"]} · '
-                f'Health {lcs["pillar_health"]}/{lcs["pillar_health_max"]}'
+                f'Quality {lcs["pillar_quality"]}/25 · '
+                f'Growth {lcs["pillar_growth"]}/25 · '
+                f'Health {lcs["pillar_health"]}/25 · '
+                f'Valuation {lcs["pillar_valuation"]}/25'
                 f'</div>'
             )
 
@@ -2215,7 +2279,7 @@ def generate_sector_leaders_page(groups: list = None) -> str:
 <div class="hero">
   <div class="pill">Peer Comparison · 同類比較 · Auto-updated nightly</div>
   <h1>Sector Leaders &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">產業領袖</span></h1>
-  <p class="hero-sub">Within each sector, stocks are ranked by conviction score — Quality, Growth, and Financial Health combined. The 👑 leader is the most fundamentally sound stock in that peer group right now. Top 5 per group. Use this to compare, not to buy blind.<br><span style="font-size:13px;color:var(--text-muted)">各產業股票依評分排序——品質、成長、財務健康三項合計。👑 代表當前該同類中基本面最強的股票。每組最多顯示前 5 名。</span></p>
+  <p class="hero-sub">Within each sector, stocks are ranked by conviction score — Quality (25) · Growth (25) · Health (25) · Valuation (25) = 100 pts. The 👑 leader is the most fundamentally sound and fairly valued stock in that peer group right now. Top 5 per group. Use this to compare, not to buy blind.<br><span style="font-size:13px;color:var(--text-muted)">各產業股票依評分排序——品質、成長、財務健康、估值四大支柱各25分合計100分。👑 代表當前該同類中基本面最強且估值合理的股票。每組最多顯示前 5 名。</span></p>
 </div>
 
 <div class="content">
@@ -2653,6 +2717,48 @@ _COMPANY_PAGE_CSS = """
 .overview-table tr:last-child td { border-bottom: none; }
 .overview-table tbody tr:hover { background: var(--surface-off); }
 
+/* ── Technical Position card ── */
+.tech-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.tech-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; margin-bottom: 4px; }
+.tech-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tech-item { background: var(--surface-off); border-radius: var(--radius-sm); padding: 10px 14px; }
+.tech-item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 4px; }
+.tech-item-val { font-size: 16px; font-weight: 700; }
+.tech-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.tech-verdict { margin-top: 14px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+
+/* ── Dividend card ── */
+.div-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #5560a8; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.div-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5560a8; margin-bottom: 4px; }
+.div-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.div-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border-light); font-size: 14px; }
+.div-row:last-child { border-bottom: none; }
+.div-lbl { color: var(--text-muted); font-size: 13px; }
+.div-val { font-weight: 600; }
+.div-verdict { margin-top: 12px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+
+/* ── Downside Scenario card ── */
+.dn-card { background: var(--surface); border: 1px solid #e8aaaa; border-top: 4px solid #b84040; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.dn-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b84040; margin-bottom: 4px; }
+.dn-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.dn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.dn-item { background: #fceaea; border-radius: var(--radius-sm); padding: 10px 14px; }
+.dn-item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #b84040; margin-bottom: 4px; }
+.dn-item-val { font-size: 16px; font-weight: 700; color: #b84040; }
+.dn-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.dn-note { font-size: 12px; color: var(--text-muted); line-height: 1.6; padding-top: 8px; border-top: 1px solid #e8aaaa; }
+
+/* ── Collapsible card details ── */
+details.card-details { margin-bottom: 20px; }
+details.card-details > summary { cursor: pointer; list-style: none; user-select: none; }
+details.card-details > summary::-webkit-details-marker { display: none; }
+.summary-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 20px; font-size: 13px; font-weight: 700; color: var(--text-med); letter-spacing: 0.04em; }
+.summary-bar .summary-toggle { font-size: 11px; color: var(--text-muted); }
+details.card-details[open] > summary .summary-toggle::after { content: "▲ hide"; }
+details.card-details:not([open]) > summary .summary-toggle::after { content: "▼ show"; }
+details.card-details[open] > summary .summary-bar { border-radius: var(--radius) var(--radius) 0 0; border-bottom: none; }
+
 /* ── Narrative section label ── */
 .narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
 """
@@ -2993,7 +3099,7 @@ def generate_watchlist_page(prices: list) -> str:
 <div class="hero">
   <div class="pill">Live Data · Auto-updated</div>
   <h1>My Watchlist</h1>
-  <p class="hero-sub">Conviction scores for each tracked stock — computed from fundamentals across three pillars: Quality, Growth, and Financial Health. Refreshed with every briefing.</p>
+  <p class="hero-sub">Conviction scores for each tracked stock — computed from fundamentals across four pillars: Quality (25) · Growth (25) · Health (25) · Valuation (25) = 100 pts. Refreshed with every briefing.</p>
 </div>
 
 <div class="content">
@@ -3052,6 +3158,7 @@ _ZH_LABELS = {
     "Retained Earnings": "保留盈餘", "Interest Coverage":"利息覆蓋倍數",
     # Card section titles
     "Valuation":               "估值", "Quality & Profitability": "品質與獲利能力",
+    "EV/EBITDA":               "企業價值/稅息前利潤",
     "Financial Health":        "財務健康", "Analyst Consensus":       "分析師共識",
     "Ownership":               "持股結構", "Market Profile":          "市場概況",
     "Conviction Score":        "信念評分", "Signal Summary":          "訊號摘要",
@@ -3062,6 +3169,18 @@ _ZH_LABELS = {
     "Analyst Price Target Range": "分析師目標價區間",
     "Earnings Surprise History": "財報驚喜歷史",
     "Quarterly Trend":         "季度趨勢",
+    # 100% tier additions
+    "Technical Position":      "技術位置",
+    "50-Day MA":               "50日均線",
+    "200-Day MA":              "200日均線",
+    "RSI (14)":                "相對強弱指數",
+    "Dividend":                "股息",
+    "Payout Ratio":            "派息比率",
+    "Annual Dividend":         "年度股息",
+    "5Y Avg Yield":            "5年平均殖利率",
+    "Insider Activity":        "內部人交易 (近90日)",
+    "Downside Scenario":       "下行情境分析",
+    "FCF Trend":               "自由現金流趨勢",
 }
 
 
@@ -3099,48 +3218,62 @@ def _kpi_tile(label, value, sub, color):
 
 
 def _fetch_roic_trend_html(ticker: str) -> str:
-    """Return a 'Moat Trend' card HTML showing 4-year ROIC + gross margin history.
+    """Return a 'Moat Trend' card showing 4-year ROIC, gross margin, and FCF margin history.
     Returns empty string on any failure so company page degrades gracefully."""
     try:
         import yfinance as yf
         t = yf.Ticker(ticker)
-        fin = t.financials          # annual income statement (columns = fiscal years)
-        bs  = t.balance_sheet       # annual balance sheet
+        fin = t.financials
+        bs  = t.balance_sheet
+        cf  = t.cashflow
 
         if fin is None or fin.empty or bs is None or bs.empty:
             return ""
 
-        years = sorted(fin.columns, reverse=True)[:4]  # up to 4 most-recent fiscal years
+        years = sorted(fin.columns, reverse=True)[:4]
         if len(years) < 2:
             return ""
+
+        # Build annual FCF: operating CF - capex, keyed by year label
+        fcf_by_year = {}
+        try:
+            if cf is not None and not cf.empty:
+                for yr in cf.columns:
+                    try:
+                        op_cf = float(cf.at["Operating Cash Flow", yr]) if "Operating Cash Flow" in cf.index else None
+                        capex = float(cf.at["Capital Expenditure", yr]) if "Capital Expenditure" in cf.index else 0
+                        if op_cf is not None:
+                            fcf_by_year[str(yr)[:4]] = op_cf + (capex if capex < 0 else -abs(capex))
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
         rows = []
         for yr in years:
             label = str(yr)[:4]
             try:
-                rev  = fin.loc["Total Revenue", yr]       if "Total Revenue"       in fin.index else None
-                cogs = fin.loc["Cost Of Revenue", yr]     if "Cost Of Revenue"     in fin.index else None
-                ebit = fin.loc["EBIT", yr]                if "EBIT"                in fin.index else None
-                tax_rate = 0.21
-                nopat = ebit * (1 - tax_rate) if ebit else None
+                rev  = fin.loc["Total Revenue", yr]   if "Total Revenue"   in fin.index else None
+                cogs = fin.loc["Cost Of Revenue", yr] if "Cost Of Revenue" in fin.index else None
+                ebit = fin.loc["EBIT", yr]             if "EBIT"             in fin.index else None
+                nopat = ebit * 0.79 if ebit else None
 
-                # Invested capital = total equity + total debt - cash
-                eq    = bs.loc["Stockholders Equity", yr] if "Stockholders Equity" in bs.index else None
-                td    = bs.loc["Long Term Debt", yr]      if "Long Term Debt"      in bs.index else 0
-                std   = bs.loc["Current Debt", yr]        if "Current Debt"        in bs.index else 0
-                cash  = bs.loc["Cash And Cash Equivalents", yr] if "Cash And Cash Equivalents" in bs.index else 0
-                ic = (eq or 0) + (td or 0) + (std or 0) - (cash or 0)
+                eq   = bs.loc["Stockholders Equity", yr] if "Stockholders Equity" in bs.index else None
+                td   = bs.loc["Long Term Debt", yr]      if "Long Term Debt"      in bs.index else 0
+                std  = bs.loc["Current Debt", yr]        if "Current Debt"        in bs.index else 0
+                cash = bs.loc["Cash And Cash Equivalents", yr] if "Cash And Cash Equivalents" in bs.index else 0
+                ic   = (eq or 0) + (td or 0) + (std or 0) - (cash or 0)
 
                 roic_pct = round(nopat / ic * 100, 1) if (nopat and ic and ic > 0) else None
                 gm_pct   = round((rev - cogs) / rev * 100, 1) if (rev and cogs and rev > 0) else None
-                rows.append({"year": label, "roic": roic_pct, "gm": gm_pct})
+                fcf_pct  = round(fcf_by_year[label] / rev * 100, 1) if (label in fcf_by_year and rev and rev > 0) else None
+                rows.append({"year": label, "roic": roic_pct, "gm": gm_pct, "fcf": fcf_pct})
             except Exception:
-                rows.append({"year": label, "roic": None, "gm": None})
+                rows.append({"year": label, "roic": None, "gm": None, "fcf": None})
 
         if all(r["roic"] is None for r in rows):
             return ""
 
-        # Trend verdict based on most-recent vs oldest available ROIC
         roic_vals = [r["roic"] for r in rows if r["roic"] is not None]
         if len(roic_vals) >= 2:
             delta = roic_vals[0] - roic_vals[-1]
@@ -3150,31 +3283,33 @@ def _fetch_roic_trend_html(ticker: str) -> str:
         else:
             verdict, vc = "Insufficient data", "#888"
 
-        # Build mini bar chart for ROIC
         max_roic = max((abs(r["roic"]) for r in rows if r["roic"] is not None), default=1)
         bar_rows = ""
         for r in rows:
             if r["roic"] is not None:
-                pct = min(100, abs(r["roic"]) / max(max_roic, 1) * 100)
+                pct   = min(100, abs(r["roic"]) / max(max_roic, 1) * 100)
                 color = "#2e6b58" if r["roic"] >= 15 else "#b87820" if r["roic"] >= 8 else "#b84040"
-                gm_str = f'{r["gm"]:.0f}%' if r["gm"] is not None else "—"
+                gm_str  = f'{r["gm"]:.0f}%'  if r["gm"]  is not None else "—"
+                fcf_str = f'{r["fcf"]:.0f}%' if r["fcf"] is not None else "—"
+                fcf_c   = "#2e6b58" if (r["fcf"] or 0) >= 20 else "#b87820" if (r["fcf"] or 0) >= 10 else "#b84040"
                 bar_rows += (
                     f'<div class="mt-row">'
                     f'  <div class="mt-yr">{r["year"]}</div>'
                     f'  <div class="mt-bar-wrap"><div class="mt-bar" style="width:{pct:.0f}%;background:{color}"></div></div>'
                     f'  <div class="mt-val" style="color:{color}">{r["roic"]:.1f}%</div>'
                     f'  <div class="mt-gm">GM {gm_str}</div>'
+                    f'  <div class="mt-gm" style="color:{fcf_c}">FCF {fcf_str}</div>'
                     f'</div>'
                 )
 
         return f"""
 <div class="mt-card">
   <div class="mt-header">
-    <div class="mt-title">Moat Trend — ROIC &amp; Gross Margin</div>
+    <div class="mt-title">Moat Trend — ROIC, Gross Margin &amp; FCF<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 護城河趨勢</span></div>
     <div class="mt-verdict" style="color:{vc}">{verdict}</div>
   </div>
-  <div class="mt-sub">Return on Invested Capital measures how efficiently the business generates profit from the capital it uses.
-    A rising ROIC over time signals a widening moat — the company is compounding its competitive advantage.</div>
+  <div class="mt-sub">ROIC measures profit generated per dollar invested — a rising trend signals a widening moat.
+    FCF margin shows the actual cash the business keeps after all costs. Both together reveal whether quality is improving or eroding.</div>
   {bar_rows}
 </div>"""
     except Exception:
@@ -3487,15 +3622,20 @@ def _render_signal_summary_html(sig: dict) -> str:
     return f"""
 <div class="sig-card" style="border-left:4px solid {vc['color']};border:1px solid {vc['border']};border-left:4px solid {vc['color']}">
   <div class="sig-header">
-    <div class="sig-title">Signal Summary</div>
+    <div class="sig-title">Signal Summary<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 訊號摘要</span></div>
     <div class="sig-sub">Deterministic read across three dimensions — not AI · updated daily</div>
   </div>
   <div class="sig-grid">
-    <div class="sig-col"><div class="sig-col-lbl">Fundamentals</div>{_pill(sig["fundamentals"])}</div>
-    <div class="sig-col"><div class="sig-col-lbl">Entry Timing</div>{_pill(sig["valuation"])}</div>
-    <div class="sig-col"><div class="sig-col-lbl">Momentum</div>{_pill(sig["momentum"])}</div>
+    <div class="sig-col"><div class="sig-col-lbl">Fundamentals<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 基本面</span></div>{_pill(sig["fundamentals"])}</div>
+    <div class="sig-col"><div class="sig-col-lbl">Entry Timing<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 進場時機</span></div>{_pill(sig["valuation"])}</div>
+    <div class="sig-col"><div class="sig-col-lbl">Momentum<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 動能</span></div>{_pill(sig["momentum"])}</div>
   </div>
   <div class="sig-verdict" style="color:{vc['color']};border-top:1px solid {vc['border']}">{sig["verdict"]}</div>
+  <div class="sig-exit" style="margin-top:10px;padding:8px 12px;background:#fafafa;border-radius:6px;border:1px solid #e8e8e8;font-size:11px;color:var(--text-muted)">
+    <strong style="color:var(--text)">Watch for exit signals</strong> — Consider reducing position if:
+    conviction score drops below 55 &nbsp;·&nbsp; price falls below 200-day MA &nbsp;·&nbsp; Signal Summary turns to 2+ red signals<br>
+    <span style="font-size:10px">留意退出訊號：評分跌破 55 · 股價跌破200日均線 · 訊號摘要出現 2 個以上紅燈</span>
+  </div>
 </div>"""
 
 
@@ -3562,7 +3702,7 @@ def _fetch_sector_performance_html(ticker: str, sector: str, price: float = None
         return f"""
 <div class="sp-card">
   <div class="sp-header">
-    <div class="sp-title">Performance vs Sector ({etf})</div>
+    <div class="sp-title">Performance vs Sector ({etf})<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 板塊相對表現</span></div>
     <div class="sp-verdict" style="color:{vc}">{verdict}</div>
   </div>
   <div class="sp-sub">Compares this stock's returns to its sector ETF ({etf}) — the benchmark for its peer group.
@@ -3617,6 +3757,268 @@ def _render_macro_sensitivity_html(sector: str) -> str:
       Use this to stress-test your thesis against the current macro environment.</div>
   </div>
   <div class="macro-grid">{cells}</div>
+</div>"""
+
+
+def _collapsible(summary_label: str, content_html: str, open_: bool = False) -> str:
+    """Wrap content in a styled <details> collapsible block. Returns '' if content is empty."""
+    if not content_html:
+        return ""
+    open_attr = " open" if open_ else ""
+    return (
+        f'<details class="card-details"{open_attr}>'
+        f'<summary><div class="summary-bar">'
+        f'<span>{summary_label}</span>'
+        f'<span class="summary-toggle"></span>'
+        f'</div></summary>'
+        f'{content_html}'
+        f'</details>'
+    )
+
+
+def _render_technical_position_html(tech: dict, price: float, currency: str) -> str:
+    """Render a Technical Position card from fetch_ticker_technical() output. Shows placeholder on empty."""
+    try:
+        if not tech or (tech.get("ma50") is None and tech.get("ma200") is None):
+            return """
+<div class="tech-card">
+  <div class="tech-title">Technical Position <span style="font-size:10px;font-weight:400;color:var(--text-muted)">技術位置</span></div>
+  <div class="tech-sub">Moving averages and momentum — institutional traders watch the 50 and 200-day MA as key support/resistance lines.</div>
+  <div style="padding:16px 0;color:var(--text-muted);font-size:13px">Technical data unavailable · 技術資料暫不適用</div>
+</div>"""
+        ma50    = tech.get("ma50")
+        ma200   = tech.get("ma200")
+        rsi     = tech.get("rsi")
+        vol_r   = tech.get("volume_ratio")
+
+        items = ""
+        # 50-day MA
+        if ma50 and price:
+            pct50 = (price - ma50) / ma50 * 100
+            c50   = "#2e6b58" if pct50 >= 0 else "#b84040"
+            sign50 = "+" if pct50 >= 0 else ""
+            pos50  = "above" if pct50 >= 0 else "below"
+            items += (
+                f'<div class="tech-item">'
+                f'<div class="tech-item-label">50-Day MA</div>'
+                f'<div class="tech-item-val" style="color:{c50}">{sign50}{pct50:.1f}%</div>'
+                f'<div class="tech-item-sub">{_fmt_wl_price(ma50, currency)} — price {pos50} MA</div>'
+                f'</div>'
+            )
+        # 200-day MA
+        if ma200 and price:
+            pct200 = (price - ma200) / ma200 * 100
+            c200   = "#2e6b58" if pct200 >= 0 else "#b84040"
+            sign200 = "+" if pct200 >= 0 else ""
+            pos200  = "above" if pct200 >= 0 else "below"
+            items += (
+                f'<div class="tech-item">'
+                f'<div class="tech-item-label">200-Day MA</div>'
+                f'<div class="tech-item-val" style="color:{c200}">{sign200}{pct200:.1f}%</div>'
+                f'<div class="tech-item-sub">{_fmt_wl_price(ma200, currency)} — price {pos200} MA</div>'
+                f'</div>'
+            )
+        # RSI
+        if rsi is not None:
+            if rsi >= 70:   rsi_lbl, rsi_c = "Overbought — pullback risk", "#b84040"
+            elif rsi >= 55: rsi_lbl, rsi_c = "Bullish momentum",           "#2e6b58"
+            elif rsi >= 45: rsi_lbl, rsi_c = "Neutral",                    "#888"
+            elif rsi >= 30: rsi_lbl, rsi_c = "Bearish momentum",           "#b87820"
+            else:           rsi_lbl, rsi_c = "Oversold — bounce watch",    "#3a72b0"
+            items += (
+                f'<div class="tech-item">'
+                f'<div class="tech-item-label">RSI (14)</div>'
+                f'<div class="tech-item-val" style="color:{rsi_c}">{rsi:.0f}</div>'
+                f'<div class="tech-item-sub">{rsi_lbl}</div>'
+                f'</div>'
+            )
+        # Volume ratio
+        if vol_r is not None:
+            vol_lbl = "Heavy volume" if vol_r >= 2 else "Above avg" if vol_r >= 1.2 else "Normal" if vol_r >= 0.8 else "Light volume"
+            items += (
+                f'<div class="tech-item">'
+                f'<div class="tech-item-label">Volume Ratio</div>'
+                f'<div class="tech-item-val">{vol_r:.1f}×</div>'
+                f'<div class="tech-item-sub">{vol_lbl} vs 20-day avg</div>'
+                f'</div>'
+            )
+
+        # Verdict
+        above50  = tech.get("above_ma50")
+        above200 = tech.get("above_ma200")
+        if above50 and above200:
+            v_txt, v_bg, v_col = "Strong uptrend — price above both 50 & 200-day MA", "#eaf3f0", "#2e6b58"
+        elif above200 and not above50:
+            v_txt, v_bg, v_col = "Pullback within uptrend — above 200-day MA but below 50-day", "#fdf4e7", "#b87820"
+        elif above50 and not above200:
+            v_txt, v_bg, v_col = "Recovery attempt — above 50-day but still below 200-day MA", "#fdf4e7", "#b87820"
+        else:
+            v_txt, v_bg, v_col = "Downtrend — price below both 50 & 200-day MA", "#fceaea", "#b84040"
+        verdict_html = f'<div class="tech-verdict" style="background:{v_bg};color:{v_col}">{v_txt}</div>'
+
+        return f"""
+<div class="tech-card">
+  <div class="tech-title">Technical Position <span style="font-size:10px;font-weight:400;color:var(--text-muted)">技術位置</span></div>
+  <div class="tech-sub">Moving averages and momentum — institutional traders watch the 50 and 200-day MA as key support/resistance lines.</div>
+  <div class="tech-grid">{items}</div>
+  {verdict_html}
+</div>"""
+    except Exception:
+        return """
+<div class="tech-card">
+  <div class="tech-title">Technical Position <span style="font-size:10px;font-weight:400;color:var(--text-muted)">技術位置</span></div>
+  <div class="tech-sub">Moving averages and momentum — institutional traders watch the 50 and 200-day MA as key support/resistance lines.</div>
+  <div style="padding:16px 0;color:var(--text-muted);font-size:13px">Technical data unavailable · 技術資料暫不適用</div>
+</div>"""
+
+
+def _render_dividend_html(d: dict, currency: str) -> str:
+    """Render a Dividend card. Returns '' if no dividend data or no dividend paid."""
+    try:
+        dy   = d.get("dividend_yield")
+        rate = d.get("dividend_rate")
+        pr   = d.get("payout_ratio")
+        avg5 = d.get("five_year_avg_div_yield")
+
+        if not dy and not rate:
+            return (
+                '<div class="div-card">'
+                '<div class="div-title">Dividend <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股息</span></div>'
+                '<div class="div-sub">Income investors: does this stock pay you while you wait?</div>'
+                '<div class="div-verdict" style="background:#f5f5f5;color:#888">No dividend — this company reinvests all earnings into growth rather than paying shareholders directly.</div>'
+                '</div>'
+            )
+
+        rows_html = ""
+        if dy:
+            dy_pct = dy * 100
+            rows_html += f'<div class="div-row"><span class="div-lbl">Dividend Yield</span><span class="div-val">{dy_pct:.2f}%</span></div>'
+        if rate:
+            rows_html += f'<div class="div-row"><span class="div-lbl">Annual Dividend</span><span class="div-val">{_fmt_wl_price(rate, currency)} per share</span></div>'
+        if avg5:
+            avg5_pct = avg5 * 100
+            vs_avg   = dy * 100 - avg5_pct if dy else None
+            vs_str   = f" ({'+' if (vs_avg or 0) >= 0 else ''}{vs_avg:.2f}% vs avg)" if vs_avg is not None else ""
+            rows_html += f'<div class="div-row"><span class="div-lbl">5Y Avg Yield</span><span class="div-val">{avg5_pct:.2f}%{vs_str}</span></div>'
+        if pr is not None:
+            pr_pct = pr * 100
+            if pr_pct <= 40:    pr_lbl, pr_c = "Well-covered — sustainable ✓", "#2e6b58"
+            elif pr_pct <= 70:  pr_lbl, pr_c = "Moderate — watch for earnings pressure", "#b87820"
+            elif pr_pct <= 100: pr_lbl, pr_c = "Elevated — limited room for growth ⚠", "#b87820"
+            else:               pr_lbl, pr_c = "Unsustainable — paying more than it earns ⚠", "#b84040"
+            rows_html += (
+                f'<div class="div-row">'
+                f'<span class="div-lbl">Payout Ratio</span>'
+                f'<span class="div-val" style="color:{pr_c}">{pr_pct:.0f}% — {pr_lbl}</span>'
+                f'</div>'
+            )
+
+        # Sustainability verdict
+        if pr is not None:
+            if pr <= 0.40:  sust_txt, sust_bg, sust_c = "Dividend is well-covered — payout ratio leaves room for increases and withstands earnings pressure.", "#eaf3f0", "#2e6b58"
+            elif pr <= 0.70: sust_txt, sust_bg, sust_c = "Dividend is sustainable but moderate — monitor earnings trends.", "#fdf4e7", "#b87820"
+            else:           sust_txt, sust_bg, sust_c = "Payout ratio is elevated — dividend sustainability depends on earnings holding steady.", "#fceaea", "#b84040"
+        else:
+            sust_txt, sust_bg, sust_c = "Payout ratio unavailable — assess dividend sustainability from FCF relative to dividend rate.", "#f5f5f5", "#888"
+
+        return f"""
+<div class="div-card">
+  <div class="div-title">Dividend <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股息</span></div>
+  <div class="div-sub">Income investors: does this stock pay you while you wait? Payout ratio below 40% = well-covered, above 75% = risk of a cut.</div>
+  {rows_html}
+  <div class="div-verdict" style="background:{sust_bg};color:{sust_c}">{sust_txt}</div>
+</div>"""
+    except Exception:
+        return (
+            '<div class="div-card">'
+            '<div class="div-title">Dividend <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股息</span></div>'
+            '<div class="div-sub">Income investors: does this stock pay you while you wait?</div>'
+            '<div class="div-verdict" style="background:#f5f5f5;color:#888">Dividend data unavailable · 股息資料暫不適用</div>'
+            '</div>'
+        )
+
+
+def _render_downside_scenario_html(d: dict, currency: str) -> str:
+    """Render a Downside Scenario card from existing data. No AI or extra yfinance. Shows placeholder on failure."""
+    try:
+        price  = d.get("price")
+        # Use forward P/E first; fall back to trailing P/E if forward is unavailable or negative
+        fpe    = d.get("forward_pe")
+        if not fpe or fpe <= 0:
+            fpe = d.get("trailing_pe")
+        tgt_lo = d.get("target_low")
+
+        if not price or price <= 0:
+            return """
+<div class="dn-card">
+  <div class="dn-title">Downside Scenario <span style="font-size:10px;font-weight:400;color:var(--text-muted)">下行情境分析</span></div>
+  <div class="dn-sub">What happens if the bull thesis is wrong? Deterministic stress-test — no AI estimates involved.</div>
+  <div style="padding:16px 0;color:var(--text-muted);font-size:13px">Scenario requires price data · 需價格數據</div>
+</div>"""
+
+        items = ""
+        has_any = False
+
+        # Scenario 1: Bear analyst target
+        if tgt_lo and tgt_lo < price:
+            lo_pct = (tgt_lo - price) / price * 100
+            items += (
+                f'<div class="dn-item">'
+                f'<div class="dn-item-label">Bear Analyst Target</div>'
+                f'<div class="dn-item-val">{_fmt_wl_price(tgt_lo, currency)}</div>'
+                f'<div class="dn-item-sub">{lo_pct:.0f}% from current price</div>'
+                f'</div>'
+            )
+            has_any = True
+
+        # Scenario 2: P/E compression to 15x (sector-average)
+        if fpe and fpe > 0:
+            fwd_eps = price / fpe
+            p15 = fwd_eps * 15
+            p10 = fwd_eps * 10
+            pct15 = (p15 - price) / price * 100
+            pct10 = (p10 - price) / price * 100
+            items += (
+                f'<div class="dn-item">'
+                f'<div class="dn-item-label">P/E Compresses to 15×</div>'
+                f'<div class="dn-item-val">{_fmt_wl_price(p15, currency)}</div>'
+                f'<div class="dn-item-sub">{pct15:+.0f}% — sector-average multiple</div>'
+                f'</div>'
+                f'<div class="dn-item">'
+                f'<div class="dn-item-label">P/E Compresses to 10×</div>'
+                f'<div class="dn-item-val">{_fmt_wl_price(p10, currency)}</div>'
+                f'<div class="dn-item-sub">{pct10:+.0f}% — deep-value / recession multiple</div>'
+                f'</div>'
+            )
+            has_any = True
+
+        if not has_any:
+            return """
+<div class="dn-card">
+  <div class="dn-title">Downside Scenario <span style="font-size:10px;font-weight:400;color:var(--text-muted)">下行情境分析</span></div>
+  <div class="dn-sub">What happens if the bull thesis is wrong? Deterministic stress-test — no AI estimates involved.</div>
+  <div style="padding:16px 0;color:var(--text-muted);font-size:13px">Scenario requires P/E data or analyst targets · 需本益比數據或分析師目標價</div>
+</div>"""
+
+        note = (
+            "P/E compression scenarios use current forward EPS estimates — if earnings are cut, downside is worse. "
+            "Bear target is the lowest analyst price target, not a worst-case. "
+            "Use these as a mental stop-loss check: can you hold if the stock falls to these levels?"
+        )
+
+        return f"""
+<div class="dn-card">
+  <div class="dn-title">Downside Scenario <span style="font-size:10px;font-weight:400;color:var(--text-muted)">下行情境分析</span></div>
+  <div class="dn-sub">What happens if the bull thesis is wrong? Deterministic stress-test — no AI estimates involved.</div>
+  <div class="dn-grid">{items}</div>
+  <div class="dn-note">{note}</div>
+</div>"""
+    except Exception:
+        return """
+<div class="dn-card">
+  <div class="dn-title">Downside Scenario <span style="font-size:10px;font-weight:400;color:var(--text-muted)">下行情境分析</span></div>
+  <div class="dn-sub">What happens if the bull thesis is wrong? Deterministic stress-test — no AI estimates involved.</div>
+  <div style="padding:16px 0;color:var(--text-muted);font-size:13px">Scenario data unavailable · 情境數據暫不適用</div>
 </div>"""
 
 
@@ -3747,7 +4149,8 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         elif beta < 1.2: b_lbl, c = "Moves with the market", "#3a72b0"
         elif beta < 1.8: b_lbl, c = "More volatile than market", "#b87820"
         else:            b_lbl, c = "Highly volatile", "#b84040"
-        tiles.append(_kpi_tile("Beta", f"{beta:.2f}", b_lbl, c))
+        beta_scale = "β&lt;1 = calmer than S&amp;P 500 · β=1 = moves with market · β&gt;1 = amplified swings"
+        tiles.append(_kpi_tile("Beta", f"{beta:.2f}", f"{b_lbl}<br><span style='font-size:9px;color:var(--text-muted)'>{beta_scale}</span>", c))
     kpi_html = f'<div class="kpi-row">{"".join(tiles)}</div>' if tiles else ""
 
     # ── 5-year ROIC/margin trend + historical P/E context ─────────────────────
@@ -3769,6 +4172,21 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
     # ── Macro sensitivity matrix (item 4) ─────────────────────────────────────
     macro_html = _render_macro_sensitivity_html(d.get("sector", ""))
 
+    # ── Technical position — MA + RSI (100% item 2) ────────────────────────────
+    tech_data = {}
+    try:
+        from src.fetchers.prices import fetch_ticker_technical
+        tech_data = fetch_ticker_technical(ticker)
+    except Exception:
+        pass
+    tech_html = _render_technical_position_html(tech_data, price, currency)
+
+    # ── Dividend card (100% item 6) ────────────────────────────────────────────
+    dividend_html = _render_dividend_html(d, currency)
+
+    # ── Downside scenario card (100% item 7) ──────────────────────────────────
+    scenario_html = _render_downside_scenario_html(d, currency)
+
     # ── 52-week range bar ──────────────────────────────────────────────────────
     range_html = ""
     if price and d.get("week_52_low") and d.get("week_52_high"):
@@ -3776,7 +4194,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         pos52 = max(2, min(98, (price - low52) / (high52 - low52) * 100)) if high52 > low52 else 50
         range_html = f"""
 <div class="range-card">
-  <div class="range-title">52-Week Price Range</div>
+  <div class="range-title">52-Week Price Range<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 52週股價區間</span></div>
   <div class="range-bar-track">
     <div class="range-bar-fill" style="width:{pos52:.1f}%"></div>
     <div class="range-dot" style="left:{pos52:.1f}%"></div>
@@ -3819,27 +4237,42 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
                 f'</div>'
             )
         analyst_col = (
-            f'<div class="ao-title">Analyst Consensus</div>'
+            f'<div class="ao-title">Analyst Consensus<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 分析師評級</span></div>'
             f'<div class="ao-row"><strong>{n_analysts}</strong> analysts covering this stock</div>'
             f'<div class="ao-row">Consensus: <span class="rec-pill {rec_cls}">{rec_lbl}</span> (mean {rec_mean:.1f}/5)</div>'
             f'{bhs_html}'
             f'<div class="ao-row">{upside_str}</div>'
         )
     else:
-        analyst_col = '<div class="ao-title">Analyst Consensus</div><div class="ao-row" style="color:var(--text-muted)">No analyst data</div>'
+        analyst_col = '<div class="ao-title">Analyst Consensus<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 分析師評級</span></div><div class="ao-row" style="color:var(--text-muted)">No analyst data</div>'
 
     own_parts = []
     if d.get("insider_pct") is not None:
         ins = d["insider_pct"] * 100
         note = "High" if ins >= 10 else "Low" if ins < 1 else ""
         own_parts.append(f'Insider ownership: <strong>{ins:.2f}%</strong>{f" — {note}" if note else ""}')
+    # Insider recent activity (last 90 days)
+    ibc = d.get("insider_buy_count", 0) or 0
+    isc = d.get("insider_sell_count", 0) or 0
+    if ibc > 0 or isc > 0:
+        if ibc > isc:
+            ins_verdict, ins_c = "Net buying — bullish signal ↑", "#2e6b58"
+        elif isc > ibc:
+            ins_verdict, ins_c = "Net selling — monitor closely", "#b84040"
+        else:
+            ins_verdict, ins_c = "Mixed activity", "#b87820"
+        own_parts.append(
+            f'Insider activity (90d): <strong>{ibc} buy{"s" if ibc != 1 else ""}, {isc} sale{"s" if isc != 1 else ""}</strong>'
+            f' — <span style="color:{ins_c}">{ins_verdict}</span>'
+        )
     if d.get("institutional_pct") is not None:
         inst = d["institutional_pct"] * 100
         own_parts.append(f'Institutional: <strong>{inst:.1f}%</strong>')
     if d.get("short_float") is not None:
         sf = d["short_float"] * 100
-        flag = " — elevated short interest" if sf > 10 else ""
-        own_parts.append(f'Short interest: <strong>{sf:.1f}%</strong>{flag}')
+        sf_c = "#b84040" if sf > 15 else "#b87820" if sf > 10 else "inherit"
+        flag = " — elevated short pressure ⚠" if sf > 10 else " — low"
+        own_parts.append(f'Short interest: <strong style="color:{sf_c}">{sf:.1f}%</strong>{flag}')
     ownership_col = (
         f'<div class="ao-title">Ownership</div>'
         + "".join(f'<div class="ao-row">{p}</div>' for p in own_parts)
@@ -3897,7 +4330,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         target_range_html = f"""
 <div class="tgt-card">
   <div class="tgt-header">
-    <div class="tgt-title">Analyst Price Target Range</div>
+    <div class="tgt-title">Analyst Price Target Range<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 分析師目標價區間</span></div>
     <div class="tgt-sub">Where Wall Street analysts think the stock is headed — low, consensus, and high targets</div>
   </div>
   <div class="tgt-body">
@@ -3986,6 +4419,12 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
             "Are Wall Street analysts raising or lowering their earnings forecasts over the past 60 days? "
             "Rising estimates = analysts see better results ahead (bullish signal). "
             "Falling estimates = forecasts being cut, increasing risk of an earnings miss.")
+    if d.get("ev_ebitda") is not None:
+        ev = d["ev_ebitda"]
+        flag = '<span class="flag-pass">✓ Attractive</span>' if ev < 15 else '<span class="flag-warn">Premium</span>' if ev > 30 else ""
+        val_rows += _mrow("EV/EBITDA", f'{ev:.1f}×{flag}',
+            "Enterprise Value divided by EBITDA — a cleaner valuation measure than P/E because it includes debt. "
+            "Below 15× is attractive for most companies; above 30× signals the market is paying a significant premium.")
     if not val_rows:
         val_rows = '<p class="m-def">Valuation data unavailable.</p>'
 
@@ -4116,7 +4555,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
                 f'<td class="q-mono">{net_str}</td></tr>'
             )
         quarterly_html = (
-            f'<div class="q-card"><div class="q-card-head">Quarterly Trend · Last {len(quarterly)} Quarters</div>'
+            f'<div class="q-card"><div class="q-card-head">Quarterly Trend · Last {len(quarterly)} Quarters<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 季度財務趨勢</span></div>'
             f'<table class="q-table"><thead><tr>'
             f'<th>Quarter</th><th>Revenue</th><th>Trend / QoQ</th><th>Gross Margin</th><th>Net Income</th>'
             f'</tr></thead><tbody>{q_rows}</tbody></table></div>'
@@ -4172,7 +4611,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
 
   {sig_html}
 
-  {peer_html}
+  {_collapsible("Peer Comparison 同業比較", peer_html)}
 
   <div class="cs-card" style="border-top:4px solid {sc_color};border:1px solid {sc_border};border-top:4px solid {sc_color}">
     <div class="cs-card-header" style="background:linear-gradient(135deg,{sc_light} 0%,var(--surface) 65%)">
@@ -4180,6 +4619,7 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
         <div>
           <div class="cs-card-title" style="color:{sc_color}">Conviction Score <span style="font-size:12px;font-weight:400;color:var(--text-muted)">信念評分</span></div>
           <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork · 基於基本面的確定性評分</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Scored: {updated}</div>
         </div>
         {score_sparkline_html}
       </div>
@@ -4212,21 +4652,27 @@ def generate_company_page(d: dict, quarterly: list, narrative: str, cached_cs: d
 
   {range_html}
 
+  {tech_html}
+
   {target_range_html}
 
   {ao_html}
 
+  {dividend_html}
+
   {sector_perf_html}
 
-  {macro_html}
+  {_collapsible("Macro Sensitivity 總經敏感度", macro_html)}
 
   {quarterly_html}
 
-  {earnings_surprise_html}
+  {_collapsible("Earnings Surprise History 財報驚喜歷史", earnings_surprise_html)}
 
   {roic_trend_html}
 
   {historical_pe_html}
+
+  {scenario_html}
 
   <p class="narrative-label">Analyst Briefing · AI-generated · {updated}</p>
   {narrative_html}
