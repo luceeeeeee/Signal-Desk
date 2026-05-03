@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMY · Company Analysis · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 40px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+.mk-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.mk-table tbody tr:hover { background: var(--bg); }
+.news-title { word-break: break-word; }
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero { padding: 32px 20px 24px; }
+  .content { padding: 0 16px 60px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+  body { font-size: 14px; }
+}
+
+
+/* ── Hero ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  text-decoration: none; margin-bottom: 18px; letter-spacing: 0.03em;
+}
+.back-link:hover { text-decoration: underline; }
+.co-ticker { font-size: 40px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.co-name   { font-size: 15px; color: var(--text-muted); margin: 4px 0 12px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.hero-badge {
+  display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 8px;
+  font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; border: 1px solid transparent;
+}
+.badge-price { background: var(--surface); border-color: var(--border); color: var(--text); }
+.badge-up    { background: #eaf3f0; border-color: #c6ddd6; color: #2e6b58; }
+.badge-dn    { background: #fceaea; border-color: #e8aaaa; color: #b84040; }
+.hero-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
+.hero-tag    { font-size: 11px; color: var(--text-muted); background: var(--surface-off); border: 1px solid var(--border-light); padding: 3px 10px; border-radius: 20px; }
+
+/* ── Bilingual label helpers ── */
+.kpi-zh { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-top: 1px; }
+.m-title-zh { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+.cs-pillar-zh { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+
+/* ── KPI tiles ── */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.kpi-val   { font-size: 22px; font-weight: 900; font-family: 'Menlo','SF Mono',monospace; line-height: 1.1; margin-bottom: 4px; }
+.kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+.kpi-sub   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Conviction score card ── */
+.cs-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.cs-card-header { padding: 14px 24px; border-bottom: 1px solid var(--border-light); }
+.cs-card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.cs-card-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cs-body { display: flex; flex-wrap: wrap; gap: 32px; padding: 24px 28px; }
+.cs-score-col { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.cs-score-num { font-size: 64px; font-weight: 900; line-height: 1; font-family: 'Menlo','SF Mono',monospace; }
+.cs-score-denom { font-size: 12px; color: var(--text-muted); }
+.cs-score-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; text-align: center; }
+.cs-pillars-col { flex: 1; min-width: 180px; }
+.cs-pillar { margin-bottom: 18px; }
+.cs-pillar:last-child { margin-bottom: 0; }
+.cs-pillar-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.cs-pillar-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.cs-pillar-pts  { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'Menlo','SF Mono',monospace; }
+.cs-bar-track { height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.cs-bar-fill  { height: 100%; border-radius: 4px; }
+.cs-pillar-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.cs-checks-col { min-width: 200px; }
+.cs-check { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 12px; }
+.cs-check:last-child { margin-bottom: 0; }
+.cs-check-icon  { font-size: 11px; font-weight: 700; width: 14px; flex-shrink: 0; }
+.cs-check-name  { flex: 1; color: var(--text-med); }
+.cs-check-val   { font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); min-width: 40px; text-align: right; }
+.cs-check-thresh { font-size: 10px; color: var(--text-muted); }
+
+/* ── Metrics grid ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+@media(max-width:740px) { .metrics-grid { grid-template-columns: 1fr; } }
+.m-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow-sm); }
+.mc-blue  { border-top: 4px solid #3a72b0; }
+.mc-teal  { border-top: 4px solid #2e6b58; }
+.mc-amber { border-top: 4px solid #b87820; }
+.mc-blue .m-title  { color: #3a72b0; border-bottom-color: #b8d4f0; }
+.mc-teal .m-title  { color: #2e6b58; border-bottom-color: #c6ddd6; }
+.mc-amber .m-title { color: #b87820; border-bottom-color: #e8c88a; }
+.m-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+.m-row  { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.m-label { font-size: 12px; color: var(--text-muted); flex: 1; line-height: 1.4; }
+.m-val  { font-size: 14px; font-weight: 700; font-family: 'Menlo','SF Mono',monospace; color: var(--text); white-space: nowrap; }
+.m-def  { font-size: 11px; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px; padding: 5px 9px; background: var(--surface-off); border-radius: var(--radius-sm); border-left: 2px solid var(--border); }
+.flag-pass { font-size: 10px; font-weight: 700; color: #2e6b58; background: #eaf3f0; border: 1px solid #c6ddd6; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+.flag-warn { font-size: 10px; font-weight: 700; color: #b87820; background: #fdf4e7; border: 1px solid #e8c88a; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+/* ── 52-week range ── */
+.range-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.range-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 16px; }
+.range-bar-track { position: relative; height: 8px; background: var(--border-light); border-radius: 4px; margin-bottom: 12px; }
+.range-bar-fill  { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #c6ddd6, var(--accent)); border-radius: 4px; }
+.range-dot { position: absolute; top: 50%; width: 14px; height: 14px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.range-labels strong { color: var(--accent); }
+
+/* ── Analyst & Ownership ── */
+.ao-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.ao-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+@media(max-width:620px) { .ao-grid { grid-template-columns: 1fr; } }
+.ao-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-light); }
+.ao-row   { font-size: 13px; color: var(--text-med); margin-bottom: 7px; line-height: 1.5; }
+.ao-row strong { color: var(--text); }
+.rec-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.rec-buy  { background: #eaf3f0; color: #2e6b58; border: 1px solid #c6ddd6; }
+.rec-hold { background: #fdf4e7; color: #b87820; border: 1px solid #e8c88a; }
+.rec-sell { background: #fceaea; color: #b84040; border: 1px solid #e8aaaa; }
+
+/* ── Quarterly trend ── */
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.q-card-head { padding: 13px 22px; border-bottom: 1px solid var(--border-light); background: var(--surface-off); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--accent); }
+.q-table { width: 100%; border-collapse: collapse; }
+.q-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); text-align: left; border-bottom: 1px solid var(--border-light); }
+.q-table td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border-light); color: var(--text-med); }
+.q-table tr:last-child td { border-bottom: none; }
+.q-table tbody tr:hover { background: var(--surface-off); }
+.q-period { font-weight: 600; color: var(--text); font-size: 12px; white-space: nowrap; }
+.q-mono   { font-family: 'Menlo','SF Mono',monospace; font-weight: 600; }
+.q-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.q-bar-track { width: 70px; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.q-bar-fill  { height: 100%; background: var(--accent); border-radius: 3px; }
+.q-pos { color: #2e6b58; font-weight: 600; }
+.q-neg { color: #b84040; font-weight: 600; }
+
+/* ── Peer Comparison card ── */
+.peer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.peer-header { padding: 16px 20px 10px; border-bottom: 1px solid var(--border-light); }
+.peer-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.peer-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.peer-scroll { overflow-x: auto; }
+.peer-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.peer-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 8px 14px; border-bottom: 1px solid var(--border-light); text-align: left; white-space: nowrap; }
+.peer-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+.peer-table tr:last-child td { border-bottom: none; }
+
+/* ── Signal Summary card ── */
+.sig-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; overflow: hidden; }
+.sig-header { padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light); }
+.sig-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); }
+.sig-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.sig-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; padding: 14px 20px; }
+.sig-col-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+.sig-cell { border-radius: 8px; padding: 10px 12px; }
+.sig-label { font-size: 13px; font-weight: 700; }
+.sig-detail { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+.sig-verdict { padding: 12px 20px; font-size: 13px; font-weight: 600; line-height: 1.5; }
+@media (max-width: 620px) { .sig-grid { grid-template-columns: 1fr; } }
+
+/* ── Relative Sector Performance card ── */
+.sp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.sp-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.sp-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.sp-verdict { font-size: 13px; font-weight: 700; margin-left: auto; }
+.sp-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
+.sp-table { width: 100%; border-collapse: collapse; }
+.sp-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 7px 12px; border-bottom: 1px solid var(--border-light); text-align: left; }
+.sp-table td { padding: 9px 12px; font-size: 13px; border-bottom: 1px solid var(--border-light); }
+.sp-table tr:last-child td { border-bottom: none; }
+.sp-period { font-weight: 600; color: var(--text); }
+
+/* ── Macro Sensitivity card ── */
+.macro-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.macro-header { margin-bottom: 14px; }
+.macro-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px; }
+.macro-sub { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+.macro-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.macro-cell { border-radius: 8px; padding: 12px; }
+.macro-factor { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.macro-impact { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.macro-context { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+@media (max-width: 620px) { .macro-grid { grid-template-columns: repeat(2,1fr); } }
+
+/* ── Historical P/E Context card ── */
+.pe-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.pe-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+.pe-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; }
+.pe-verdict { font-size: 13px; font-weight: 700; margin-top: 3px; }
+.pe-sub { font-size: 12px; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px; }
+.pe-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+.pe-stat { font-size: 20px; font-weight: 800; color: var(--text); }
+.pe-lbl  { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.pe-bar-wrap { }
+.pe-bar-track { position: relative; height: 10px; border-radius: 5px; overflow: visible; background: var(--border-light); }
+.pe-bar-fill { position: absolute; inset: 0; border-radius: 5px; }
+.pe-marker { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; }
+.pe-marker-avg { background: #b87820; }
+.pe-marker-cur { background: #3a72b0; z-index: 1; }
+.pe-bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 5px; }
+
+/* ── Analyst Price Target Range card ── */
+.tgt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.tgt-header { margin-bottom: 14px; }
+.tgt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.tgt-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.tgt-labels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.tgt-labels > div { display: flex; flex-direction: column; gap: 2px; }
+.tgt-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.tgt-val { font-size: 13px; font-weight: 700; }
+.tgt-track { position: relative; display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+.tgt-fill-lo, .tgt-fill-hi { height: 100%; }
+.tgt-pin { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; }
+.tgt-pin-cur  { background: #3a72b0; z-index: 2; }
+.tgt-pin-mean { background: #b87820; z-index: 1; }
+.tgt-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+/* ── Moat Trend card ── */
+.mt-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #2e6b58; border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-bottom: 24px; padding: 20px 24px; }
+.mt-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 6px; }
+.mt-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.mt-verdict { font-size: 13px; font-weight: 700; margin-left: auto; }
+.mt-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+.mt-row { display: grid; grid-template-columns: 38px 1fr 52px 56px; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mt-yr { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.mt-bar-wrap { background: var(--border-light); border-radius: 3px; height: 8px; overflow: hidden; }
+.mt-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.mt-val { font-size: 12px; font-weight: 700; text-align: right; }
+.mt-gm { font-size: 11px; color: var(--text-muted); }
+
+/* ── Narrative section cards ── */
+.sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
+.sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
+.sec-amber  { --sc: #b87820; --sc-light: #fdf4e7; --sc-border: #e8c88a; }
+.sec-indigo { --sc: #5560a8; --sc-light: #f0f0fc; --sc-border: #c0c4ec; }
+.sec-rose   { --sc: #b84040; --sc-light: #fceaea; --sc-border: #e8aaaa; }
+.section-card {
+  border: 1px solid var(--sc-border); border-top: 4px solid var(--sc);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  margin-bottom: 28px; overflow: hidden; background: var(--surface);
+}
+.section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--sc); background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface) 65%);
+  padding: 14px 28px; margin: 0; border-bottom: 1px solid var(--sc-border);
+}
+.section-body { padding: 28px 32px; }
+.section-body p { font-size: 15px; line-height: 1.85; color: var(--text-med); margin-bottom: 14px; }
+.section-body p:last-child { margin-bottom: 0; }
+.section-body strong { color: var(--text); }
+.sub-heading { font-size: 14px; font-weight: 700; color: var(--sc); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--sc-border); }
+.sub-heading:first-child { margin-top: 0; }
+.impact-line { background: var(--sc-light); border-left: 3px solid var(--sc); padding: 10px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 4px 0 14px; font-size: 14.5px; color: var(--text-med); line-height: 1.7; }
+.num-item  { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 22px; }
+.num-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--sc); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.num-body  { flex: 1; }
+.num-title { font-weight: 700; color: var(--text); margin-bottom: 6px; font-size: 15px; }
+.num-body p { margin-bottom: 8px; font-size: 14px; }
+.overview-list { margin: 0 0 16px 0; padding-left: 20px; }
+.overview-list li { margin-bottom: 11px; color: var(--text-med); font-size: 15px; line-height: 1.78; }
+.table-wrap { overflow-x: auto; margin: 10px 0 18px; border-radius: var(--radius-sm); border: 1px solid var(--sc-border); }
+.overview-table { width: 100%; border-collapse: collapse; }
+.overview-table thead tr { background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface-off) 65%); border-bottom: 1px solid var(--sc-border); }
+.overview-table th { padding: 9px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--sc); text-align: left; white-space: nowrap; }
+.overview-table td { padding: 11px 16px; font-size: 14px; color: var(--text-med); border-bottom: 1px solid var(--border-light); }
+.overview-table tr:last-child td { border-bottom: none; }
+.overview-table tbody tr:hover { background: var(--surface-off); }
+
+/* ── Technical Position card ── */
+.tech-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #3a72b0; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.tech-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #3a72b0; margin-bottom: 4px; }
+.tech-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tech-item { background: var(--surface-off); border-radius: var(--radius-sm); padding: 10px 14px; }
+.tech-item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 4px; }
+.tech-item-val { font-size: 16px; font-weight: 700; }
+.tech-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.tech-verdict { margin-top: 14px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+
+/* ── Dividend card ── */
+.div-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid #5560a8; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.div-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5560a8; margin-bottom: 4px; }
+.div-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.div-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border-light); font-size: 14px; }
+.div-row:last-child { border-bottom: none; }
+.div-lbl { color: var(--text-muted); font-size: 13px; }
+.div-val { font-weight: 600; }
+.div-verdict { margin-top: 12px; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+
+/* ── Downside Scenario card ── */
+.dn-card { background: var(--surface); border: 1px solid #e8aaaa; border-top: 4px solid #b84040; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+.dn-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #b84040; margin-bottom: 4px; }
+.dn-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.dn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.dn-item { background: #fceaea; border-radius: var(--radius-sm); padding: 10px 14px; }
+.dn-item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #b84040; margin-bottom: 4px; }
+.dn-item-val { font-size: 16px; font-weight: 700; color: #b84040; }
+.dn-item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.dn-note { font-size: 12px; color: var(--text-muted); line-height: 1.6; padding-top: 8px; border-top: 1px solid #e8aaaa; }
+
+/* ── Collapsible card details ── */
+details.card-details { margin-bottom: 20px; }
+details.card-details > summary { cursor: pointer; list-style: none; user-select: none; }
+details.card-details > summary::-webkit-details-marker { display: none; }
+.summary-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 20px; font-size: 13px; font-weight: 700; color: var(--text-med); letter-spacing: 0.04em; }
+.summary-bar .summary-toggle { font-size: 11px; color: var(--text-muted); }
+details.card-details[open] > summary .summary-toggle::after { content: "▲ hide"; }
+details.card-details:not([open]) > summary .summary-toggle::after { content: "▼ show"; }
+details.card-details[open] > summary .summary-bar { border-radius: var(--radius) var(--radius) 0 0; border-bottom: none; }
+
+/* ── Narrative section label ── */
+.narrative-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid var(--border-light); }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand" style="text-decoration:none;">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <a class="back-link" href="top-picks.html">← Top Picks</a>
+  <div class="co-ticker">BMY</div>
+  <div class="co-name">Bristol-Myers Squibb Company</div>
+  <div class="hero-badges">
+    <span class="hero-badge badge-price">$58.22</span>
+    <span class="hero-badge badge-dn">-3.91%</span>
+  </div>
+  <div class="hero-tags"><span class="hero-tag">Market Cap: $118.9B</span><span class="hero-tag">Healthcare</span><span class="hero-tag">Drug Manufacturers - General</span><span class="hero-tag">USD</span></div>
+</div>
+
+<div class="content">
+
+  <div class="kpi-row"><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">+2.6%</div><div class="kpi-label">Revenue Growth<div class="kpi-zh">營收成長</div></div><div class="kpi-sub">Slow growth · ≥10% is strong</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">20.1%</div><div class="kpi-label">FCF Margin<div class="kpi-zh">自由現金流利潤率</div></div><div class="kpi-sub">Strong cash converter · of every $100 revenue, keeps $20 as cash</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">16.8%</div><div class="kpi-label">ROIC<div class="kpi-zh">投入資本回報率</div></div><div class="kpi-sub">Earns $0.17 per $1 invested · ≥15% is strong</div></div><div class="kpi-tile" style="border-top:3px solid #b87820"><div class="kpi-val" style="color:#b87820">+8.8%</div><div class="kpi-label">Analyst Target<div class="kpi-zh">分析師目標價</div></div><div class="kpi-sub">Wall St consensus: HOLD</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">9.5x</div><div class="kpi-label">Fwd P/E<div class="kpi-zh">預期本益比</div></div><div class="kpi-sub">Cheap · pay $9 per $1 of profit</div></div><div class="kpi-tile" style="border-top:3px solid #2e6b58"><div class="kpi-val" style="color:#2e6b58">Upper Range</div><div class="kpi-label">Price Position<div class="kpi-zh">股價位置</div></div><div class="kpi-sub">77% of 52-wk range</div></div></div>
+
+  
+<div class="sig-card" style="border-left:4px solid #b87820;border:1px solid #e8c88a;border-left:4px solid #b87820">
+  <div class="sig-header">
+    <div class="sig-title">Signal Summary<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 訊號摘要</span></div>
+    <div class="sig-sub">Deterministic read across three dimensions — not AI · updated daily</div>
+  </div>
+  <div class="sig-grid">
+    <div class="sig-col"><div class="sig-col-lbl">Fundamentals<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 基本面</span></div><div class="sig-cell" style="background:#fceaea;border:1px solid #e8aaaa"><div class="sig-label" style="color:#b84040">Weak Fundamentals</div><div class="sig-detail"></div></div></div>
+    <div class="sig-col"><div class="sig-col-lbl">Entry Timing<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 進場時機</span></div><div class="sig-cell" style="background:#eaf3f0;border:1px solid #c6ddd6"><div class="sig-label" style="color:#2e6b58">Attractive Entry</div><div class="sig-detail">Strong FCF yield and reasonable P/E — good margin of safety</div></div></div>
+    <div class="sig-col"><div class="sig-col-lbl">Momentum<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 動能</span></div><div class="sig-cell" style="background:#eaf3f0;border:1px solid #c6ddd6"><div class="sig-label" style="color:#2e6b58">Mildly Bullish</div><div class="sig-detail">Positive but mixed signals</div></div></div>
+  </div>
+  <div class="sig-verdict" style="color:#b87820;border-top:1px solid #e8c88a">Mixed signals across fundamentals, valuation, and momentum. Monitor before committing capital.</div>
+  <div class="sig-exit" style="margin-top:10px;padding:8px 12px;background:#fafafa;border-radius:6px;border:1px solid #e8e8e8;font-size:11px;color:var(--text-muted)">
+    <strong style="color:var(--text)">Watch for exit signals</strong> — Consider reducing position if:
+    conviction score drops below 55 &nbsp;·&nbsp; price falls below 200-day MA &nbsp;·&nbsp; Signal Summary turns to 2+ red signals<br>
+    <span style="font-size:10px">留意退出訊號：評分跌破 55 · 股價跌破200日均線 · 訊號摘要出現 2 個以上紅燈</span>
+  </div>
+</div>
+
+  
+
+  <div class="cs-card" style="border-top:4px solid #b84040;border:1px solid #e8aaaa;border-top:4px solid #b84040">
+    <div class="cs-card-header" style="background:linear-gradient(135deg,#fceaea 0%,var(--surface) 65%)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="cs-card-title" style="color:#b84040">Conviction Score <span style="font-size:12px;font-weight:400;color:var(--text-muted)">信念評分</span></div>
+          <div class="cs-card-sub">Deterministic score from fundamentals — no AI guesswork · 基於基本面的確定性評分</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Scored: May 03, 2026 · 19:07 Taipei</div>
+        </div>
+        
+      </div>
+    </div>
+    <div class="cs-body">
+      <div class="cs-score-col">
+        <div class="cs-score-num" style="color:#b84040">51</div>
+        <div class="cs-score-denom">/ 100</div>
+        <div class="cs-score-label" style="color:#b84040">Weak</div>
+      </div>
+      <div class="cs-pillars-col"><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Quality<span class="cs-pillar-zh">品質</span></span><span class="cs-pillar-pts">21 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:84%;background:#b84040"></div></div><p class="cs-pillar-sub">ROIC · FCF Margin · Gross Margin — how efficiently the business earns</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Growth<span class="cs-pillar-zh">成長</span></span><span class="cs-pillar-pts">3 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:12%;background:#b84040"></div></div><p class="cs-pillar-sub">Revenue Growth · Earnings Growth — is the business getting bigger?</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Health<span class="cs-pillar-zh">健康</span></span><span class="cs-pillar-pts">2 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:8%;background:#b84040"></div></div><p class="cs-pillar-sub">Cash vs Debt · Equity Ratio · Analyst Upside — balance sheet strength</p></div><div class="cs-pillar"><div class="cs-pillar-head"><span class="cs-pillar-name">Valuation<span class="cs-pillar-zh">估值</span></span><span class="cs-pillar-pts">25 / 25</span></div><div class="cs-bar-track"><div class="cs-bar-fill" style="width:100%;background:#b84040"></div></div><p class="cs-pillar-sub">FCF Yield · Forward P/E — P/E 9x — fairly priced or cheap</p></div></div>
+      <div class="cs-checks-col"><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">ROIC</span><span class="cs-check-val">17%</span><span class="cs-check-thresh">≥15%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#b87820">⚠</span><span class="cs-check-name">Rev Growth</span><span class="cs-check-val">+3%</span><span class="cs-check-thresh">≥10%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">FCF Margin</span><span class="cs-check-val">20%</span><span class="cs-check-thresh">≥20%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Gross Margin</span><span class="cs-check-val">72%</span><span class="cs-check-thresh">≥40%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">ROE</span><span class="cs-check-val">39%</span><span class="cs-check-thresh">≥15%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">FCF Yield</span><span class="cs-check-val">8.2%</span><span class="cs-check-thresh">≥4%</span></div><div class="cs-check"><span class="cs-check-icon" style="color:#2e6b58">✓</span><span class="cs-check-name">Fwd P/E</span><span class="cs-check-val">9.5x</span><span class="cs-check-thresh"><25x</span></div></div>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="m-card mc-blue">
+      <div class="m-title">Valuation <span class="m-title-zh">估值</span></div>
+      <div class="m-row"><span class="m-label">Forward P/E <span style="font-size:10px;font-weight:400;color:var(--text-muted)">預期本益比</span></span><span class="m-val">9.5<span class="flag-pass">Reasonable</span></span></div><p class="m-def">Investors pay this many dollars for every $1 projected to be earned next year. Lower = cheaper relative to earnings.</p><div class="m-row"><span class="m-label">Trailing P/E <span style="font-size:10px;font-weight:400;color:var(--text-muted)">歷史本益比</span></span><span class="m-val">16.3</span></div><p class="m-def">Same concept, but based on the last 12 months of actual reported earnings — no estimates involved.</p><div class="m-row"><span class="m-label">PEG Ratio <span style="font-size:10px;font-weight:400;color:var(--text-muted)">成長調整本益比</span></span><span class="m-val">24.12<span class="flag-warn">Expensive vs growth</span></span></div><p class="m-def">P/E divided by the growth rate. Below 1.0 often signals the stock is cheap relative to how fast it's growing.</p><div class="m-row"><span class="m-label">Price / Book <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股價淨值比</span></span><span class="m-val">5.9x</span></div><p class="m-def">Share price vs book value of company assets. Above 5x means a large premium — justified only if returns on equity are high.</p><div class="m-row"><span class="m-label">Analyst Target <span style="font-size:10px;font-weight:400;color:var(--text-muted)">分析師目標價</span></span><span class="m-val">$63.32 +8.8%</span></div><p class="m-def">Wall Street consensus price target. Current recommendation: <strong>HOLD</strong>.</p><div class="m-row"><span class="m-label">EV/EBITDA <span style="font-size:10px;font-weight:400;color:var(--text-muted)">企業價值/稅息前利潤</span></span><span class="m-val">8.2×<span class="flag-pass">✓ Attractive</span></span></div><p class="m-def">Enterprise Value divided by EBITDA — a cleaner valuation measure than P/E because it includes debt. Below 15× is attractive for most companies; above 30× signals the market is paying a significant premium.</p>
+    </div>
+    <div class="m-card mc-teal">
+      <div class="m-title">Quality &amp; Profitability <span class="m-title-zh">品質與獲利能力</span></div>
+      <div class="m-row"><span class="m-label">ROIC <span style="font-size:10px;font-weight:400;color:var(--text-muted)">投入資本回報率</span></span><span class="m-val">16.8%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Return on Invested Capital — profit generated per dollar put to work. Above 15% separates great businesses from average ones.</p><div class="m-row"><span class="m-label">FCF Margin <span style="font-size:10px;font-weight:400;color:var(--text-muted)">自由現金流利潤率</span></span><span class="m-val">20.1%<span class="flag-pass">✓ Strong</span></span></div><p class="m-def">Free cash left after all operating costs as a % of revenue. Businesses above 20% generate cash even through downturns.</p><div class="m-row"><span class="m-label">Gross Margin <span style="font-size:10px;font-weight:400;color:var(--text-muted)">毛利率</span></span><span class="m-val">72.0%<span class="flag-pass">✓</span></span></div><p class="m-def">Revenue minus cost of goods sold. Higher = more pricing power. Above 40% typically indicates a differentiated product.</p><div class="m-row"><span class="m-label">Operating Margin <span style="font-size:10px;font-weight:400;color:var(--text-muted)">營業利益率</span></span><span class="m-val">29.3%</span></div><p class="m-def">What remains after paying staff, rent, and all operating costs — before interest and taxes.</p><div class="m-row"><span class="m-label">Net Margin <span style="font-size:10px;font-weight:400;color:var(--text-muted)">淨利率</span></span><span class="m-val">15.0%</span></div><p class="m-def">The bottom line: final profit as a % of revenue after every expense including taxes.</p><div class="m-row"><span class="m-label">ROE <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股東權益報酬率</span></span><span class="m-val">38.7%<span class="flag-pass">✓</span></span></div><p class="m-def">Return on Equity — net income divided by shareholders' equity. Above 15% shows efficient use of investor capital.</p><div class="m-row"><span class="m-label">Capex / Revenue <span style="font-size:10px;font-weight:400;color:var(--text-muted)">資本支出/營收</span></span><span class="m-val"><span style="color:#2e6b58">2.7% — Capital-light ✓</span></span></div><p class="m-def">How much of each dollar of sales is reinvested in property and equipment. Below 5% = capital-light (software, brands) — cash flows freely. Above 15% = capital-intensive (factories, infrastructure) — heavy ongoing investment required.</p><div class="m-row"><span class="m-label">Buyback Yield <span style="font-size:10px;font-weight:400;color:var(--text-muted)">回購殖利率</span></span><span class="m-val"><span style="color:#888">0.0% — Minimal buybacks</span></span></div><p class="m-def">How much of the company's market value is returned to shareholders via share repurchases each year. Buybacks reduce share count, boosting future earnings per share. Works like a tax-efficient dividend — a sign management believes shares are undervalued.</p><div class="m-row"><span class="m-label">R&amp;D / Revenue</span><span class="m-val">20.5%</span></div><p class="m-def">Research &amp; development spending as % of sales. High R&amp;D = investing aggressively in future products and competitive advantages. The trade-off: R&amp;D reduces current profit margins but may build tomorrow's moat.</p>
+    </div>
+    <div class="m-card mc-amber">
+      <div class="m-title">Financial Health <span class="m-title-zh">財務健康</span></div>
+      <div class="m-row"><span class="m-label">Cash on Hand <span style="font-size:10px;font-weight:400;color:var(--text-muted)">持有現金</span></span><span class="m-val">$10.5B</span></div><div class="m-row"><span class="m-label">Total Debt <span style="font-size:10px;font-weight:400;color:var(--text-muted)">總負債</span></span><span class="m-val">$44.5B</span></div><div class="m-row"><span class="m-label">Cash / Debt <span style="font-size:10px;font-weight:400;color:var(--text-muted)">現金/負債比</span></span><span class="m-val">0.2x<span class="flag-warn">⚠ Leveraged</span></span></div><p class="m-def">Times cash covers total debt. Above 1x means the company can pay off all debt immediately from its cash pile.</p><div class="m-row"><span class="m-label">Equity Ratio <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股東權益比率</span></span><span class="m-val">21%<span class="flag-warn">⚠ Leveraged</span></span></div><p class="m-def">Shareholders' equity as % of total assets. Higher = less reliance on borrowed money to fund the business.</p><div class="m-row"><span class="m-label">Current Ratio <span style="font-size:10px;font-weight:400;color:var(--text-muted)">流動比率</span></span><span class="m-val">1.4</span></div><p class="m-def">Short-term assets vs short-term liabilities. Above 1.5 = strong liquidity buffer; below 1.0 = potential cash crunch.</p><div class="m-row"><span class="m-label">Working Capital <span style="font-size:10px;font-weight:400;color:var(--text-muted)">營運資金</span></span><span class="m-val">$6.0B&nbsp;<span class="flag-pass">Positive</span></span></div><p class="m-def">Day-to-day cash buffer. Positive means the company can fund operations without tapping credit lines.</p><div class="m-row"><span class="m-label">Retained Earnings <span style="font-size:10px;font-weight:400;color:var(--text-muted)">保留盈餘</span></span><span class="m-val">$16.9B</span></div><p class="m-def">Cumulative profits reinvested in the business over its lifetime — a proxy for long-term wealth creation.</p><div class="m-row"><span class="m-label">Interest Coverage <span style="font-size:10px;font-weight:400;color:var(--text-muted)">利息覆蓋倍數</span></span><span class="m-val"><span style="color:#3a72b0">Healthy — 5.9× coverage</span></span></div><p class="m-def">Operating profit divided by annual interest payments. A ratio of 10× means the company earns 10 times more than it needs to service its debt — very safe. Below 2× is a warning: one bad quarter could create a liquidity crisis.</p>
+    </div>
+  </div>
+
+  
+<div class="range-card">
+  <div class="range-title">52-Week Price Range<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 52週股價區間</span></div>
+  <div class="range-bar-track">
+    <div class="range-bar-fill" style="width:77.1%"></div>
+    <div class="range-dot" style="left:77.1%"></div>
+  </div>
+  <div class="range-labels">
+    <span>Low: $42.52</span>
+    <span><strong>Current: $58.22</strong> &nbsp;(77% of range)</span>
+    <span>High: $62.89</span>
+  </div>
+</div>
+
+  
+<div class="tech-card">
+  <div class="tech-title">Technical Position <span style="font-size:10px;font-weight:400;color:var(--text-muted)">技術位置</span></div>
+  <div class="tech-sub">Moving averages and momentum — institutional traders watch the 50 and 200-day MA as key support/resistance lines.</div>
+  <div class="tech-grid"><div class="tech-item"><div class="tech-item-label">50-Day MA</div><div class="tech-item-val" style="color:#b84040">-1.6%</div><div class="tech-item-sub">$59.17 — price below MA</div></div><div class="tech-item"><div class="tech-item-label">200-Day MA</div><div class="tech-item-val" style="color:#2e6b58">+14.1%</div><div class="tech-item-sub">$51.04 — price above MA</div></div><div class="tech-item"><div class="tech-item-label">RSI (14)</div><div class="tech-item-val" style="color:#888">51</div><div class="tech-item-sub">Neutral</div></div><div class="tech-item"><div class="tech-item-label">Volume Ratio</div><div class="tech-item-val">1.9×</div><div class="tech-item-sub">Above avg vs 20-day avg</div></div></div>
+  <div class="tech-verdict" style="background:#fdf4e7;color:#b87820">Pullback within uptrend — above 200-day MA but below 50-day</div>
+</div>
+
+  
+<div class="tgt-card">
+  <div class="tgt-header">
+    <div class="tgt-title">Analyst Price Target Range<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 分析師目標價區間</span></div>
+    <div class="tgt-sub">Where Wall Street analysts think the stock is headed — low, consensus, and high targets</div>
+  </div>
+  <div class="tgt-body">
+    <div class="tgt-labels">
+      <div><span class="tgt-lbl">Bear Target</span><span class="tgt-val" style="color:#b84040">$40.00 (-31%)</span></div>
+      <div><span class="tgt-lbl">Consensus</span><span class="tgt-val" style="color:#2e6b58">$63.32 (+9%)</span></div>
+      <div><span class="tgt-lbl">Bull Target</span><span class="tgt-val" style="color:#2e6b58">$75.00 (+29%)</span></div>
+    </div>
+    <div class="tgt-track">
+      <div class="tgt-fill-lo"  style="width:67%;background:linear-gradient(90deg,#fceaea,#fef9ec)"></div>
+      <div class="tgt-fill-hi"  style="width:33%;background:linear-gradient(90deg,#fef9ec,#eaf3f0)"></div>
+      <div class="tgt-pin tgt-pin-cur"  style="left:52%" title="Current price"></div>
+      <div class="tgt-pin tgt-pin-mean" style="left:67%" title="Consensus target"></div>
+    </div>
+    <div class="tgt-axis">
+      <span>$40.00</span>
+      <span style="font-weight:600">▲ Current: $58.22</span>
+      <span>$75.00</span>
+    </div>
+  </div>
+</div>
+
+  
+<div class="ao-card">
+  <div class="ao-grid">
+    <div><div class="ao-title">Analyst Consensus<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 分析師評級</span></div><div class="ao-row"><strong>25</strong> analysts covering this stock</div><div class="ao-row">Consensus: <span class="rec-pill rec-hold">Hold</span> (mean 2.5/5)</div><div class="ao-row" style="margin-top:4px"><span style="color:#2e6b58;font-weight:700">10 Buy</span> &nbsp;·&nbsp; <span style="color:#b87820;font-weight:700">18 Hold</span> &nbsp;·&nbsp; <span style="color:#b84040;font-weight:700">1 Sell</span></div><div style="display:flex;height:6px;border-radius:3px;overflow:hidden;margin:4px 0 6px"><div style="width:34%;background:#2e6b58"></div><div style="width:62%;background:#b87820"></div><div style="width:3%;background:#b84040"></div></div><div class="ao-row">Target: <strong>$63.32</strong> (+8.8% upside)</div></div>
+    <div><div class="ao-title">Ownership</div><div class="ao-row">Insider ownership: <strong>0.09%</strong> — Low</div><div class="ao-row">Institutional: <strong>83.4%</strong></div><div class="ao-row">Short interest: <strong style="color:inherit">1.6%</strong> — low</div></div>
+    <div><div class="ao-title">Market Profile</div><div class="ao-row">PEG ratio: <strong>24.12</strong> — expensive vs growth</div><div class="ao-row">Dividend: <strong>None</strong></div><div class="ao-row">Market cap: <strong>$118.9B</strong></div></div>
+  </div>
+</div>
+
+  
+<div class="div-card">
+  <div class="div-title">Dividend <span style="font-size:10px;font-weight:400;color:var(--text-muted)">股息</span></div>
+  <div class="div-sub">Income investors: does this stock pay you while you wait? Payout ratio below 40% = well-covered, above 75% = risk of a cut.</div>
+  <div class="div-row"><span class="div-lbl">Annual Dividend</span><span class="div-val">$2.52 per share</span></div><div class="div-row"><span class="div-lbl">5Y Avg Yield</span><span class="div-val">393.00%</span></div><div class="div-row"><span class="div-lbl">Payout Ratio</span><span class="div-val" style="color:#b87820">70% — Elevated — limited room for growth ⚠</span></div>
+  <div class="div-verdict" style="background:#fceaea;color:#b84040">Payout ratio is elevated — dividend sustainability depends on earnings holding steady.</div>
+</div>
+
+  
+<div class="sp-card">
+  <div class="sp-header">
+    <div class="sp-title">Performance vs Sector (XLV)<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 板塊相對表現</span></div>
+    <div class="sp-verdict" style="color:#2e6b58">Mostly outperforming XLV — 2/3 periods ↑</div>
+  </div>
+  <div class="sp-sub">Compares this stock's returns to its sector ETF (XLV) — the benchmark for its peer group.
+    Persistent outperformance signals a durable competitive edge; persistent underperformance is a red flag
+    even when fundamentals look fine on paper.</div>
+  <table class="sp-table">
+    <thead><tr><th>Period</th><th>BMY</th><th>XLV (Sector)</th><th>Difference</th></tr></thead>
+    <tbody><tr><td class="sp-period">1M</td><td style="color:#b84040;font-weight:600">-2.3%</td><td style="color:#b84040;font-weight:600">-1.1%</td><td style="color:#b84040;font-weight:700">-1.2%</td></tr><tr><td class="sp-period">3M</td><td style="color:#2e6b58;font-weight:600">+5.2%</td><td style="color:#b84040;font-weight:600">-6.4%</td><td style="color:#2e6b58;font-weight:700">+11.6%</td></tr><tr><td class="sp-period">6M</td><td style="color:#2e6b58;font-weight:600">+30.5%</td><td style="color:#2e6b58;font-weight:600">+1.4%</td><td style="color:#2e6b58;font-weight:700">+29.0%</td></tr></tbody>
+  </table>
+</div>
+
+  <details class="card-details"><summary><div class="summary-bar"><span>Macro Sensitivity 總經敏感度</span><span class="summary-toggle"></span></div></summary>
+<div class="macro-card">
+  <div class="macro-header">
+    <div class="macro-title">Macro Sensitivity — Healthcare</div>
+    <div class="macro-sub">How four key macro forces affect this sector's earnings and valuation.
+      Use this to stress-test your thesis against the current macro environment.</div>
+  </div>
+  <div class="macro-grid"><div class="macro-cell" style="background:#f5f5f5;border:1px solid #88833"><div class="macro-factor">Rate Hike</div><div class="macro-impact" style="color:#888">— Neutral</div><div class="macro-context">If the Fed raises interest rates</div></div><div class="macro-cell" style="background:#fef9ec;border:1px solid #b8782033"><div class="macro-factor">Strong USD</div><div class="macro-impact" style="color:#b87820">▼ Headwind</div><div class="macro-context">If the US dollar rises vs major currencies</div></div><div class="macro-cell" style="background:#fef9ec;border:1px solid #b8782033"><div class="macro-factor">China Risk</div><div class="macro-impact" style="color:#b87820">▼ Headwind</div><div class="macro-context">If US–China trade tensions escalate</div></div><div class="macro-cell" style="background:#f5f5f5;border:1px solid #88833"><div class="macro-factor">Oil Spike</div><div class="macro-impact" style="color:#888">— Neutral</div><div class="macro-context">If crude oil rises ~20%</div></div></div>
+</div></details>
+
+  <div class="q-card"><div class="q-card-head">Quarterly Trend · Last 4 Quarters<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 季度財務趨勢</span></div><table class="q-table"><thead><tr><th>Quarter</th><th>Revenue</th><th>Trend / QoQ</th><th>Gross Margin</th><th>Net Income</th></tr></thead><tbody><tr><td><span class="q-period">Mar '26</span></td><td class="q-mono">N/A</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:0%"></div></div></div></td><td class="q-mono">N/A</td><td class="q-mono">N/A</td></tr><tr><td><span class="q-period">Dec '25</span></td><td class="q-mono">$12.5B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:100%"></div></div><span class="q-pos">+2.3%</span></div></td><td class="q-mono">67.2%</td><td class="q-mono">$1.1B</td></tr><tr><td><span class="q-period">Sep '25</span></td><td class="q-mono">$12.2B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:97%"></div></div><span class="q-neg">-0.4%</span></div></td><td class="q-mono">71.9%</td><td class="q-mono">$2.2B</td></tr><tr><td><span class="q-period">Jun '25</span></td><td class="q-mono">$12.3B</td><td><div class="q-bar-wrap"><div class="q-bar-track"><div class="q-bar-fill" style="width:98%"></div></div></div></td><td class="q-mono">72.5%</td><td class="q-mono">$1.3B</td></tr></tbody></table></div>
+
+  <details class="card-details"><summary><div class="summary-bar"><span>Earnings Surprise History 財報驚喜歷史</span><span class="summary-toggle"></span></div></summary>
+<div class="q-card">
+  <div class="q-card-head">Earnings Surprise History — Did the company beat or miss Wall Street's forecasts?</div>
+  <table class="q-table">
+    <thead><tr><th>Quarter</th><th>Est. EPS</th><th>Actual EPS</th><th>Result</th></tr></thead>
+    <tbody><tr><td class="q-period">Jun '25</td><td class="q-mono">$1.10</td><td class="q-mono">$1.46</td><td><span style="color:#2e6b58;font-weight:700">Beat +32.6%</span></td></tr><tr><td class="q-period">Sep '25</td><td class="q-mono">$1.52</td><td class="q-mono">$1.63</td><td><span style="color:#2e6b58;font-weight:700">Beat +7.6%</span></td></tr><tr><td class="q-period">Dec '25</td><td class="q-mono">$1.20</td><td class="q-mono">$1.26</td><td><span style="color:#2e6b58;font-weight:700">Beat +4.6%</span></td></tr><tr><td class="q-period">Mar '26</td><td class="q-mono">$1.42</td><td class="q-mono">$1.58</td><td><span style="color:#2e6b58;font-weight:700">Beat +11.1%</span></td></tr></tbody>
+  </table>
+</div></details>
+
+  
+<div class="mt-card">
+  <div class="mt-header">
+    <div class="mt-title">Moat Trend — ROIC, Gross Margin &amp; FCF<span style="font-size:10px;font-weight:400;color:var(--text-muted)"> · 護城河趨勢</span></div>
+    <div class="mt-verdict" style="color:#2e6b58">Widening moat ↑</div>
+  </div>
+  <div class="mt-sub">ROIC measures profit generated per dollar invested — a rising trend signals a widening moat.
+    FCF margin shows the actual cash the business keeps after all costs. Both together reveal whether quality is improving or eroding.</div>
+  <div class="mt-row">  <div class="mt-yr">2025</div>  <div class="mt-bar-wrap"><div class="mt-bar" style="width:100%;background:#2e6b58"></div></div>  <div class="mt-val" style="color:#2e6b58">16.6%</div>  <div class="mt-gm">GM 71%</div>  <div class="mt-gm" style="color:#2e6b58">FCF 27%</div></div><div class="mt-row">  <div class="mt-yr">2024</div>  <div class="mt-bar-wrap"><div class="mt-bar" style="width:55%;background:#b84040"></div></div>  <div class="mt-val" style="color:#b84040">-9.1%</div>  <div class="mt-gm">GM 71%</div>  <div class="mt-gm" style="color:#2e6b58">FCF 29%</div></div><div class="mt-row">  <div class="mt-yr">2023</div>  <div class="mt-bar-wrap"><div class="mt-bar" style="width:79%;background:#b87820"></div></div>  <div class="mt-val" style="color:#b87820">13.1%</div>  <div class="mt-gm">GM 76%</div>  <div class="mt-gm" style="color:#2e6b58">FCF 28%</div></div><div class="mt-row">  <div class="mt-yr">2022</div>  <div class="mt-bar-wrap"><div class="mt-bar" style="width:69%;background:#b87820"></div></div>  <div class="mt-val" style="color:#b87820">11.5%</div>  <div class="mt-gm">GM 78%</div>  <div class="mt-gm" style="color:#2e6b58">FCF 26%</div></div>
+</div>
+
+  
+
+  
+<div class="dn-card">
+  <div class="dn-title">Downside Scenario <span style="font-size:10px;font-weight:400;color:var(--text-muted)">下行情境分析</span></div>
+  <div class="dn-sub">What happens if the bull thesis is wrong? Deterministic stress-test — no AI estimates involved.</div>
+  <div class="dn-grid"><div class="dn-item"><div class="dn-item-label">Bear Analyst Target</div><div class="dn-item-val">$40.00</div><div class="dn-item-sub">-31% from current price</div></div><div class="dn-item"><div class="dn-item-label">P/E Compresses to 15×</div><div class="dn-item-val">$92.01</div><div class="dn-item-sub">+58% — sector-average multiple</div></div><div class="dn-item"><div class="dn-item-label">P/E Compresses to 10×</div><div class="dn-item-val">$61.34</div><div class="dn-item-sub">+5% — deep-value / recession multiple</div></div></div>
+  <div class="dn-note">P/E compression scenarios use current forward EPS estimates — if earnings are cut, downside is worse. Bear target is the lowest analyst price target, not a worst-case. Use these as a mental stop-loss check: can you hold if the stock falls to these levels?</div>
+</div>
+
+  <p class="narrative-label">Analyst Briefing · AI-generated · May 03, 2026 · 19:07 Taipei</p>
+  <div class="section-card sec-indigo"><h2 class="section-title">BUSINESS OVERVIEW</h2><div class="section-body">
+<p><strong>English:</strong> Bristol‑Myers Squibb (BMY) develops, manufactures and sells prescription drugs for cancer, immunology, cardiovascular disease and fibrosis. Its moat lies in a deep patent portfolio and FDA‑approved biologics that are hard for rivals to copy, plus high switching costs because doctors and patients stay on proven therapies once they work. The company controls roughly 15% of the global oncology market, giving it pricing power and stable cash flow.</p>
+<p><strong>繁體中文：</strong>Bristol‑Myers Squibb（BMY）研發、製造並銷售癌症、免疫、心血管和纖維化領域的處方藥。護城河在於龐大的專利組合與已獲 FDA 核准的生技藥，競爭者不易仿製，加上醫師與患者在療效確定後換藥成本高。公司在全球腫瘤藥市場約佔 15%，因此具備定價權與穩定現金流。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-blue"><h2 class="section-title">RECENT DEVELOPMENTS</h2><div class="section-body">
+<p><strong>English:</strong> In the last six months BMY completed the $13 billion acquisition of a rare‑disease biotech, expanding its pipeline into gene‑editing therapy. Quarterly revenue rose 2.6% YoY to $12.5 billion in December, while net income climbed 20% to $1.09 billion, driven by strong sales of its flagship oncology drug.</p>
+<p><strong>繁體中文：</strong>過去六個月 BMY 完成 130 億美元收購一家罕見疾病生技公司，將管線擴展至基因編輯療法。12 月份營收年增 2.6% 至 125 億美元，淨利年增 20% 至 10.9 億美元，主要受益於主力腫瘤藥的強勁銷售。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-teal"><h2 class="section-title">CATALYSTS</h2><div class="section-body">
+<ul class="overview-list">
+<li><strong>Regulatory approval of the gene‑editing therapy:</strong> FDA decision expected Q3 2026; a positive outcome could add $1‑2 billion of revenue in the next 3‑5 years.</li>
+<li><strong>Launch of new oncology indication:</strong> Expansion of the flagship drug into a second‑line lung‑cancer indication slated for H2 2026, potentially increasing sales by 15% annually.</li>
+<li><strong>Patent expiry management:</strong> Successful filing of continuation patents for three top sellers through 2030 will protect margins and cash flow.</li>
+</ul>
+<ul class="overview-list">
+<li><strong>基因編輯療法的監管批核：</strong>預計於 2026 年第三季獲得 FDA 批核，若成功，未來 3‑5 年可帶來 10‑20 億美元營收。</li>
+<li><strong>新腫瘤適應症上市：</strong>將在 2026 年下半年將主力藥物推廣至第二線肺癌適應症，預估年銷售成長 15%。</li>
+<li><strong>專利到期管理：</strong>已為三項主力產品提交延伸專利，確保至 2030 年仍有保護，維持毛利率與現金流。</li>
+</ul>
+<p>---</p>
+</div></div>
+<div class="section-card sec-rose"><h2 class="section-title">RISKS</h2><div class="section-body">
+<ul class="overview-list">
+<li><strong>Patent cliff on legacy drugs:</strong> If any key patents expire earlier than expected, generic competition could cut revenue by up to 10% in 2027.</li>
+<li><strong>Integration risk of the rare‑disease biotech:</strong> Cultural or operational mis‑steps could delay pipeline milestones, eroding the $13 billion acquisition premium.</li>
+<li><strong>Regulatory setbacks:</strong> A negative FDA ruling on the gene‑editing therapy would not only remove the expected revenue boost but also hurt investor confidence, potentially pulling the stock 12% lower.</li>
+</ul>
+<ul class="overview-list">
+<li><strong>核心藥品專利失效：</strong>若關鍵專利提前到期，2027 年可能因仿製藥競爭而損失最高 10% 營收。</li>
+<li><strong>罕見疾病生技公司的整合風險：</strong>文化或營運不順可能延遲管線里程碑，使 130 億美元收購溢價無法實現。</li>
+<li><strong>監管失敗風險：</strong>若基因編輯療法被 FDA 否決，不僅失去預期營收，更會打擊市場信心，股價可能下跌 12%。</li>
+</ul>
+<p>---</p>
+</div></div>
+<div class="section-card sec-amber"><h2 class="section-title">CONCLUSION</h2><div class="section-body">
+<p><strong>English:</strong> At $58.22, BMY is a hold. The forward P/E of 9.5 is well below the 5‑year average of ~13, indicating cheap valuation, but high debt and modest revenue growth keep upside limited. A breakthrough FDA approval or a 55 % price drop would push the case to buy; a missed approval or a $52 price breach would trigger a sell. The 5‑year moat durability looks solid thanks to patents and a leading oncology franchise.</p>
+<p><strong>繁體中文：</strong>以 58.22 美元的股價，BMY 應持有。9.5 倍的遠期本益比遠低於過去五年約 13 倍的平均值，顯示估值偏低，但高負債與營收成長緩慢限制了上行空間。若取得關鍵 FDA 批核或股價跌至 55 美元以下，則可升為買進；若審批失敗或跌破 52 美元，則轉為賣出。專利與領先腫瘤藥的雙重護城河在未來五年仍具韌性。</p>
+<p>---</p>
+</div></div>
+<div class="section-card sec-indigo"><h2 class="section-title">WHY OWN VS. INDEX?</h2><div class="section-body">
+<p><strong>English:</strong> BMY offers a unique blend of high ROIC (16.8%) and a defensible oncology franchise that the broad S&amp;P 500 cannot replicate; this can produce returns above the market average when the pipeline succeeds. However, the index still provides smoother growth with lower volatility for most investors. <strong>Alpha case: Compelling</strong></p>
+<p><strong>繁體中文：</strong>BMY 具備 16.8% 的高資本報酬率與難以被大盤複製的腫瘤藥護城河，當新藥成功時能提供高於市場的回報。但對大多數投資人而言，指數仍提供較平順且波動較低的收益。<strong>超額報酬評估：有說服力</strong></p>
+</div></div>
+
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; BMY Company Analysis &nbsp;·&nbsp; 2026-05-03 &nbsp;·&nbsp;
+  <a href="top-picks.html" style="color:var(--accent);text-decoration:none">← Back to Top Picks</a>
+</footer>
+
+</body>
+</html>
