@@ -361,6 +361,8 @@ def route_message(user_id: str, text: str) -> str:
         return _handle_add(tu[4:].strip())
     if tu.startswith("REMOVE "):
         return _handle_remove(tu[7:].strip())
+    if tu == "WHOAMI":
+        return f"Your LINE User ID:\n{user_id}"
     if tu == "HELP":
         return _handle_help(user_id, t)
     if tu.startswith("FEEDBACK"):
