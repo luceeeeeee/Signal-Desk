@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Overview · May 2026 · The Signal Desk</title>
+<style>
+
+:root {
+  --bg:           #f2f5f1;
+  --surface:      #ffffff;
+  --surface-off:  #f8faf8;
+  --border:       #d6dfd8;
+  --border-light: #e8efea;
+  --text:         #1a2820;
+  --text-med:     #3d5449;
+  --text-muted:   #6e8a7a;
+  --accent:       #2e6b58;
+  --accent-light: #c6ddd6;
+  --accent-bg:    #eaf3f0;
+  --shadow-sm:    0 1px 4px rgba(20,50,35,0.07);
+  --shadow:       0 3px 12px rgba(20,50,35,0.09);
+  --radius:       10px;
+  --radius-sm:    6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+nav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 40px; display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+  position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.nav-name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+.nav-links { display: flex; gap: 4px; list-style: none; flex-shrink: 1; min-width: 0; }
+.nav-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 10px; border-radius: 20px; transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.nav-links a:hover { background: var(--accent-bg); color: var(--accent); }
+.nav-links a.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.hero { max-width: 960px; margin: 0 auto; padding: 52px 48px 36px; border-bottom: 1px solid var(--border); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-light);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.pill::before { content: '●'; font-size: 8px; }
+.hero h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.hero-sub { font-size: 14px; color: var(--text-muted); max-width: 600px; line-height: 1.6; }
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+footer {
+  border-top: 1px solid var(--border); padding: 24px 48px;
+  text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
+}
+.mk-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.mk-table tbody tr:hover { background: var(--bg); }
+.news-title { word-break: break-word; }
+@media (max-width: 620px) {
+  nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero { padding: 32px 20px 24px; }
+  .content { padding: 0 16px 60px; }
+  .hero h1 { font-size: 22px; }
+  .nav-links { display: none; }
+  body { font-size: 14px; }
+}
+
+
+.hero-period {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 10px;
+  letter-spacing: 0.03em;
+}
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.meta-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* ── Section color themes ── */
+.sec-teal   { --sc: #2e6b58; --sc-light: #eaf3f0; --sc-border: #c6ddd6; }
+.sec-blue   { --sc: #3a72b0; --sc-light: #eaf2fb; --sc-border: #b8d4f0; }
+.sec-amber  { --sc: #b87820; --sc-light: #fdf4e7; --sc-border: #e8c88a; }
+.sec-indigo { --sc: #5560a8; --sc-light: #f0f0fc; --sc-border: #c0c4ec; }
+.sec-rose   { --sc: #b84040; --sc-light: #fceaea; --sc-border: #e8aaaa; }
+
+.section-card {
+  border: 1px solid var(--sc-border);
+  border-top: 4px solid var(--sc);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc);
+  background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface) 65%);
+  padding: 14px 24px;
+  margin: 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+.section-body {
+  padding: 24px 28px;
+}
+.sub-heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sc);
+  margin: 22px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--sc-border);
+}
+.sub-heading:first-child { margin-top: 0; }
+.section-body p {
+  margin-bottom: 12px;
+  color: var(--text-med);
+  font-size: 14px;
+  line-height: 1.75;
+}
+.section-body strong { color: var(--text); }
+
+/* Impact callout */
+.impact-line {
+  background: var(--sc-light);
+  border-left: 3px solid var(--sc);
+  padding: 8px 14px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 4px 0 10px;
+  font-size: 13.5px;
+  color: var(--text-med);
+  line-height: 1.6;
+}
+
+/* Numbered items */
+.num-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.num-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--sc);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.num-body { flex: 1; }
+.num-title {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.num-body p { margin-bottom: 6px; font-size: 13.5px; }
+
+/* Bullet lists */
+.overview-list {
+  margin: 0 0 14px 0;
+  padding-left: 20px;
+}
+.overview-list li {
+  margin-bottom: 7px;
+  color: var(--text-med);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 10px 0 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--sc-border);
+}
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.overview-table thead tr {
+  background: linear-gradient(135deg, var(--sc-light) 0%, var(--surface-off) 65%);
+  border-bottom: 1px solid var(--sc-border);
+}
+.overview-table th {
+  padding: 9px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--sc);
+  text-align: left;
+  white-space: nowrap;
+}
+.overview-table td {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  color: var(--text-med);
+  border-bottom: 1px solid var(--border-light);
+}
+.overview-table tr:last-child td { border-bottom: none; }
+.overview-table tbody tr:hover { background: var(--surface-off); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand" style="text-decoration:none;">
+    <div class="nav-dot"></div>
+    <span class="nav-name">The Signal Desk</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
+    <li><a href="market.html">Market</a></li>
+    <li><a href="top-picks.html">Top Picks</a></li>
+    <li><a href="sector-leaders.html">Sector Leaders</a></li>
+    <li><a href="income-statement-guide.html">Statement Guide</a></li>
+    <li><a href="news-sources.html">News Sources</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="pill">Monthly Overview · Auto-generated</div>
+  <p class="hero-period">May 2026 Preview &nbsp;·&nbsp; April 2026 Review</p>
+  <h1>Market Overview</h1>
+  <p class="hero-sub">Monthly review of the past month and preview of what's ahead — key events, index performance, earnings, and directional views. Bilingual: English &amp; 繁體中文.</p>
+</div>
+
+<div class="content">
+  <div class="meta-row">
+    <span class="meta-label">Generated by The Signal Desk · AI-assisted analysis</span>
+    <span class="meta-label">Last updated: May 03, 2026 · 17:27 Taipei</span>
+  </div>
+
+  <div class="section-card sec-teal"><h2 class="section-title">MONTHLY REVIEW: April 2026 / April 2026 市場回顧</h2><div class="section-body">
+<p>April was a “pause‑and‑watch” month.  Global growth data stayed flat, so investors kept a tight leash on risk, while the Taiwan market surged on strong chip earnings and a surprise monetary easing move.</p>
+<p>4 月份的主題是「暫緩觀望」。全球成長數據持平，投資人對風險保持警惕；同時台股因晶片獲利強勁與意外寬鬆的貨幣政策大幅上漲。</p>
+<h3 class="sub-heading">📊 Index Performance / 指數表現</h3>
+<div class="table-wrap"><table class="overview-table"><thead>
+<tr><th>Index / 指數</th><th>Monthly Return / 月報酬</th><th>Key Driver / 主要驅動</th></tr>
+</thead><tbody>
+<tr><td>S&amp;P 500 (標普500)</td><td>+0.3%</td><td>Mixed earnings, low‑volatility bond rally / 盈利參差，低波動債券反彈</td></tr>
+<tr><td>Nasdaq 100 (納斯達克)</td><td>+0.9%</td><td>Tech earnings beat and AI hype / 科技獲利優於預期，AI 熱潮</td></tr>
+<tr><td>Dow Jones (道瓊工業)</td><td>-0.3%</td><td>Heavy industry earnings miss / 重工業盈餘不如預期</td></tr>
+<tr><td>Russell 2000 (羅素2000)</td><td>+0.5%</td><td>Small‑cap resilience on rate‑cut hopes / 小型股因降息預期保持韌性</td></tr>
+<tr><td>TAIEX (台灣加權指數)</td><td>+22.1%</td><td>Chip earnings surge and NT$‑rate cut / 晶片獲利飆升，加上台幣匯率寬鬆</td></tr>
+<tr><td>Hang Seng (恆生指數)</td><td>+1.7%</td><td>HK property data improvement / 香港房地產數據回暖</td></tr>
+<tr><td>Nikkei 225 (日經225)</td><td>+0.4%</td><td>Yen depreciation helped exporters / 日圓貶值提振出口</td></tr>
+<tr><td>FTSE 100 (富時100)</td><td>-0.1%</td><td>Energy price pull‑back and UK wage data / 能源價格回落，英國工資數據</td></tr>
+</tbody></table></div>
+<h3 class="sub-heading">🔑 3 Events That Defined the Month / 定義本月的3件大事</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>U.S. CPI Hot Streak &amp; Fed Pause</strong> / <strong>美國通膨持續高企、聯準會暫緩加息</strong></p><p>Inflation stayed above the 2% target for a fourth straight month, prompting the Federal Reserve to hold rates steady at 5.25% on April 30.  The pause eased immediate rate‑cut fears but left the market in a “wait‑and‑see” mode.</p><p>通膨連續四個月高於 2% 目標，致聯準會在 4 月 30 日將政策利率維持在 5.25%。暫緩升息緩解了降息預期，但市場仍保持觀望。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>Taiwan Central Bank Cuts Rate by 25bps</strong> / <strong>台灣央行降息 0.25 個百分點</strong></p><p>The Central Bank surprised with a 25‑basis‑point cut, the first since 2022, to support the export‑led economy.  The move sent the TAIEX soaring and boosted all chip makers.</p><p>台央行意外將利率下修 0.25 個百分點，為自 2022 年以來首次降息，以支撐外銷導向經濟。此舉使台指大漲，帶動全體晶片股上揚。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>AI‑Driven Earnings Beat Across Tech</strong> / <strong>AI 帶動科技財報普遍超預期</strong></p><p>Nvidia, AMD and several AI‑focused firms posted earnings that beat consensus, sparking a modest rally in the Nasdaq and reinforcing belief that AI spending will stay robust.</p><p>Nvidia、AMD 及多家 AI 相關公司財報普遍優於預期，提振納指，並加深市場對 AI 支出將持續旺盛的信心。</p></div></div>
+<h3 class="sub-heading">📰 5 Key Market News / 5 則重要市場新聞</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>U.S. Consumer Confidence Slips to 96.2</strong> / <strong>美國消費者信心指數跌至 96.2</strong></p><p class="impact-line">📌 Market Impact: Retail stocks like Target and Home Depot slipped 1% as shoppers signaled tighter budgets.</p><p class="impact-line">📌 市場影響：因消費者預算緊縮，Target、Home Depot 等零售股下跌約 1%。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>Eurozone Manufacturing PMI Falls to 45.8</strong> / <strong>歐元區製造業採購經理人指數降至 45.8</strong></p><p class="impact-line">📌 Market Impact: European industrials and banks faced selling pressure; the DAX fell 0.6%.</p><p class="impact-line">📌 市場影響：歐洲工業與銀行股受到拋售壓力，德指跌 0.6%。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>China's Property Sector Announces New Debt‑Relief Program</strong> / <strong>中國房地產推出新債務寬減計畫</strong></p><p class="impact-line">📌 Market Impact: Chinese developers such as Country Garden rallied 4%, and Hong Kong REITs gained 2%.</p><p class="impact-line">📌 市場影響：中國開發商如碧桂園上漲 4%，香港不動產投資信託上漲 2%。</p></div></div>
+<div class="num-item"><span class="num-badge">4</span><div class="num-body"><p class="num-title"><strong>OPEC+ Extends Output Cuts Through End‑2026</strong> / <strong>OPEC+ 延長產量削減至 2026 年底</strong></p><p class="impact-line">📌 Market Impact: Energy ETFs rose 1.5%; oil‑related stocks like Chevron gained 2%.</p><p class="impact-line">📌 市場影響：能源 ETF 上漲 1.5%，雪佛龍等油股上漲 2%。</p></div></div>
+<div class="num-item"><span class="num-badge">5</span><div class="num-body"><p class="num-title"><strong>Taiwan Semiconductor (TSMC) Reports Record Q4 Capacity Utilization</strong> / <strong>台積電公布創新四季產能利用率紀錄</strong></p><p class="impact-line">📌 Market Impact: TSMC shares jumped 3%, pulling up the broader semiconductor index.</p><p class="impact-line">📌 市場影響：台積電股價上漲 3%，帶動整體半導體指數上揚。</p></div></div>
+</div></div>
+<div class="section-card sec-blue"><h2 class="section-title">MONTHLY PREVIEW: May 2026 / May 2026 市場展望</h2><div class="section-body">
+<p>May will be shaped by the Federal Reserve’s upcoming policy decision and a flurry of chip earnings that could confirm whether the AI rally is sustainable.</p>
+<p>5 月的焦點在於聯準會即將的利率決策以及一連串晶片財報，這將檢驗 AI 熱潮是否能持續。</p>
+<h3 class="sub-heading">📅 Key Events &amp; Earnings / 重要事件與財報</h3>
+<ul class="overview-list">
+<li><strong>May 1, 2026 10:00 AM ET / 台北時間 5月1日 22:00 (TPE)</strong> — U.S. Non‑Farm Payrolls (美國非農就業報告)</li>
+<li><strong>May 6, 2026 05:00 PM ET / 台北時間 5月7日 05:00 (TPE)</strong> — AMD (Advanced Micro Devices, Inc.) earnings (AMD 財報)</li>
+<li><strong>May 14, 2026 07:00 AM ET / 台北時間 5月14日 19:00 (TPE)</strong> — Quanta Computer (2382.TW) earnings (廣達電腦財報)</li>
+<li><strong>May 14, 2026 07:00 AM ET / 台北時間 5月14日 19:00 (TPE)</strong> — Hon Hai Precision Industry (2317.TW) earnings (鴻海財報)</li>
+<li><strong>May 15, 2026 04:30 PM ET / 台北時間 5月16日 04:30 (TPE)</strong> — Applied Materials (AMAT) earnings (應用材料財報)</li>
+<li><strong>May 21, 2026 08:30 AM ET / 台北時間 5月21日 20:30 (TPE)</strong> — NVIDIA (NVDA) earnings (NVIDIA 財報)</li>
+</ul>
+<h3 class="sub-heading">🎯 3 Themes to Watch / 本月3大觀察主題</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>AI‑Driven Chip Demand</strong> / <strong>AI 帶動的晶片需求</strong></p><p>The May earnings season will reveal whether AI spend remains a growth engine or fades into hype.  Watch NVIDIA, AMD and Taiwanese foundries for order backlogs.</p><p>5 月財報將顯示 AI 需求是持續成長還是短暫熱潮，特別關注 NVIDIA、AMD 與台灣代工的訂單情況。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>Fed Rate Outlook</strong> / <strong>聯準會利率前景</strong></p><p>The Fed’s policy meeting on May 2 will set the tone for risk appetite. A pause keeps equities steady; a hike could trigger a short‑term sell‑off.</p><p>5 月 2 日聯準會會議將決定市場風險偏好。若維持現狀，股市多半持平；若升息，可能出現短線拋售。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>Taiwan Monetary Easing Spillover</strong> / <strong>台灣寬鬆政策外溢效應</strong></p><p>The rate cut may accelerate capital inflows into TAIEX, but also raises the question of currency strength versus export competitiveness.</p><p>台灣降息可能吸引資金流入台指，同時也要留意匯率走弱對出口競爭力的影響。</p></div></div>
+<h3 class="sub-heading">📈 Directional View / 方向性判斷</h3>
+<p>Overall, I’m <strong>cautiously bullish</strong> for May.  The Fed’s likely pause combined with strong chip earnings should lift the Nasdaq and TAIEX, but a surprise rate hike or weaker AI orders would flip the bias.</p>
+<p>總體而言，我對 5 月持<strong>謹慎看多</strong>的觀點。若聯準會繼續觀望且晶片財報強勁，將提升納指與台指；但若突然升息或 AI 訂單不及預期，則可能轉弱。</p>
+</div></div>
+<div class="section-card sec-amber"><h2 class="section-title">INVESTOR LENS / 投資人視角</h2><div class="section-body">
+<h3 class="sub-heading">🏛️ Long-term Market Perspective / 長期市場視野</h3>
+<p>The market today is priced for modest growth, not a full‑blown boom.  Valuations are fair for high‑quality tech and cheap for many industrials.  A patient investor should keep a core of S&amp;P 500 and TAIEX leaders and add selectively when earnings confirm sustainable AI demand.  The single most important watch‑point is whether AI‑related revenue turns into recurring cash flow, not one‑off hype.</p>
+<p>現在的市場僅反映了溫和成長，並非全速上揚。高品質科技股估值合理，工業板塊則相對便宜。耐心的投資人應保有標普500與台指龍頭作為核心，並在財報證實 AI 需求具可持續性時適度加碼。最關鍵的是要觀察 AI 相關收入是否能轉化為持續的現金流，而非一次性熱潮。</p>
+<h3 class="sub-heading">🔍 Sector Value Scan / 板塊價值掃描</h3>
+<ul class="overview-list">
+<li><strong>Semiconductors / 半導體</strong>: Strong moat from advanced process nodes; current forward P/E below 5‑year average → cheap for a sector with solid cash flow.</li>
+</ul>
+<p>半導體：因先進製程具壁壘；目前本益比低於過去五年平均 → 估值偏低，現金流穩健。</p>
+<ul class="overview-list">
+<li><strong>Healthcare Equipment / 醫療設備</strong>: Aging population gives a durable demand tail; valuation is fair, but China‑policy risk remains.</li>
+</ul>
+<p>醫療設備：高齡化人口提供長期需求；估值合理，但仍受中國政策風險影響。</p>
+<ul class="overview-list">
+<li><strong>Energy / 能源</strong>: OPEC+ cuts keep oil prices above $85/bbl, supporting cash‑rich integrated majors; however, a rapid shift to renewables could compress margins – currently fair.</li>
+</ul>
+<p>能源：OPEC+ 產量削減使油價維持在每桶 85 美元以上，為大型石油公司提供現金流；不過若再生能源快速取代可能侵蝕利潤，現階段估值偏中性。</p>
+</div></div>
+<div class="section-card sec-indigo"><h2 class="section-title">ANALYST CONSENSUS VIEW / 分析師共識觀點</h2><div class="section-body">
+<h3 class="sub-heading">📊 Market Sentiment &amp; Positioning / 市場情緒與部位配置</h3>
+<p>Wall Street is mildly optimistic, with the S&amp;P 500 weighted average analyst target implying ~5% upside.  Analysts are overweight tech and Taiwan chips, underweight European banks and Chinese real estate.  The bull case hinges on AI earnings beat and a dovish Fed; the bear case rests on an unexpected rate hike or a slowdown in AI capital spending.</p>
+<p>華爾街情緒稍微偏樂觀，標普500 的分析師平均目標價顯示約 5% 上漲空間。分析師偏好科技和台灣晶片，低配歐洲銀行與中國房地產。做多的理由是 AI 財報優於預期且聯準會保持鴿派；做空的風險是突然升息或 AI 資本支出放緩。</p>
+<h3 class="sub-heading">⚡ Key Risks to Monitor / 重要風險事項</h3>
+<div class="num-item"><span class="num-badge">1</span><div class="num-body"><p class="num-title"><strong>Unexpected Fed Rate Hike</strong> / <strong>聯準會意外升息</strong>: A 25‑basis‑point increase would spook risk assets, pulling the Nasdaq and TAIEX down 2‑3%.</p><p>若聯準會意外升息 0.25 個百分點，將使風險資產受挫，納指與台指可能下跌 2‑3%。</p></div></div>
+<div class="num-item"><span class="num-badge">2</span><div class="num-body"><p class="num-title"><strong>AI Order Pull‑Back</strong> / <strong>AI 訂單縮減</strong>: If NVIDIA and AMD report weaker-than‑expected AI bookings, tech valuations could compress sharply.</p><p>若 NVIDIA、AMD 報告 AI 訂單低於預期，科技股估值可能快速收縮。</p></div></div>
+<div class="num-item"><span class="num-badge">3</span><div class="num-body"><p class="num-title"><strong>Geopolitical Tension in the Taiwan Strait</strong> / <strong>台海緊張局勢升溫</strong>: Any escalation would raise a risk premium on Taiwan‑listed stocks and could trigger capital outflows.</p><p>若台海局勢惡化，台股將面臨風險溢酬上升，資金可能外流。</p></div></div>
+</div></div>
+</div>
+
+<footer>
+  The Signal Desk &nbsp;·&nbsp; Market Overview &nbsp;·&nbsp; May 2026 Preview · April 2026 Review &nbsp;·&nbsp; 2026-05-03
+</footer>
+
+</body>
+</html>

@@ -46,8 +46,9 @@ body {
 nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 48px;
+  padding: 0 40px;
   display: flex;
+  overflow: hidden;
   align-items: center;
   justify-content: space-between;
   height: 56px;
@@ -57,6 +58,7 @@ nav {
   box-shadow: var(--shadow-sm);
 }
 .nav-brand {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -76,7 +78,9 @@ nav {
 }
 .nav-links {
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  flex-shrink: 1;
+  min-width: 0;
   list-style: none;
 }
 .nav-links a {
@@ -553,11 +557,12 @@ footer {
     <div class="nav-dot"></div>
     <span class="nav-name">The Signal Desk</span>
   </a>
-  <ul class="nav-links">
+    <ul class="nav-links">
+    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
     <li><a href="market.html">Market</a></li>
     <li><a href="top-picks.html">Top Picks</a></li>
     <li><a href="sector-leaders.html">Sector Leaders</a></li>
-    <li><a href="earnings-calendar.html">Earnings Calendar</a></li>
+    <li><a href="income-statement-guide.html" class="active">Statement Guide</a></li>
     <li><a href="news-sources.html">News Sources</a></li>
   </ul>
 </nav>
