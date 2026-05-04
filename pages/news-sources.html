@@ -64,10 +64,16 @@ footer {
   border-top: 1px solid var(--border); padding: 24px 48px;
   text-align: center; font-size: 12px; color: var(--text-muted); background: var(--surface);
 }
+.mk-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.mk-table tbody tr:hover { background: var(--bg); }
+.news-title { word-break: break-word; }
 @media (max-width: 620px) {
   nav, .hero, .content, footer { padding-left: 16px; padding-right: 16px; }
+  .hero { padding: 32px 20px 24px; }
+  .content { padding: 0 16px 60px; }
   .hero h1 { font-size: 22px; }
   .nav-links { display: none; }
+  body { font-size: 14px; }
 }
 
 
@@ -180,7 +186,7 @@ footer {
 <div class="hero">
   <div class="pill">Live Data · 即時資料 · Auto-updated</div>
   <h1>News Sources &nbsp;<span style="font-size:16px;font-weight:400;color:var(--text-muted)">新聞來源</span></h1>
-  <p class="hero-sub">Every briefing draws from 50 RSS feeds across 7 regions. Automatically regenerated whenever a new source is added.<br><span style="font-size:13px;color:var(--text-muted)">每份簡報從 50 個 RSS 來源抓取，涵蓋 7 個地區。新增來源時自動更新。</span></p>
+  <p class="hero-sub">Every briefing draws from 50 RSS feeds across 13 regions. Automatically regenerated whenever a new source is added.<br><span style="font-size:13px;color:var(--text-muted)">每份簡報從 50 個 RSS 來源抓取，涵蓋 13 個地區。新增來源時自動更新。</span></p>
 </div>
 
 <div class="content">
@@ -191,7 +197,7 @@ footer {
       <div class="stat-label">Total Sources</div>
     </div>
     <div class="stat-tile">
-      <div class="stat-val">7</div>
+      <div class="stat-val">13</div>
       <div class="stat-label">Regions Covered</div>
     </div>
     <div class="stat-tile">
@@ -368,6 +374,35 @@ footer {
       </tbody>
     </table>
   </div>
+  <div class="region-card" style="border-top:4px solid #4a6090;">
+    <div class="region-head" style="background:linear-gradient(135deg,#eef2fa 0%,var(--surface) 65%);">
+      <span class="region-flag">🇪🇺</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#4a6090">Europe</span>
+        <span class="region-zh">歐洲</span>
+      </div>
+      <span class="region-count" style="color:#4a6090;background:#eef2fa;border-color:#c0cce8">2 sources</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#eef2fa 0%,var(--surface-off) 65%); border-bottom:1px solid #c0cce8;">
+          <th style="color:#4a6090">Source</th>
+          <th style="color:#4a6090">Language</th>
+          <th style="color:#4a6090">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">DW Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+            <tr>
+              <td class="src-name">Euronews Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
   <div class="region-card" style="border-top:4px solid #2a7a7a;">
     <div class="region-head" style="background:linear-gradient(135deg,#e8f5f5 0%,var(--surface) 65%);">
       <span class="region-flag">🌏</span>
@@ -520,15 +555,144 @@ footer {
       </tbody>
     </table>
   </div>
+  <div class="region-card" style="border-top:4px solid #8b4a10;">
+    <div class="region-head" style="background:linear-gradient(135deg,#faf0e8 0%,var(--surface) 65%);">
+      <span class="region-flag">🇮🇳</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#8b4a10">India</span>
+        <span class="region-zh">印度</span>
+      </div>
+      <span class="region-count" style="color:#8b4a10;background:#faf0e8;border-color:#e0c4a0">2 sources</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#faf0e8 0%,var(--surface-off) 65%); border-bottom:1px solid #e0c4a0;">
+          <th style="color:#8b4a10">Source</th>
+          <th style="color:#8b4a10">Language</th>
+          <th style="color:#8b4a10">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">Economic Times India</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+            <tr>
+              <td class="src-name">Mint Markets</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #a03060;">
+    <div class="region-head" style="background:linear-gradient(135deg,#faeaf0 0%,var(--surface) 65%);">
+      <span class="region-flag">🇯🇵</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#a03060">Japan</span>
+        <span class="region-zh">日本</span>
+      </div>
+      <span class="region-count" style="color:#a03060;background:#faeaf0;border-color:#e0b0c8">1 source</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#faeaf0 0%,var(--surface-off) 65%); border-bottom:1px solid #e0b0c8;">
+          <th style="color:#a03060">Source</th>
+          <th style="color:#a03060">Language</th>
+          <th style="color:#a03060">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">Japan Times Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #2060a0;">
+    <div class="region-head" style="background:linear-gradient(135deg,#e8f0fa 0%,var(--surface) 65%);">
+      <span class="region-flag">🇦🇺</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#2060a0">Australia</span>
+        <span class="region-zh">澳洲</span>
+      </div>
+      <span class="region-count" style="color:#2060a0;background:#e8f0fa;border-color:#a0c0e0">1 source</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#e8f0fa 0%,var(--surface-off) 65%); border-bottom:1px solid #a0c0e0;">
+          <th style="color:#2060a0">Source</th>
+          <th style="color:#2060a0">Language</th>
+          <th style="color:#2060a0">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">SMH Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #205080;">
+    <div class="region-head" style="background:linear-gradient(135deg,#e8f0f8 0%,var(--surface) 65%);">
+      <span class="region-flag">🇰🇷</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#205080">South Korea</span>
+        <span class="region-zh">韓國</span>
+      </div>
+      <span class="region-count" style="color:#205080;background:#e8f0f8;border-color:#a0c0d8">1 source</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#e8f0f8 0%,var(--surface-off) 65%); border-bottom:1px solid #a0c0d8;">
+          <th style="color:#205080">Source</th>
+          <th style="color:#205080">Language</th>
+          <th style="color:#205080">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">Korea Herald Business</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="region-card" style="border-top:4px solid #903030;">
+    <div class="region-head" style="background:linear-gradient(135deg,#fae8e8 0%,var(--surface) 65%);">
+      <span class="region-flag">🇨🇳</span>
+      <div class="region-title-block">
+        <span class="region-title" style="color:#903030">China</span>
+        <span class="region-zh">中國</span>
+      </div>
+      <span class="region-count" style="color:#903030;background:#fae8e8;border-color:#e0b0b0">1 source</span>
+    </div>
+    <table class="src-table">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#fae8e8 0%,var(--surface-off) 65%); border-bottom:1px solid #e0b0b0;">
+          <th style="color:#903030">Source</th>
+          <th style="color:#903030">Language</th>
+          <th style="color:#903030">Feed</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td class="src-name">Caixin Global</td>
+              <td class="src-lang" style="color:var(--text-muted);">English</td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
 
   <div class="note">
-    📡 &nbsp;This page is auto-generated from the live source list each time the briefing system starts. Adding a new RSS feed to the system will automatically appear here on the next run. Last updated: May 01, 2026 · 23:49 Taipei.
+    📡 &nbsp;This page is auto-generated from the live source list each time the briefing system starts. Adding a new RSS feed to the system will automatically appear here on the next run. Last updated: May 04, 2026 · 09:11 Taipei.
   </div>
 
 </div>
 
 <footer>
-  The Signal Desk &nbsp;·&nbsp; News Sources &nbsp;·&nbsp; Auto-generated 2026-05-01
+  The Signal Desk &nbsp;·&nbsp; News Sources &nbsp;·&nbsp; Auto-generated 2026-05-04
 </footer>
 
 </body>
