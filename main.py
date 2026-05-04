@@ -24,7 +24,7 @@ from src.analysis.claude_analyst import generate_briefing, generate_intraday_ale
 from src.notifications.email_sender import EmailChannel
 from src.notifications.line_sender import LineChannel
 from src.utils.helpers import load_settings, load_watchlist, now_taipei
-from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, generate_signal_log_page, _fetch_monthly_index_data, _load_scores_cache, _save_scores_cache, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
+from src.utils.page_generator import generate_news_sources_page, generate_monthly_overview_page, generate_company_page, generate_top_picks_page, generate_sector_leaders_page, generate_market_page, generate_earnings_calendar_page, generate_signal_log_page, generate_etf_overview_page, _fetch_monthly_index_data, _load_scores_cache, _save_scores_cache, PAGES_DIR, TOP_PICKS_UNIVERSE, SECTOR_GROUPS
 from src.fetchers.news import NEWS_FEEDS
 from src.analysis.claude_analyst import generate_monthly_overview
 from src.analysis.conviction_score import compute_conviction_score
@@ -446,6 +446,11 @@ if __name__ == "__main__":
     if missing:
         print(f"  Generating {len(missing)} missing watchlist company page(s)...")
         run_company_pages(missing)
+
+    # Regenerate ETF overview on startup (lightweight, no AI)
+    print("  Generating ETF Overview page...")
+    generate_etf_overview_page()
+    _git_push_pages("etf-overview")
 
     # Generate monthly overview if this month's page doesn't exist yet
     import os

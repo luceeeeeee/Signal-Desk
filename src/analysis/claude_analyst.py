@@ -828,7 +828,8 @@ def _build_line_menu(settings: dict, base_url: str) -> str:
         f"📋 月度總覽  {base_url}/monthly-{month_slug}.html",
         f"📅 財報日曆  {base_url}/earnings-calendar-2026.html",
         f"📡 新聞來源  {base_url}/news-sources.html",
-        f"📈 公司分析  {base_url}/top-picks.html",
+        f"📈 股票分析  {base_url}/top-picks.html",
+        f"🏦 ETF 總覽  {base_url}/etf-overview.html",
         "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
     ]
     return "\n".join(lines)

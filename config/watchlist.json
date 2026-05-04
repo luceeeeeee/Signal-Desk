@@ -97,6 +97,13 @@
       "market": "TW",
       "currency": "TWD",
       "note": "UPAMC Taiwan Growth Active ETF"
+    },
+    {
+      "ticker": "QQQM",
+      "name": "Invesco NASDAQ 100 ETF",
+      "market": "US",
+      "currency": "USD",
+      "note": "Lower-cost QQQ alternative"
     }
   ]
 }

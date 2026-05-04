@@ -4814,3 +4814,269 @@ def generate_signal_log_page(signals: list = None) -> str:
         f.write(html)
     print(f"[Pages] signal-log.html written ({len(signals)} signals)")
     return "signal-log.html"
+
+
+# ── ETF Overview ──────────────────────────────────────────────────────────────
+
+ETF_CATEGORIES = [
+    {
+        "id": "tw-growth",
+        "name": "TW Growth ETFs",
+        "name_zh": "台灣成長型 ETF",
+        "desc": "Broad Taiwan market — tracks major indices",
+        "desc_zh": "追蹤台灣主要指數，廣泛市場曝險",
+        "tickers": ["0050.TW", "0052.TW", "006208.TW"],
+    },
+    {
+        "id": "tw-income",
+        "name": "TW Income ETFs",
+        "name_zh": "台灣高股息型 ETF",
+        "desc": "High-dividend Taiwan ETFs — income-focused, regular distributions",
+        "desc_zh": "高殖利率台股 ETF，以定期配息為核心策略",
+        "tickers": ["0056.TW", "00878.TW", "00919.TW", "00915.TW", "00918.TW", "009816.TW", "00981A.TW"],
+    },
+    {
+        "id": "us-growth",
+        "name": "US Growth ETFs",
+        "name_zh": "美國成長型 ETF",
+        "desc": "US broad-market and Nasdaq-100 index ETFs",
+        "desc_zh": "美股大盤與那斯達克100指數 ETF",
+        "tickers": ["SPY", "QQQ", "QQQM"],
+    },
+]
+
+_ETF_NAMES = {
+    "0050.TW":   ("元大台灣50 ETF",          "Yuanta Taiwan 50"),
+    "0052.TW":   ("富邦科技 ETF",             "FuBon Technology"),
+    "006208.TW": ("富邦台50 ETF",             "FuBon Taiwan 50"),
+    "0056.TW":   ("元大高股息 ETF",           "Yuanta High Dividend"),
+    "00878.TW":  ("國泰永續高股息 ETF",       "Cathay Sustainable Hi-Div"),
+    "00919.TW":  ("群益台灣精選高息 ETF",     "CTBC Select Hi-Div"),
+    "00915.TW":  ("凱基優選高股息30 ETF",     "KGI Select Hi-Div 30"),
+    "00918.TW":  ("大華優利高填息30 ETF",     "Ta Chong Hi-Div 30"),
+    "009816.TW": ("凱基台灣TOP50 ETF",        "KGI Taiwan TOP 50"),
+    "00981A.TW": ("統一台灣成長主動 ETF",     "UPAMC TW Growth Active"),
+    "SPY":       ("SPDR S&P 500 ETF",         "S&P 500 大盤指數"),
+    "QQQ":       ("Invesco QQQ Trust",        "那斯達克100"),
+    "QQQM":      ("Invesco NASDAQ 100 ETF",   "那斯達克100（低費版）"),
+}
+
+_ETF_TYPE = {
+    "0050.TW": "growth", "0052.TW": "growth", "006208.TW": "growth",
+    "0056.TW": "income", "00878.TW": "income", "00919.TW": "income",
+    "00915.TW": "income", "00918.TW": "income", "009816.TW": "income", "00981A.TW": "income",
+    "SPY": "growth", "QQQ": "growth", "QQQM": "growth",
+}
+
+
+def _fetch_etf_info(ticker: str) -> dict:
+    """Fetch ETF metrics from yfinance with graceful fallback."""
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            info = yf.Ticker(ticker).info
+        return info
+    except Exception:
+        return {}
+
+
+def _fmt_aum(v) -> str:
+    if not v:
+        return "N/A"
+    try:
+        v = float(v)
+        if v >= 1e12:
+            return f"${v/1e12:.1f}T"
+        if v >= 1e9:
+            return f"${v/1e9:.1f}B"
+        if v >= 1e6:
+            return f"${v/1e6:.0f}M"
+        return f"${v:.0f}"
+    except Exception:
+        return "N/A"
+
+
+def _fmt_aum_twd(v) -> str:
+    if not v:
+        return "N/A"
+    try:
+        v = float(v)
+        if v >= 1e12:
+            return f"NT${v/1e12:.1f}兆"
+        if v >= 1e9:
+            return f"NT${v/1e9:.0f}億"
+        return f"NT${v/1e6:.0f}百萬"
+    except Exception:
+        return "N/A"
+
+
+def _render_etf_card(ticker: str, info: dict, is_tw: bool) -> str:
+    names = _ETF_NAMES.get(ticker, (ticker, ticker))
+    name_zh, name_en = names
+    etf_type = _ETF_TYPE.get(ticker, "growth")
+
+    price = info.get("regularMarketPrice") or info.get("currentPrice")
+    change_pct = info.get("regularMarketChangePercent") or info.get("regularMarketChange", 0)
+    if price and change_pct and abs(change_pct) > 1:
+        # yfinance sometimes returns absolute change, compute pct
+        prev = info.get("regularMarketPreviousClose") or (price - change_pct)
+        if prev:
+            change_pct = ((price - prev) / prev) * 100
+
+    price_str = f"NT${price:.2f}" if is_tw and price else (f"${price:.2f}" if price else "—")
+    change_color = "#2e6b58" if (change_pct or 0) >= 0 else "#b84040"
+    change_str = f'<span style="color:{change_color};font-weight:600">{change_pct:+.2f}%</span>' if change_pct else "—"
+
+    yield_raw = info.get("dividendYield") or info.get("trailingAnnualDividendYield") or 0
+    yield_pct = yield_raw if yield_raw < 1 else yield_raw / 100  # normalize
+    yield_str = f"{yield_pct*100:.1f}%" if yield_pct else "N/A"
+
+    ytd = info.get("ytdReturn")
+    yr3 = info.get("threeYearAverageReturn")
+    yr5 = info.get("fiveYearAverageReturn")
+    ytd_str = f"{ytd*100:.1f}%" if ytd else "N/A"
+    yr3_str  = f"{yr3*100:.1f}%/yr" if yr3 else "N/A"
+    yr5_str  = f"{yr5*100:.1f}%/yr" if yr5 else "N/A"
+
+    aum = info.get("totalAssets")
+    aum_str = _fmt_aum_twd(aum) if is_tw else _fmt_aum(aum)
+
+    pe = info.get("trailingPE")
+    pe_str = f"{pe:.1f}×" if pe else "N/A"
+
+    # type badge
+    badge_color = "#b87820" if etf_type == "income" else "#2e6b58"
+    badge_label = ("高股息型 Income" if etf_type == "income" else "成長型 Growth") if is_tw else ("Income" if etf_type == "income" else "Growth")
+
+    ticker_slug = ticker.lower().replace(".", "")
+    company_link = f"stock-{ticker_slug}.html"
+
+    # income-specific note
+    income_note = ""
+    if etf_type == "income":
+        income_note = f"""
+        <div style="margin-top:8px;padding:8px;background:#fffbf0;border-radius:6px;font-size:12px;color:#b87820">
+          ⚠️ Dividend yield ≠ total return. High distributions may be offset by price decline.<br>
+          <span style="color:#8a6010">殖利率 ≠ 總報酬。高配息可能伴隨股價下跌，需合併計算實際獲利。</span>
+        </div>"""
+
+    return f"""
+    <div style="background:#fff;border-radius:12px;padding:20px 24px;box-shadow:var(--shadow-sm);margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <span style="font-size:11px;font-weight:700;color:{badge_color};background:{badge_color}18;padding:2px 8px;border-radius:10px;text-transform:uppercase">{badge_label}</span>
+          <div style="margin-top:6px">
+            <a href="{company_link}" style="font-size:18px;font-weight:700;color:var(--accent);text-decoration:none">{ticker}</a>
+            <span style="font-size:13px;color:var(--text-muted);margin-left:8px">{name_zh}</span><br>
+            <span style="font-size:12px;color:#888">{name_en}</span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:700">{price_str}</div>
+          <div style="font-size:14px">{change_str}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:16px">
+        <div style="background:#f8f9f8;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">殖利率 Yield</div>
+          <div style="font-size:16px;font-weight:700;color:#2e6b58">{yield_str}</div>
+          <div style="font-size:10px;color:#aaa">annual income/price</div>
+        </div>
+        <div style="background:#f8f9f8;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">今年報酬 YTD</div>
+          <div style="font-size:16px;font-weight:700">{ytd_str}</div>
+          <div style="font-size:10px;color:#aaa">year-to-date return</div>
+        </div>
+        <div style="background:#f8f9f8;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">3年年化 3Y Ann.</div>
+          <div style="font-size:16px;font-weight:700">{yr3_str}</div>
+          <div style="font-size:10px;color:#aaa">annualized</div>
+        </div>
+        <div style="background:#f8f9f8;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">5年年化 5Y Ann.</div>
+          <div style="font-size:16px;font-weight:700">{yr5_str}</div>
+          <div style="font-size:10px;color:#aaa">annualized</div>
+        </div>
+        <div style="background:#f8f9f8;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">規模 AUM</div>
+          <div style="font-size:14px;font-weight:700">{aum_str}</div>
+          <div style="font-size:10px;color:#aaa">total fund assets</div>
+        </div>
+        <div style="background:#f8f9f8;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:#888">本益比 P/E</div>
+          <div style="font-size:16px;font-weight:700">{pe_str}</div>
+          <div style="font-size:10px;color:#aaa">blended P/E ratio</div>
+        </div>
+      </div>
+      {income_note}
+      <div style="margin-top:12px;text-align:right">
+        <a href="{company_link}" style="font-size:13px;color:var(--accent);text-decoration:none;font-weight:600">詳細分析 Full Analysis →</a>
+      </div>
+    </div>"""
+
+
+def generate_etf_overview_page() -> None:
+    """Write pages/etf-overview.html with 3 ETF category sections."""
+    now = datetime.now(tz=TAIPEI_TZ)
+    updated = now.strftime("%B %d, %Y · %H:%M Taipei")
+
+    # Fetch all ETF data up front
+    all_tickers = [t for cat in ETF_CATEGORIES for t in cat["tickers"]]
+    etf_data = {}
+    for ticker in all_tickers:
+        etf_data[ticker] = _fetch_etf_info(ticker)
+
+    # Build category sections
+    sections_html = ""
+    for cat in ETF_CATEGORIES:
+        is_tw = cat["id"].startswith("tw")
+        cards = "".join(_render_etf_card(t, etf_data.get(t, {}), is_tw) for t in cat["tickers"])
+        sections_html += f"""
+  <section style="margin-bottom:48px">
+    <div style="border-left:4px solid var(--accent);padding-left:16px;margin-bottom:24px">
+      <h2 style="margin:0;font-size:20px;font-weight:700">{cat["name"]} <span style="font-size:14px;font-weight:400;color:var(--text-muted)">{cat["name_zh"]}</span></h2>
+      <p style="margin:4px 0 0;font-size:13px;color:#666">{cat["desc"]}<br><span style="color:#999">{cat["desc_zh"]}</span></p>
+    </div>
+    {cards}
+  </section>"""
+
+    nav = _nav_html("etf-overview.html")
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ETF Overview — Signal Desk</title>
+{SHARED_CSS}
+</head>
+<body>
+{nav}
+<div class="hero">
+  <h1>ETF Overview <span style="font-size:16px;font-weight:400;color:var(--text-muted)">ETF 總覽</span></h1>
+  <p class="hero-sub">US &amp; Taiwan ETFs — growth and income, categorised for easy comparison.<br>
+    <span style="font-size:13px;color:var(--text-muted)">美股與台股 ETF — 成長型與收益型分類比較，適合各類投資目標。</span>
+  </p>
+  <p style="font-size:12px;color:#999;margin-top:4px">Updated {updated}</p>
+</div>
+<div class="container">
+
+  <div style="background:#f0f7f4;border:1px solid #c8e0d8;border-radius:10px;padding:14px 18px;margin-bottom:32px;font-size:13px">
+    <strong>📖 How to read this page / 如何閱讀本頁</strong><br>
+    <span style="color:#444">Each card shows the ETF's current price, annual yield, returns (YTD · 3Y · 5Y), fund size (AUM), and blended P/E. Click <em>Full Analysis</em> for detailed metrics.</span><br>
+    <span style="font-size:12px;color:#888">每張卡片顯示ETF現價、年殖利率、報酬率（今年·三年·五年）、基金規模與本益比。點擊「詳細分析」可查看完整指標。</span>
+  </div>
+
+{sections_html}
+</div>
+<footer style="text-align:center;padding:32px;font-size:12px;color:#999">
+  Signal Desk · ETF data via yfinance · {updated}
+</footer>
+</body>
+</html>"""
+
+    os.makedirs(PAGES_DIR, exist_ok=True)
+    out_path = os.path.join(PAGES_DIR, "etf-overview.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"[Pages] etf-overview.html written — {len(all_tickers)} ETFs across {len(ETF_CATEGORIES)} categories")
