@@ -5048,7 +5048,9 @@ def generate_etf_overview_page() -> None:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ETF Overview — Signal Desk</title>
+<style>
 {SHARED_CSS}
+</style>
 </head>
 <body>
 {nav}
