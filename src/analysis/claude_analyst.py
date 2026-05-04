@@ -245,17 +245,20 @@ Reporting: [date, ET time] / [TPE date, time]
 - 📈 Outlook: [Specific directional call — "Likely to beat/miss because..." with real reasons: recent news, AI trends, macro data, competitor signals, prior quarter momentum. Name the expected % stock move.]
 
 📊 Analyst Insight / 分析師總結:
-[English — 3-4 sentences synthesizing multiple perspectives:
+
+ENGLISH (output this block):
+3-4 sentences synthesizing multiple perspectives:
   1. Trend view: How does this quarter compare to recent history? Is the company accelerating, decelerating, or holding steady?
   2. Bull case: What is the strongest reason to be optimistic about this report?
   3. Bear case: What is the one thing that could disappoint — name a specific risk (not generic "macro uncertainty")?
-  4. Bottom line: Given all of this, what should an investor watch for the moment results drop? Name a specific number or guidance metric that will move the stock.]
+  4. Bottom line: Given all of this, what should an investor watch for the moment results drop? Name a specific number or guidance metric that will move the stock.
 
-[繁體中文 — 3-4句，綜合多方觀點：
+繁體中文（必須輸出此段）:
+3-4句，綜合多方觀點：
   1. 趨勢觀察：與近幾季相比，公司是在加速、減速還是持平？
   2. 樂觀理由：對這份財報最有說服力的一個正面論點？
   3. 風險因素：最可能讓市場失望的一件具體事項（不要泛稱「總經不確定性」）？
-  4. 投資結論：結果公布時，投資人最應該盯哪一個具體數字或業績指引？]
+  4. 投資結論：結果公布時，投資人最應該盯哪一個具體數字或業績指引？
 
 [繁體中文 — 財報資料]
 - 公司簡介：一句話說明公司業務
@@ -331,12 +334,11 @@ TICKER / Company Name
 - 長期投資結論：[一句話，資深投資人平易近人的風格——會買入、持有，還是略過？]]]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Market Page / 市場總覽 → [MARKET_URL]
 📋 Monthly Overview / 月度總覽 → [MONTHLY_PAGE_URL]
 📚 Income Statement Guide / 財報指南 → [GUIDE_URL]
 📅 Earnings Calendar / 財報日曆 → [CALENDAR_URL]
 📡 News Sources / 新聞來源 → [SOURCES_URL]
-🔗 SEC Filings / 美股申報 → https://www.sec.gov/cgi-bin/browse-edgar
-🔗 TW Filings / 台股公開資訊 → https://mops.twse.com.tw
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
 
 
@@ -754,6 +756,7 @@ def _inject_site_links(briefing: str, settings: dict) -> str:
     now = datetime.now(tz=TAIPEI_TZ)
     month_slug = now.strftime("%Y-%m")
     replacements = {
+        "[MARKET_URL]":         f"{base}/market.html",
         "[MONTHLY_PAGE_URL]":  f"{base}/monthly-{month_slug}.html",
         "[GUIDE_URL]":         f"{base}/income-statement-guide.html",
         "[CALENDAR_URL]":      f"{base}/earnings-calendar-2026.html",
@@ -764,16 +767,86 @@ def _inject_site_links(briefing: str, settings: dict) -> str:
     return briefing
 
 
-def generate_briefing(market: str, news_items_text: str, prices_text: str, earnings_text: str, sentiment_text: str = "", base_url: str = "") -> str:
+
+def _build_line_briefing_prompt(market: str, news_items_text: str, prices_text: str, earnings_text: str, sentiment_text: str = "") -> str:
+    now = datetime.now(tz=TAIPEI_TZ)
+    if market == "TW":
+        session_label = "早安 TW | Good Morning TW"
+    else:
+        session_label = "晚間 US | Good Evening US"
+
+    return f"""Generate a compact LINE-format briefing for {market} market. Output EXACTLY the sections below in order. Keep every line SHORT — one line per item. Both English and Traditional Chinese (繁體中文) are required for every item.
+
+TODAY: {now.strftime("%Y-%m-%d %H:%M")} Taipei
+
+DATA PROVIDED:
+MARKET SENTIMENT: {sentiment_text}
+WATCHLIST PRICES: {prices_text}
+NEWS: {news_items_text}
+EARNINGS: {earnings_text}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{session_label}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【MARKET OVERVIEW / 市場概況】
+Pick the 3 most market-moving indicators (e.g. S&P 500, Nasdaq, TWSE, VIX, 10Y yield).
+For each, one English line then one Chinese line:
+[index/indicator]: [value] ([change]) — [one-sentence plain-language impact]
+[指標中文名]: [數值] ([變化]) — [一句話說明影響]
+
+【TOP NEWS / 市場新聞】
+Pick the 3 most investment-relevant headlines from NEWS data.
+For each, one English line then one Chinese line:
+[Source | Region] [Headline] — 📌 [one-sentence market impact]
+[來源 | 地區] [中文標題] — 📌 [一句話市場影響]
+
+【WATCHLIST / 自選股方向】
+For EVERY stock in WATCHLIST PRICES (skip ETFs), two lines per stock:
+Line 1 (English): [TICKER] [🟢 Bullish/🟡 Neutral/🔴 Bearish] — [reason, 5 words max] | Risk: [specific risk, 5 words] | Watch: [specific level or trigger]
+Line 2 (Chinese): [護城河: 寬廣/狹窄/無] | [長期獲利: 強/中/弱] | [估值: 便宜/合理/偏貴] | [結論: one decisive phrase]
+
+【EARNINGS SPOTLIGHT / 財報焦點】
+ONLY include this section if there are companies reporting within 48 hours. If none, OMIT this section entirely.
+For each company, one English line then one Chinese line:
+[TICKER] ([date ET] / [TPE time]) — 📌 [outlook in one sentence, include expected % move]
+[公司名] — 📌 [一句話展望，含預期漲跌幅] | 分析師: [one-sentence analyst view]
+
+Do NOT include any footer, links, or extra commentary. Stop after the last section."""
+
+
+def _build_line_menu(settings: dict, base_url: str) -> str:
+    """Build the LINE menu footer with direct page links."""
+    if not base_url:
+        return ""
+    from datetime import datetime
+    now = datetime.now()
+    month_slug = now.strftime("%Y-%m")
+    lines = [
+        "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        f"📊 市場總覽  {base_url}/market.html",
+        f"📋 月度總覽  {base_url}/monthly-{month_slug}.html",
+        f"📅 財報日曆  {base_url}/earnings-calendar-2026.html",
+        f"📡 新聞來源  {base_url}/news-sources.html",
+        f"📈 公司分析  {base_url}/top-picks.html",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    ]
+    return "\n".join(lines)
+
+def generate_briefing(market: str, news_items_text: str, prices_text: str, earnings_text: str, sentiment_text: str = "", base_url: str = "", line_format: bool = False) -> str:
     settings = load_settings()
     if not base_url:
         base_url = _site_url(settings)
-    prompt = _build_briefing_prompt(market, news_items_text, prices_text, earnings_text, sentiment_text)
-    briefing = _generate(prompt, max_tokens=settings["analysis"]["briefing_max_tokens"])
-    briefing = _inject_site_links(briefing, settings)
-    # Append company page links section if site is configured
-    if base_url and prices_text:
-        briefing += _build_company_links_footer(prices_text, base_url)
+    if line_format:
+        prompt = _build_line_briefing_prompt(market, news_items_text, prices_text, earnings_text, sentiment_text)
+        briefing = _generate(prompt, max_tokens=3000)
+        briefing += _build_line_menu(settings, base_url)
+    else:
+        prompt = _build_briefing_prompt(market, news_items_text, prices_text, earnings_text, sentiment_text)
+        briefing = _generate(prompt, max_tokens=settings["analysis"]["briefing_max_tokens"])
+        briefing = _inject_site_links(briefing, settings)
+        if base_url and prices_text:
+            briefing += _build_company_links_footer(prices_text, base_url)
     return briefing
 
 

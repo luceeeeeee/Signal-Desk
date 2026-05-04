@@ -124,13 +124,24 @@ def _deduplicate(items: list, max_items: int = 20) -> list:
 
 
 def fetch_news(hours_back: int = 24, max_items: int = 20) -> list:
+    from collections import defaultdict
     all_items = []
     for source in NEWS_FEEDS:
         all_items.extend(_fetch_feed(source, hours_back=hours_back))
 
     # Sort newest first
     all_items.sort(key=lambda x: x["published"], reverse=True)
-    return _deduplicate(all_items, max_items=max_items)
+
+    # Cap at 2 items per source to prevent any one region dominating
+    source_counts = defaultdict(int)
+    capped = []
+    for item in all_items:
+        src = item["source"]
+        if source_counts[src] < 2:
+            capped.append(item)
+            source_counts[src] += 1
+
+    return _deduplicate(capped, max_items=max_items)
 
 
 def format_news_for_prompt(news_items: list) -> str:

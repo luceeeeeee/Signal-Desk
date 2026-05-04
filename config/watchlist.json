@@ -34,6 +34,69 @@
       "market": "TW",
       "currency": "TWD",
       "note": "TW50 ETF"
+    },
+    {
+      "ticker": "0052.TW",
+      "name": "富邦科技 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "FuBon Technology ETF"
+    },
+    {
+      "ticker": "006208.TW",
+      "name": "富邦台50 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "FuBon Taiwan 50 ETF"
+    },
+    {
+      "ticker": "00919.TW",
+      "name": "群益台灣精選高息 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "CTBC Taiwan Select High Dividend ETF"
+    },
+    {
+      "ticker": "00878.TW",
+      "name": "國泰永續高股息 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "Cathay Sustainable High Dividend ETF"
+    },
+    {
+      "ticker": "00918.TW",
+      "name": "大華優利高填息30 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "Ta Chong High Dividend 30 ETF"
+    },
+    {
+      "ticker": "00915.TW",
+      "name": "凱基優選高股息30 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "KGI Select High Dividend 30 ETF"
+    },
+    {
+      "ticker": "0056.TW",
+      "name": "元大高股息 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "Yuanta High Dividend ETF"
+    },
+    {
+      "ticker": "009816.TW",
+      "name": "凱基台灣TOP50 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "KGI Taiwan TOP 50 ETF"
+    },
+    {
+      "ticker": "00981A.TW",
+      "name": "統一台灣成長主動 ETF",
+      "market": "TW",
+      "currency": "TWD",
+      "note": "UPAMC Taiwan Growth Active ETF"
     }
   ]
 }

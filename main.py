@@ -229,7 +229,7 @@ def run_briefing(market: str):
     sentiment_text = format_market_sentiment_for_prompt(sentiment)
 
     print("  Generating briefing with Claude...")
-    briefing = generate_briefing(market, news_text, prices_text, earnings_text, sentiment_text, base_url)
+    briefing = generate_briefing(market, news_text, prices_text, earnings_text, sentiment_text, base_url, line_format=(channel_cfg.get("channel") == "line"))
 
     now = now_taipei()
     subject = (

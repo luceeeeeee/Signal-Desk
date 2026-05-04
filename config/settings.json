@@ -6,7 +6,7 @@
   },
   "notifications": {
     "briefing": {
-      "channel": "email",
+      "channel": "line",
       "recipient": "yenhsuanlee@gmail.com",
       "line_recipients": [
         "U4e5b06105f0a98c127d920332357c218",
