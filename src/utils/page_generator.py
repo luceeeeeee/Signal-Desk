@@ -414,7 +414,6 @@ def generate_news_sources_page(feeds: list) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"[Pages] news-sources.html updated — {total} sources across {len([r for r in REGION_ORDER if grouped.get(r)])} regions")
-    _git_push_pages("news-sources")
 
 
 # ── Monthly overview ──────────────────────────────────────────────────────────

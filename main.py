@@ -429,6 +429,7 @@ if __name__ == "__main__":
 
     # Regenerate static pages on every startup
     generate_news_sources_page(NEWS_FEEDS)
+    _git_push_pages("news-sources")
 
     # Generate earnings calendar on startup (always fresh)
     print("  Generating Earnings Calendar page...")
@@ -437,7 +438,7 @@ if __name__ == "__main__":
 
     # Generate missing watchlist company pages at startup
     missing = [
-        d for d in _startup_prices
+        d for d in fetch_all_prices()
         if d.get("price") and not os.path.exists(
             os.path.join(PAGES_DIR, f"stock-{d.get('ticker','').lower()}.html")
         )

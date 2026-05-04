@@ -403,6 +403,7 @@ if LINE_SDK_AVAILABLE and handler:
     def on_message(event):
         user_id = event.source.user_id
         text    = event.message.text
+        print(f"[LINE Bot] Message from {user_id}: {text[:60]}")
         reply   = route_message(user_id, text)
         _reply(event.reply_token, reply)
 
